@@ -1,10 +1,10 @@
 # ngx-chess-board
 <img alt="npm" src="https://img.shields.io/npm/v/ngx-chess-board?color=success&label=npm%20package&logo=success&logoColor=success&style=plastic">
 
-ngx-chess-board is a project which allows to embed chess game on site.
+ngx-chess-board is a project which allows to add chess game for two players on the site.
 
 ## Instalation
-<code>npm i chess-board
+<code>npm i chess-board</code>
 
 ## Screenshots
 ![alt scr](https://i.imgur.com/IgPDO19.png)
@@ -12,8 +12,8 @@ ngx-chess-board is a project which allows to embed chess game on site.
 
 ## Usage
 
-* <code>import {NgxChessBoardModule} from "ngx-chess-game";</code>
-* <ngx-chess-board></ngx-chess-board>
+* <code>import {NgxChessBoardModule} from "ngx-chess-board";</code>
+* `<ngx-chess-board></ngx-chess-board>`
 
 ## API
 
@@ -21,4 +21,4 @@ ngx-chess-board is a project which allows to embed chess game on site.
 
 Input | Type | Description    
 | :---: | :---: | :---: |
-size | number | Sets size of the chess board
+size | number | Sets size of the chess board (in pixels). Default value is <b>400</b>

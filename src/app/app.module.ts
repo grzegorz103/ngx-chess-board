@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import {NgxChessGameModule} from 'ngx-chess-board';
+import {NgxChessBoardModule} from 'ngx-chess-board';
 
 @NgModule({
   declarations: [
@@ -10,7 +10,7 @@ import {NgxChessGameModule} from 'ngx-chess-board';
   ],
   imports: [
     BrowserModule,
-    NgxChessGameModule
+    NgxChessBoardModule
   ],
   providers: [],
   bootstrap: [AppComponent]
