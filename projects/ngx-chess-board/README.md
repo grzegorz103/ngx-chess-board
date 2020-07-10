@@ -1,4 +1,6 @@
 # ngx-chess-board
+<img alt="npm" src="https://img.shields.io/npm/v/ngx-chess-board?color=success&label=npm%20package&logo=success&logoColor=success&style=plastic">
+
 ngx-chess-board is a project which allows to embed chess game on site.
 
 ## Instalation

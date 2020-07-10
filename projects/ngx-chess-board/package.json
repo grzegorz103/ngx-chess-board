@@ -1,8 +1,22 @@
 {
   "name": "ngx-chess-board",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "peerDependencies": {
     "@angular/common": "^8.2.14",
     "@angular/core": "^8.2.14"
-  }
+  },
+
+  "description": "Chess game component",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grzegorz103/ngx-chess-board.git"
+  },
+  "homepage": "https://github.com/grzegorz103/ngx-chess-board",
+  "keywords": [
+    "angular",
+    "chess",
+    "game",
+    "multiplayer",
+    "board"
+  ]
 }
