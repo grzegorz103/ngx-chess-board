@@ -17,12 +17,8 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name: Remove analytics
-          command: ng analytics off
-
-      - run:
           name: Install angularcli
-          command: sudo npm install -g @angular/cli@latest
+          command: sudo npm install -g @angular/cli@latest > /dev/null
 
       - run:
           name: Run unit tests with karma
