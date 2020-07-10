@@ -1,22 +1,23 @@
-version: 2.1
-orbs:
-  node: circleci/node@1.1.6
-  browser-tools: circleci/browser-tools@1.0.1
+version: 2
+
 jobs:
-  build-and-test:
+  build:
     docker:
-      - image: 'cimg/node:13.12'
-    executor:
-      name: node/default
+      - image: circleci/node:6-browsers
+        environment:
+          CHROME_BIN: "/usr/bin/google-chrome"
     steps:
-      - browser-tools/install-chrome
-      - browser-tools/install-chromedriver
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test ngx-chess-board
-workflows:
-    build-and-test:
-      jobs:
-        - build-and-test
+      - run:
+          name: Install node_modules with npm
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Install angularcli
+          command: sudo npm install -g @angular/cli@latest
+      - run:
+          name: Run unit tests with karma
+          command: ng test ngx-chess-board
