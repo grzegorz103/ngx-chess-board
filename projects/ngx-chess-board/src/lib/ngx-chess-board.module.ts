@@ -9,4 +9,4 @@ import {NgxChessBoardComponent} from './ngx-chess-board.component';
   ],
   exports: [NgxChessBoardComponent]
 })
-export class NgxChessGameModule { }
+export class NgxChessBoardModule { }
