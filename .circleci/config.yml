@@ -6,6 +6,7 @@ jobs:
       - image: circleci/node:latest-browsers
         environment:
           CHROME_BIN: "/usr/bin/google-chrome"
+          NG_CLI_ANALYTICS: "ci"
     steps:
       - checkout
       - run:
