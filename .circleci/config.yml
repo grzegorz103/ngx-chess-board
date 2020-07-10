@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@1.1.6
-  browser-tools: circleci/browser-tools@1.0.1
+  browser-tools: circleci/browser-tools@2.6.3
 jobs:
   build-and-test:
     docker:
