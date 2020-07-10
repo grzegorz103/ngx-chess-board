@@ -1,12 +1,21 @@
-version: 2
+version: 2.1
+orbs:
+  node: circleci/node@1.1.6
 jobs:
-  build:
+  build-and-test:
     docker:
-      - image: circleci/node:10
-        environment:
-          CHROME_BIN: /usr/bin/google-chrome
-
+      - image: 'cimg/node:13.12'
+    executor:
+      name: node/default
     steps:
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
       - checkout
-      - run: npm install
-      - run: npm test ngx-chess-board
+      - node/with-cache:
+          steps:
+            - run: npm install
+            - run: npm test ngx-chess-board
+workflows:
+    build-and-test:
+      jobs:
+        - build-and-test
