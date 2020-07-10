@@ -1,0 +1,25 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:latest-browsers
+        environment:
+          CHROME_BIN: "/usr/bin/google-chrome"
+          NG_CLI_ANALYTICS: "ci"
+    steps:
+      - checkout
+      - run:
+          name: Install node_modules with npm
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Install angularcli
+          command: sudo npm install -g @angular/cli@latest > /dev/null
+
+      - run:
+          name: Run unit tests with karma
+          command: ng test ngx-chess-board
