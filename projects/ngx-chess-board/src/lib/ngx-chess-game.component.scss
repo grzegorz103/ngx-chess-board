@@ -1,0 +1,56 @@
+.board-row {
+  display: block;
+  width: 100%;
+  height: 12.5%;
+}
+
+.board-col {
+  display: inline-block;
+  width: 12.5%;
+  vertical-align: top;
+  cursor: default;
+  height: 100%;
+}
+
+.bg-black {
+  background-color: #BAA378;
+}
+
+.bg-shine {
+  background-color: rgb(97, 84, 61);
+}
+
+.piece {
+  height: 100%;
+  cursor: grab;
+  width: 100%;
+  background-size: cover;
+  justify-content: center;
+  text-align: center;
+  margin-top: -10px;
+}
+
+.piece::after {
+  content: '\200b';
+}
+
+#drag {
+  height: 100%;
+  // border: 3px solid blue;
+  width: 100%;
+}
+
+.possible-point {
+  border: 3px solid rgb(0, 0, 0);
+  box-sizing: border-box;
+}
+
+.possible-capture {
+  border: 3px solid rgb(0, 255, 42);
+  box-sizing: border-box;
+}
+
+.king-check {
+  border: 5px solid red;
+  box-sizing: border-box;
+}

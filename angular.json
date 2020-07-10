@@ -124,6 +124,41 @@
           }
         }
       }
+    },
+    "ngx-chess-board": {
+      "projectType": "library",
+      "root": "projects/ngx-chess-board",
+      "sourceRoot": "projects/ngx-chess-board/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/ngx-chess-board/tsconfig.lib.json",
+            "project": "projects/ngx-chess-board/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ngx-chess-board/src/test.ts",
+            "tsConfig": "projects/ngx-chess-board/tsconfig.spec.json",
+            "karmaConfig": "projects/ngx-chess-board/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/ngx-chess-board/tsconfig.lib.json",
+              "projects/ngx-chess-board/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }},
   "defaultProject": "chess-board"
 }
