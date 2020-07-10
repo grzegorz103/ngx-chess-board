@@ -13,10 +13,10 @@ import {Pawn} from './pieces/pawn';
 
 @Component({
   selector: 'ngx-chess-board',
-  templateUrl: './ngx-chess-game.component.html',
-  styleUrls: ['./ngx-chess-game.component.scss']
+  templateUrl: './ngx-chess-board.component.html',
+  styleUrls: ['./ngx-chess-board.component.scss']
 })
-export class NgxChessGameComponent implements OnInit {
+export class NgxChessBoardComponent implements OnInit {
 
   @Input('size')
   size: number = 400;
@@ -62,11 +62,11 @@ export class NgxChessGameComponent implements OnInit {
         this.checkIfRookMoved(this.activePiece);
         this.checkIfKingMoved(this.activePiece);
 
-        if (!this.currentWhitePlayer && this.isKingInCheck(Color.BLACK, NgxChessGameComponent.pieces)) {
+        if (!this.currentWhitePlayer && this.isKingInCheck(Color.BLACK, NgxChessBoardComponent.pieces)) {
           this.blackKingChecked = true;
         }
 
-        if (this.currentWhitePlayer && this.isKingInCheck(Color.WHITE, NgxChessGameComponent.pieces)) {
+        if (this.currentWhitePlayer && this.isKingInCheck(Color.WHITE, NgxChessBoardComponent.pieces)) {
           this.whiteKingChecked = true;
         }
 
@@ -92,7 +92,7 @@ export class NgxChessGameComponent implements OnInit {
   getPieceByPoint(row: number, col: number): Piece {
     row = Math.floor(row);
     col = Math.floor(col);
-    return NgxChessGameComponent.pieces.find(e => e.point.col === col && e.point.row === row);
+    return NgxChessBoardComponent.pieces.find(e => e.point.col === col && e.point.row === row);
   }
 
   isKingChecked(piece: Piece) {
@@ -113,59 +113,59 @@ export class NgxChessGameComponent implements OnInit {
     if (row > 7 || row < 0 || col > 7 || col < 0) {
       return false;
     }
-    return !NgxChessGameComponent.pieces.some(e => e.point.col === col && e.point.row === row);
+    return !NgxChessBoardComponent.pieces.some(e => e.point.col === col && e.point.row === row);
   }
 
   static isFieldTakenByEnemy(row: number, col: number, enemyColor: Color): boolean {
     if (row > 7 || row < 0 || col > 7 || col < 0) {
       return false;
     }
-    return NgxChessGameComponent.pieces.some(e => e.point.col === col && e.point.row === row && e.color === enemyColor);
+    return NgxChessBoardComponent.pieces.some(e => e.point.col === col && e.point.row === row && e.color === enemyColor);
   }
 
 
   static isFieldUnderAttack(row: number, col: number, color: Color) {
     let found = false;
-    return NgxChessGameComponent.pieces.filter(e => e.color === color).some(e => e.getCoveredFields().some(f => f.col === col && f.row === row));
+    return NgxChessBoardComponent.pieces.filter(e => e.color === color).some(e => e.getCoveredFields().some(f => f.col === col && f.row === row));
   }
 
   static getPieceByField(row: number, col: number): Piece {
-    if (NgxChessGameComponent.isFieldEmpty(row, col)) {
+    if (NgxChessBoardComponent.isFieldEmpty(row, col)) {
       //   throw new Error('Piece not found');
       return undefined;
     }
 
-    return NgxChessGameComponent.pieces.find(e => e.point.col === col && e.point.row === row);
+    return NgxChessBoardComponent.pieces.find(e => e.point.col === col && e.point.row === row);
   }
 
   private addPieces() {
-    NgxChessGameComponent.pieces = [];
+    NgxChessBoardComponent.pieces = [];
     // piony czarne
     for (let i = 0; i < 8; ++i) {
-      NgxChessGameComponent.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN));
+      NgxChessBoardComponent.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN));
     }
-    NgxChessGameComponent.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK));
-    NgxChessGameComponent.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT));
-    NgxChessGameComponent.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP));
-    NgxChessGameComponent.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN));
-    NgxChessGameComponent.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING));
-    NgxChessGameComponent.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP));
-    NgxChessGameComponent.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT));
-    NgxChessGameComponent.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK));
+    NgxChessBoardComponent.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK));
+    NgxChessBoardComponent.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT));
+    NgxChessBoardComponent.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP));
+    NgxChessBoardComponent.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN));
+    NgxChessBoardComponent.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING));
+    NgxChessBoardComponent.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP));
+    NgxChessBoardComponent.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT));
+    NgxChessBoardComponent.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK));
 
 
     // piony biale
     for (let i = 0; i < 8; ++i) {
-      NgxChessGameComponent.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN));
+      NgxChessBoardComponent.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN));
     }
-    NgxChessGameComponent.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK));
-    NgxChessGameComponent.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT));
-    NgxChessGameComponent.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP));
-    NgxChessGameComponent.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN));
-    NgxChessGameComponent.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING));
-    NgxChessGameComponent.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP));
-    NgxChessGameComponent.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT));
-    NgxChessGameComponent.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK));
+    NgxChessBoardComponent.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK));
+    NgxChessBoardComponent.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT));
+    NgxChessBoardComponent.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP));
+    NgxChessBoardComponent.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN));
+    NgxChessBoardComponent.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING));
+    NgxChessBoardComponent.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP));
+    NgxChessBoardComponent.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT));
+    NgxChessBoardComponent.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK));
 
 
   }
@@ -185,10 +185,10 @@ export class NgxChessGameComponent implements OnInit {
   }
 
   async movePiece(piece: Piece, newPoint: Point) {
-    let destPiece = NgxChessGameComponent.pieces.find(e => e.point.col === newPoint.col && e.point.row === newPoint.row);
+    let destPiece = NgxChessBoardComponent.pieces.find(e => e.point.col === newPoint.col && e.point.row === newPoint.row);
 
     if (destPiece && piece.color != destPiece.color) {
-      NgxChessGameComponent.pieces = NgxChessGameComponent.pieces.filter(e => e !== destPiece);
+      NgxChessBoardComponent.pieces = NgxChessBoardComponent.pieces.filter(e => e !== destPiece);
     } else if (destPiece && piece.color === destPiece.color) {
       return;
     }
@@ -196,10 +196,10 @@ export class NgxChessGameComponent implements OnInit {
       let squaresMoved = Math.abs(newPoint.col - piece.point.col);
       if (squaresMoved > 1) {
         if (newPoint.col < 3) {
-          let leftRook = NgxChessGameComponent.getPieceByField(piece.point.row, 0);
+          let leftRook = NgxChessBoardComponent.getPieceByField(piece.point.row, 0);
           leftRook.point.col = 3;
         } else {
-          let rightRook = NgxChessGameComponent.getPieceByField(piece.point.row, 7);
+          let rightRook = NgxChessBoardComponent.getPieceByField(piece.point.row, 7);
           rightRook.point.col = 5;
         }
       }
@@ -238,12 +238,12 @@ export class NgxChessGameComponent implements OnInit {
   }
 
   public willMoveCauseCheck(currentColor: Color, row: number, col: number, destRow: number, destCol: number) {
-    let tempBoard = NgxChessGameComponent.pieces;
-    /*  NgxChessGameComponent.pieces = NgxChessGameComponent.pieces.filter(piece =>
+    let tempBoard = NgxChessBoardComponent.pieces;
+    /*  NgxChessBoardComponent.pieces = NgxChessBoardComponent.pieces.filter(piece =>
         (piece.point.col !== col) || (piece.point.row !== row)
       );*/
-    let srcPiece = NgxChessGameComponent.getPieceByField(row, col);
-    let destPiece = NgxChessGameComponent.getPieceByField(destRow, destCol);
+    let srcPiece = NgxChessBoardComponent.getPieceByField(row, col);
+    let destPiece = NgxChessBoardComponent.getPieceByField(destRow, destCol);
 
     if (srcPiece) {
       srcPiece.point.row = destRow;
@@ -251,9 +251,9 @@ export class NgxChessGameComponent implements OnInit {
     }
 
     if (destPiece) {
-      NgxChessGameComponent.pieces = NgxChessGameComponent.pieces.filter(e => e !== destPiece);
+      NgxChessBoardComponent.pieces = NgxChessBoardComponent.pieces.filter(e => e !== destPiece);
     }
-    let isBound = this.isKingInCheck(currentColor, NgxChessGameComponent.pieces);
+    let isBound = this.isKingInCheck(currentColor, NgxChessBoardComponent.pieces);
 
     if (srcPiece) {
       srcPiece.point.col = col;
@@ -261,7 +261,7 @@ export class NgxChessGameComponent implements OnInit {
     }
 
     if (destPiece) {
-      NgxChessGameComponent.pieces.push(destPiece);
+      NgxChessBoardComponent.pieces.push(destPiece);
     }
 
     return isBound;
@@ -275,8 +275,8 @@ export class NgxChessGameComponent implements OnInit {
     if (piece.color === Color.WHITE && piece.point.row === 0) {
       return this.openPromoteDialog(piece);
     } else if (piece.color === Color.BLACK && piece.point.row === 7) {
-      NgxChessGameComponent.pieces = NgxChessGameComponent.pieces.filter(e => e !== piece);
-      NgxChessGameComponent.pieces.push(new Queen(piece.point, Color.BLACK, 'queen-black.png'));
+      NgxChessBoardComponent.pieces = NgxChessBoardComponent.pieces.filter(e => e !== piece);
+      NgxChessBoardComponent.pieces.push(new Queen(piece.point, Color.BLACK, 'queen-black.png'));
     }
   }
 

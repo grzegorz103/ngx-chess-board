@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NgxChessGameComponent } from './ngx-chess-game.component';
+import { NgxChessBoardComponent } from './ngx-chess-board.component';
 
 describe('NgxChessGameComponent', () => {
-  let component: NgxChessGameComponent;
-  let fixture: ComponentFixture<NgxChessGameComponent>;
+  let component: NgxChessBoardComponent;
+  let fixture: ComponentFixture<NgxChessBoardComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NgxChessGameComponent ]
+      declarations: [ NgxChessBoardComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(NgxChessGameComponent);
+    fixture = TestBed.createComponent(NgxChessBoardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

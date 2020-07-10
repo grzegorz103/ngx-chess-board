@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {NgxChessGameComponent} from './ngx-chess-game.component';
+import {NgxChessBoardComponent} from './ngx-chess-board.component';
 
 @NgModule({
-  declarations: [NgxChessGameComponent],
+  declarations: [NgxChessBoardComponent],
   imports: [
     CommonModule
   ],
-  exports: [NgxChessGameComponent]
+  exports: [NgxChessBoardComponent]
 })
 export class NgxChessGameModule { }
