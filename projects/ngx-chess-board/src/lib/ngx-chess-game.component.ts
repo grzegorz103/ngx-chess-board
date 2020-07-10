@@ -1,23 +1,24 @@
 import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
-import {Pawn} from "./pieces/pawn";
-import {Point} from "./pieces/point";
-import {Rook} from "./pieces/rook";
-import {Knight} from "./pieces/knight";
-import {Bishop} from "./pieces/bishop";
-import {King} from "./pieces/king";
-import {Queen} from "./pieces/queen";
-import {Piece} from "./pieces/piece";
-import {Color} from "./pieces/color";
-import {UnicodeConstants} from "./utils/unicode-constants";
+import {Piece} from './pieces/piece';
+import {Color} from './pieces/color';
+import {King} from './pieces/king';
+import {UnicodeConstants} from './utils/unicode-constants';
+import {Point} from './pieces/point';
+import {Bishop} from './pieces/bishop';
+import {Knight} from './pieces/knight';
+import {Rook} from './pieces/rook';
+import {Queen} from './pieces/queen';
+import {Pawn} from './pieces/pawn';
+
 
 @Component({
-  selector: 'app-ngx-chess-game',
+  selector: 'ngx-chess-board',
   templateUrl: './ngx-chess-game.component.html',
   styleUrls: ['./ngx-chess-game.component.scss']
 })
 export class NgxChessGameComponent implements OnInit {
 
-  @Input("size")
+  @Input('size')
   size: number = 400;
 
   board: number[][];
@@ -61,11 +62,11 @@ export class NgxChessGameComponent implements OnInit {
         this.checkIfRookMoved(this.activePiece);
         this.checkIfKingMoved(this.activePiece);
 
-        if (this.currentWhitePlayer && this.isKingInCheck(Color.BLACK, NgxChessGameComponent.pieces)) {
+        if (!this.currentWhitePlayer && this.isKingInCheck(Color.BLACK, NgxChessGameComponent.pieces)) {
           this.blackKingChecked = true;
         }
 
-        if (!this.currentWhitePlayer && this.isKingInCheck(Color.WHITE, NgxChessGameComponent.pieces)) {
+        if (this.currentWhitePlayer && this.isKingInCheck(Color.WHITE, NgxChessGameComponent.pieces)) {
           this.whiteKingChecked = true;
         }
 

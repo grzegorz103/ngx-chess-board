@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
-import {NgxChessGameComponent} from "./ngx-chess-game.component";
-import {CommonModule} from "@angular/common";
-
-
+import {CommonModule} from '@angular/common';
+import {NgxChessGameComponent} from './ngx-chess-game.component';
 
 @NgModule({
   declarations: [NgxChessGameComponent],
