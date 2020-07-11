@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Piece} from './pieces/piece';
 import {Color} from './pieces/color';
 import {King} from './pieces/king';
@@ -20,6 +20,15 @@ export class NgxChessBoardComponent implements OnInit {
 
   @Input('size')
   size: number = 400;
+
+  @Input('darkTileColor')
+  darkTileColor: string = 'rgb(97, 84, 61)';
+
+  @Input('lightTileColor')
+  lightTileColor: string = '#BAA378';
+
+  @Output()
+  onMove: EventEmitter<any> = new EventEmitter<any>();
 
   board: number[][];
   pieceSize: number;
@@ -52,7 +61,7 @@ export class NgxChessBoardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.pieceSize = this.size / 8;
+    this.pieceSize = this.size / 9;
   }
 
   async onMouseDown(event) {
@@ -79,6 +88,7 @@ export class NgxChessBoardComponent implements OnInit {
       }
       this.selected = false;
       this.possibleCaptures = [];
+      this.activePiece = null;
       this.possibleMoves = [];
     } else {
       let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
@@ -218,6 +228,8 @@ export class NgxChessBoardComponent implements OnInit {
 
     piece.point = newPoint;
     this.currentWhitePlayer = !this.currentWhitePlayer;
+    this.onMove.emit();
+
     return this.checkForPawnPromote(piece);
   }
 
@@ -284,11 +296,9 @@ export class NgxChessBoardComponent implements OnInit {
       return;
     }
 
-    if (piece.color === Color.WHITE && piece.point.row === 0) {
-      return this.openPromoteDialog(piece);
-    } else if (piece.color === Color.BLACK && piece.point.row === 7) {
+    if (piece.point.row === 0 || piece.point.row === 7) {
       NgxChessBoardComponent.pieces = NgxChessBoardComponent.pieces.filter(e => e !== piece);
-      NgxChessBoardComponent.pieces.push(new Queen(piece.point, Color.BLACK, 'queen-black.png'));
+      NgxChessBoardComponent.pieces.push(new Queen(piece.point, piece.color, UnicodeConstants.BLACK_QUEEN));
     }
   }
 
@@ -342,4 +352,9 @@ export class NgxChessBoardComponent implements OnInit {
   isXYInDestMove(i: number, j: number) {
     return this.lastMoveDest && this.lastMoveDest.row === i && this.lastMoveDest.col === j;
   }
+
+  isXYInActiveMove(i: number, j: number) {
+    return this.activePiece && this.activePiece.point.row === i && this.activePiece.point.col === j;
+  }
+
 }
