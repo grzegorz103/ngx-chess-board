@@ -1,11 +1,11 @@
 <div id="board" [style.height.px]="size" [style.width.px]="size" #boardRef>
-  <div id="drag"        (mousedown)="onMouseDown($event)" >
-    <div *ngFor="let row of board; let i = index" class="board-row" >
+  <div id="drag" (mousedown)="onMouseDown($event)">
+    <div *ngFor="let row of board; let i = index" class="board-row">
       <div *ngFor="let col of row; let j = index" class="board-col"
-           [ngClass]="[((i + j) %2 === 0 ) ?  'bg-black' : 'bg-shine', isXYInPossibleMoves(i,j) ? 'possible-point' : '', isXYInPossibleCaptures(i,j) ? 'possible-capture' : '']">
+           [ngClass]="[((i + j) %2 === 0 ) ?  'bg-black' : 'bg-shine', isXYInPossibleMoves(i,j) ? 'possible-point' : '', isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', isXYInSourceMove(i,j)?'source-move':'',isXYInDestMove(i,j)?'dest-move':'']">
         <div *ngIf="getPieceByPoint(i, j)" style="height:100%; width:100%">
           <div
-            [ngClass]="isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : ''" class="piece" [style.font-size]="pieceSize + 'px'" [innerHTML]="getPieceByPoint(i,j).image">
+            class="piece" [style.font-size]="pieceSize + 'px'" [innerHTML]="getPieceByPoint(i,j).image">
           </div>
         </div>
       </div>
