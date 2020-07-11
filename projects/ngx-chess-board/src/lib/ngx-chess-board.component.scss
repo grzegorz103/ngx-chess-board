@@ -24,6 +24,8 @@
   height: 100%;
   cursor: grab;
   width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
   background-size: cover;
   justify-content: center;
   text-align: center;
@@ -51,6 +53,14 @@
 }
 
 .king-check {
-  border: 5px solid red;
+  border: 3px solid red;
   box-sizing: border-box;
+}
+
+.source-move{
+  background-color: rgba(146, 111, 26, 0.79);
+}
+
+.dest-move{
+  background-color: #926f1a;
 }

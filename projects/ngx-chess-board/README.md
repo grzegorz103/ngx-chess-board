@@ -10,7 +10,7 @@ npm i ngx-chess-board
 
 ## Screenshots
 ![alt scr](https://i.imgur.com/IgPDO19.png)
-![alt scr](https://i.imgur.com/sBmsyZ9.png)
+![alt scr](https://i.imgur.com/W4rSOya.png)
 
 ## Use example
 
