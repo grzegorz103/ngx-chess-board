@@ -45,6 +45,7 @@ Input | Type | Description
 `[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
+
 @Outputs()
 
 Name | Type | Description  
