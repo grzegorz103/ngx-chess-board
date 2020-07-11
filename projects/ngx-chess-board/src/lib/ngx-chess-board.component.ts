@@ -25,6 +25,10 @@ export class NgxChessBoardComponent implements OnInit {
   pieceSize: number;
   static pieces: Piece[] = [];
   selected = false;
+  static enPassantPoint: Point = null;
+  static enPassantPiece: Piece = null;
+  lastMoveSrc: Point = null;
+  lastMoveDest: Point = null;
 
   @ViewChild('boardRef', {static: false}) boardRef: ElementRef;
   private activePiece: Piece;
@@ -57,19 +61,21 @@ export class NgxChessBoardComponent implements OnInit {
     if (this.selected) {
       //   this.possibleMoves = activePiece.getPossibleMoves();
       if (this.isPointInPossibleMoves(pointClicked) || this.isPointInPossibleCaptures(pointClicked)) {
+        this.lastMoveSrc = this.activePiece.point;
+        this.lastMoveDest = pointClicked;
         await this.movePiece(this.activePiece, pointClicked);
         this.checkIfPawnFirstMove(this.activePiece);
         this.checkIfRookMoved(this.activePiece);
         this.checkIfKingMoved(this.activePiece);
 
-        if (!this.currentWhitePlayer && this.isKingInCheck(Color.BLACK, NgxChessBoardComponent.pieces)) {
-          this.blackKingChecked = true;
-        }
+        this.blackKingChecked = this.isKingInCheck(Color.BLACK, NgxChessBoardComponent.pieces);
+        this.whiteKingChecked = this.isKingInCheck(Color.WHITE, NgxChessBoardComponent.pieces);
 
-        if (this.currentWhitePlayer && this.isKingInCheck(Color.WHITE, NgxChessBoardComponent.pieces)) {
-          this.whiteKingChecked = true;
-        }
+        this.checkForPossibleMoves(Color.BLACK, 'Checkmate!');
+        this.checkForPossibleMoves(Color.WHITE, 'Checkmate!');
 
+        this.checkForPat(Color.BLACK);
+        this.checkForPat(Color.WHITE);
       }
       this.selected = false;
       this.possibleCaptures = [];
@@ -204,6 +210,12 @@ export class NgxChessBoardComponent implements OnInit {
         }
       }
     }
+
+    if (piece instanceof Pawn) {
+      NgxChessBoardComponent.checkIfPawnTakesEnPassant(newPoint);
+      NgxChessBoardComponent.checkIfPawnEnpassanted(piece, newPoint);
+    }
+
     piece.point = newPoint;
     this.currentWhitePlayer = !this.currentWhitePlayer;
     return this.checkForPawnPromote(piece);
@@ -284,4 +296,50 @@ export class NgxChessBoardComponent implements OnInit {
 
   }
 
+  private checkForPossibleMoves(color: Color, text: string) {
+    if (!NgxChessBoardComponent.pieces.filter(e => e.color === color)
+      .some(e => e.getPossibleMoves().some(f => !this.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col)
+        || e.getPossibleCaptures().some(f => !this.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col))))) {
+      alert(text);
+    }
+  }
+
+  private checkForPat(color: Color) {
+    if (color === Color.WHITE && !this.whiteKingChecked) {
+      this.checkForPossibleMoves(color, 'Stalemate!');
+    } else if (color === Color.BLACK && !this.blackKingChecked) {
+      this.checkForPossibleMoves(color, 'Stalemate!');
+    }
+  }
+
+  private static checkIfPawnEnpassanted(piece: Pawn, newPoint: Point) {
+    if (Math.abs(piece.point.row - newPoint.row) > 1) {
+      NgxChessBoardComponent.enPassantPiece = piece;
+      NgxChessBoardComponent.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
+    } else {
+      NgxChessBoardComponent.enPassantPoint = null;
+      NgxChessBoardComponent.enPassantPiece = null;
+    }
+  }
+
+  private static checkIfPawnTakesEnPassant(newPoint: Point) {
+    if (NgxChessBoardComponent.isEqual(newPoint, NgxChessBoardComponent.enPassantPoint)) {
+      NgxChessBoardComponent.pieces = NgxChessBoardComponent.pieces
+        .filter(piece => piece !== NgxChessBoardComponent.enPassantPiece);
+      NgxChessBoardComponent.enPassantPoint = null;
+      NgxChessBoardComponent.enPassantPiece = null;
+    }
+  }
+
+  private static isEqual(first: Point, second: Point) {
+    return first && second && first.col === second.col && first.row === second.row;
+  }
+
+  isXYInSourceMove(i: number, j: number) {
+    return this.lastMoveSrc && this.lastMoveSrc.row === i && this.lastMoveSrc.col === j;
+  }
+
+  isXYInDestMove(i: number, j: number) {
+    return this.lastMoveDest && this.lastMoveDest.row === i && this.lastMoveDest.col === j;
+  }
 }
