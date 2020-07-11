@@ -12,14 +12,6 @@
   height: 100%;
 }
 
-.bg-black {
-  background-color: #BAA378;
-}
-
-.bg-shine {
-  background-color: rgb(97, 84, 61);
-}
-
 .piece {
   height: 100%;
   cursor: grab;
@@ -58,9 +50,14 @@
 }
 
 .source-move{
-  background-color: rgba(146, 111, 26, 0.79);
+  background-color: rgba(146, 111, 26, 0.79) !important;
 }
 
 .dest-move{
-  background-color: #926f1a;
+  background-color: #926f1a !important;
 }
+
+.current-selection{
+  background-color: #D3A91E !important;
+}
+
