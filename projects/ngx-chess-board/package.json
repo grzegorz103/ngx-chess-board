@@ -18,5 +18,6 @@
     "game",
     "multiplayer",
     "board"
-  ]
+  ],
+  "license": "MIT"
 }

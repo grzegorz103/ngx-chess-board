@@ -10,16 +10,14 @@ npm i ngx-chess-board
 
 ## Screenshots
 ![alt scr](https://i.imgur.com/IgPDO19.png)
-![alt scr](https://i.imgur.com/W4rSOya.png)
+![alt scr](https://i.imgur.com/z819ALt.png)
 
 ## Use example
 
 `ngx-chess-board` exports 1 module.
 
 ```typescript
-import {
-  NgxChessBoardModule
-} from "ngx-chess-board";
+import { NgxChessBoardModule } from "ngx-chess-board";
 
 ...
 @NgModule({
@@ -44,4 +42,11 @@ Next, add following tag in your component's view to render the chess board.
 
 Input | Type | Description    
 | :---: | :---: | :---: |
-size | number | Sets size of the chess board (in pixels). Default value is <b>400</b>
+`[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>
+`[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
+`[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
+@Outputs()
+
+Name | Type | Description  
+| :---: | :---: | :---: |
+`(onMove)` | EventEmitter\<any> | Dispatch event when piece has moved
