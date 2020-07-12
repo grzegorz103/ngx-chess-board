@@ -1,7 +1,8 @@
 import {Piece} from './piece';
 import {Color} from './color';
 import {Point} from './point';
-import {NgxChessBoardComponent} from '../ngx-chess-board.component';
+import {NgxChessBoardComponent} from '../../ngx-chess-board.component';
+import {Board} from '../board';
 
 export class Pawn extends Piece {
 
@@ -55,9 +56,9 @@ export class Pawn extends Piece {
       }
     }
 
-    if (NgxChessBoardComponent.enPassantPoint && NgxChessBoardComponent.enPassantPiece.color === (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-      if (row === NgxChessBoardComponent.enPassantPiece.point.row) {
-        possiblePoints.push(NgxChessBoardComponent.enPassantPoint);
+    if (Board.enPassantPoint && Board.enPassantPiece.color === (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+      if (row === Board.enPassantPiece.point.row) {
+        possiblePoints.push(Board.enPassantPoint);
       }
     }
 
