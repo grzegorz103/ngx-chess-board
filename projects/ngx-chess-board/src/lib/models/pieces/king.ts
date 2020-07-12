@@ -12,8 +12,8 @@ export class King extends Piece {
   isMovedAlready;
   isCastling = false;
 
-  constructor(point: Point, color: Color, image: string) {
-    super(point, color, image, 0);
+    constructor(point: Point, color: Color, image: string, ngxChessBoardComponent: NgxChessBoardComponent) {
+    super(point, color, image, 0, ngxChessBoardComponent);
   }
 
   getPossibleMoves(): Point[] {
@@ -22,54 +22,54 @@ export class King extends Piece {
     let row = this.point.row;
     let col = this.point.col;
     // lewo
-    if (NgxChessBoardComponent.isFieldEmpty(row, col - 1) && !NgxChessBoardComponent.isFieldUnderAttack(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row, col - 1) && !this.ngxChessBoardComponent.isFieldUnderAttack(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row, col - 1));
     }
 
     // prawo
-    if (NgxChessBoardComponent.isFieldEmpty(row, col + 1) && !NgxChessBoardComponent.isFieldUnderAttack(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row, col + 1) && !this.ngxChessBoardComponent.isFieldUnderAttack(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row, col + 1));
     }
 
     // dol
-    if (NgxChessBoardComponent.isFieldEmpty(row + 1, col) && !NgxChessBoardComponent.isFieldUnderAttack(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row + 1, col) && !this.ngxChessBoardComponent.isFieldUnderAttack(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row + 1, col));
     }
 
     // gora
-    if (NgxChessBoardComponent.isFieldEmpty(row - 1, col) && !NgxChessBoardComponent.isFieldUnderAttack(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row - 1, col) && !this.ngxChessBoardComponent.isFieldUnderAttack(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row - 1, col));
     }
 
     // lewo gora
-    if (NgxChessBoardComponent.isFieldEmpty(row - 1, col - 1) && !NgxChessBoardComponent.isFieldUnderAttack(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row - 1, col - 1) && !this.ngxChessBoardComponent.isFieldUnderAttack(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row - 1, col - 1));
     }
     // prawo gora
-    if (NgxChessBoardComponent.isFieldEmpty(row - 1, col + 1) && !NgxChessBoardComponent.isFieldUnderAttack(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row - 1, col + 1) && !this.ngxChessBoardComponent.isFieldUnderAttack(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row - 1, col + 1));
     }
 
     // lewo dol
-    if (NgxChessBoardComponent.isFieldEmpty(row + 1, col - 1) && !NgxChessBoardComponent.isFieldUnderAttack(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row + 1, col - 1) && !this.ngxChessBoardComponent.isFieldUnderAttack(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row + 1, col - 1));
     }
     // prawo dol
-    if (NgxChessBoardComponent.isFieldEmpty(row + 1, col + 1) && !NgxChessBoardComponent.isFieldUnderAttack(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldEmpty(row + 1, col + 1) && !this.ngxChessBoardComponent.isFieldUnderAttack(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row + 1, col + 1));
     }
 
     if(!this.isMovedAlready){
       let longCastlePossible = true;
       for (let i = col - 1; i > 0; --i) {
-        if (!NgxChessBoardComponent.isFieldEmpty(row, i) || NgxChessBoardComponent.isFieldUnderAttack(row, i, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+        if (!this.ngxChessBoardComponent.isFieldEmpty(row, i) || this.ngxChessBoardComponent.isFieldUnderAttack(row, i, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
           longCastlePossible = false;
           break;
         }
       }
 
-      if (longCastlePossible && NgxChessBoardComponent.getPieceByField(row, 0)) {
-        let leftRook = NgxChessBoardComponent.getPieceByField(row, 0);
+      if (longCastlePossible && this.ngxChessBoardComponent.getPieceByField(row, 0)) {
+        let leftRook = this.ngxChessBoardComponent.getPieceByField(row, 0);
         if (leftRook instanceof Rook) {
           if (!leftRook.isMovedAlready) {
             possiblePoints.push(new Point(row, col - 2));
@@ -79,14 +79,14 @@ export class King extends Piece {
 
       let shortCastlePossible = true;
       for (let i = col + 1; i < 7; ++i) {
-        if (!NgxChessBoardComponent.isFieldEmpty(row, i) || NgxChessBoardComponent.isFieldUnderAttack(row, i, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+        if (!this.ngxChessBoardComponent.isFieldEmpty(row, i) || this.ngxChessBoardComponent.isFieldUnderAttack(row, i, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
           shortCastlePossible = false;
           break;
         }
       }
 
-      if (shortCastlePossible && NgxChessBoardComponent.getPieceByField(row, 7)) {
-        let rightRook = NgxChessBoardComponent.getPieceByField(row, 7);
+      if (shortCastlePossible && this.ngxChessBoardComponent.getPieceByField(row, 7)) {
+        let rightRook = this.ngxChessBoardComponent.getPieceByField(row, 7);
         if (rightRook instanceof Rook) {
           if (!rightRook.isMovedAlready) {
             possiblePoints.push(new Point(row, col + 2));
@@ -105,40 +105,40 @@ export class King extends Piece {
     let col = this.point.col;
 
     // lewo
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row, col - 1));
     }
 
     // prawo
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row, col + 1));
     }
 
     // dol
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row + 1, col));
     }
 
     // gora
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row - 1, col));
     }
 
     // lewo gora
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row - 1, col - 1));
     }
     // prawo gora
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row - 1, col + 1));
     }
 
     // lewo dol
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row + 1, col - 1));
     }
     // prawo dol
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !NgxChessBoardComponent.isFieldUnderAttack(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) && !this.ngxChessBoardComponent.isFieldUnderAttack(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
       possiblePoints.push(new Point(row + 1, col + 1));
     }
 
@@ -152,40 +152,40 @@ export class King extends Piece {
     let col = this.point.col;
 
     // lewo
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row, col - 1, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row, col - 1, this.color)) {
       possiblePoints.push(new Point(row, col - 1));
     }
 
     // prawo
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row, col + 1, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row, col + 1, this.color)) {
       possiblePoints.push(new Point(row, col + 1));
     }
 
     // dol
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row + 1, col, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col, this.color)) {
       possiblePoints.push(new Point(row + 1, col));
     }
 
     // gora
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row - 1, col, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col, this.color)) {
       possiblePoints.push(new Point(row - 1, col));
     }
 
     // lewo gora
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row - 1, col - 1, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col - 1, this.color)) {
       possiblePoints.push(new Point(row - 1, col - 1));
     }
     // prawo gora
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row - 1, col + 1, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col + 1, this.color)) {
       possiblePoints.push(new Point(row - 1, col + 1));
     }
 
     // lewo dol
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row + 1, col - 1, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col - 1, this.color)) {
       possiblePoints.push(new Point(row + 1, col - 1));
     }
     // prawo dol
-    if (NgxChessBoardComponent.isFieldTakenByEnemy(row + 1, col + 1, this.color)) {
+    if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col + 1, this.color)) {
       possiblePoints.push(new Point(row + 1, col + 1));
     }
 

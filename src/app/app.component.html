@@ -1,12 +1,27 @@
 <div style="width:400px; margin-left: auto; margin-right: auto">
   <h1 style="text-align: center">ngx-chess-board example</h1>
-  <ngx-chess-board [size]="400" [lightTileColor]="lightTileColor" [darkTileColor]="darkTileColor"></ngx-chess-board>
+  <ngx-chess-board #board [size]="400" [lightTileColor]="lightTileColor"
+                   [darkTileColor]="darkTileColor"></ngx-chess-board>
   <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
-  <button (click)="reset()" style="margin-top:5px">Reset</button>
+  <hr>
+  <label for="lightTile">Light tile color:</label>
+  <div class="input-group">
+    <span class="input-group-addon" id="basic-addon3" [style.background-color]="lightTileColor"></span>
+    <input type="text" class="form-control" placeholder="blue" [(ngModel)]="lightTileColor" id="lightTile"
+           aria-describedby="basic-addon3">
+  </div>
+  <br>
+  <label for="darkTile">Dark tile color:</label>
+  <div class="input-group">
+    <span class="input-group-addon" id="darkTileSpan" [style.background-color]="darkTileColor"></span>
+    <input type="text" class="form-control" placeholder="blue" [(ngModel)]="darkTileColor" id="darkTile"
+           aria-describedby="basic-addon3">
+  </div>
 
-  <br>
-  Light tile color: <input placeholder="blue" [(ngModel)]="lightTileColor">
-  <br>
-  Dark tile color: <input placeholder="blue" [(ngModel)]="darkTileColor">
+  <div>
+    <button type="button" class="btn btn-primary"
+            style="margin-top:10px;display:flex;margin-left:auto;margin-right:auto" (click)="reset()">Reset
+    </button>
+  </div>
 
 </div>

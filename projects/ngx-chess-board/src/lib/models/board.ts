@@ -9,14 +9,15 @@ import {Queen} from './pieces/queen';
 import {King} from './pieces/king';
 import {Piece} from './pieces/piece';
 import {NgxChessBoardService} from '../service/ngx-chess-board.service';
+import {NgxChessBoardComponent} from '../ngx-chess-board.component';
 
 export class Board {
 
   board: number[][];
 
-  static pieces: Piece[] = [];
-  static enPassantPoint: Point = null;
-  static enPassantPiece: Piece = null;
+   pieces: Piece[] = [];
+   enPassantPoint: Point = null;
+   enPassantPiece: Piece = null;
   lastMoveSrc: Point = null;
   lastMoveDest: Point = null;
   activePiece: Piece;
@@ -28,7 +29,8 @@ export class Board {
 
   currentWhitePlayer = true;
 
-  constructor(private ngxChessBoardService: NgxChessBoardService) {
+  constructor(private ngxChessBoardService: NgxChessBoardService,
+              private ngxChessBoardComponent: NgxChessBoardComponent) {
 
     this.board = [];
     for (var i: number = 0; i < 8; ++i) {
@@ -42,33 +44,33 @@ export class Board {
   }
 
   private addPieces() {
-    Board.pieces = [];
+    this.pieces = [];
     // piony czarne
     for (let i = 0; i < 8; ++i) {
-      Board.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN));
+      this.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.ngxChessBoardComponent));
     }
-    Board.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK));
-    Board.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT));
-    Board.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP));
-    Board.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN));
-    Board.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING));
-    Board.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP));
-    Board.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT));
-    Board.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK));
+    this.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.ngxChessBoardComponent));
+    this.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.ngxChessBoardComponent));
+    this.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.ngxChessBoardComponent));
+    this.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.ngxChessBoardComponent));
+    this.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING, this.ngxChessBoardComponent));
+    this.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.ngxChessBoardComponent));
+    this.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.ngxChessBoardComponent));
+    this.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.ngxChessBoardComponent));
 
 
     // piony biale
     for (let i = 0; i < 8; ++i) {
-      Board.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN));
+      this.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.ngxChessBoardComponent));
     }
-    Board.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK));
-    Board.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT));
-    Board.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP));
-    Board.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN));
-    Board.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING));
-    Board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP));
-    Board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT));
-    Board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK));
+    this.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.ngxChessBoardComponent));
+    this.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.ngxChessBoardComponent));
+    this.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.ngxChessBoardComponent));
+    this.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.ngxChessBoardComponent));
+    this.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING, this.ngxChessBoardComponent));
+    this.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.ngxChessBoardComponent));
+    this.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.ngxChessBoardComponent));
+    this.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.ngxChessBoardComponent));
   }
 
   isXYInPossibleMoves(row: number, col: number): boolean {

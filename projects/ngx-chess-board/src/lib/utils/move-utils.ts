@@ -4,9 +4,9 @@ import {NgxChessBoardComponent} from '../ngx-chess-board.component';
 
 export class MoveUtils {
 
-  public static willMoveCauseCheck(currentColor: Color, row: number, col: number, destRow: number, destCol: number) {
-    let srcPiece = NgxChessBoardComponent.getPieceByField(row, col);
-    let destPiece = NgxChessBoardComponent.getPieceByField(destRow, destCol);
+  public static willMoveCauseCheck(currentColor: Color, row: number, col: number, destRow: number, destCol: number, ngxChessBoardComponent: NgxChessBoardComponent) {
+    let srcPiece = ngxChessBoardComponent.getPieceByField(row, col);
+    let destPiece = ngxChessBoardComponent.getPieceByField(destRow, destCol);
 
     if (srcPiece) {
       srcPiece.point.row = destRow;
@@ -14,9 +14,9 @@ export class MoveUtils {
     }
 
     if (destPiece) {
-      Board.pieces = Board.pieces.filter(e => e !== destPiece);
+      ngxChessBoardComponent.board.pieces = ngxChessBoardComponent.board.pieces.filter(e => e !== destPiece);
     }
-    let isBound = NgxChessBoardComponent.isKingInCheck(currentColor, Board.pieces);
+    let isBound = ngxChessBoardComponent.isKingInCheck(currentColor, ngxChessBoardComponent.board.pieces);
 
     if (srcPiece) {
       srcPiece.point.col = col;
@@ -24,7 +24,7 @@ export class MoveUtils {
     }
 
     if (destPiece) {
-      Board.pieces.push(destPiece);
+      ngxChessBoardComponent.board.pieces.push(destPiece);
     }
 
     return isBound;
