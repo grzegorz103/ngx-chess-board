@@ -8,6 +8,9 @@ ngx-chess-board is a project which allows to add chess game for two players on y
 npm i ngx-chess-board
 ```
 
+## Demo
+See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/)
+
 ## Screenshots
 ![alt scr](https://i.imgur.com/IgPDO19.png)
 ![alt scr](https://i.imgur.com/z819ALt.png)
