@@ -42,6 +42,10 @@ Next, add following tag in your component's view to render the chess board:
 Then you can inject NgxChessBoardService into your component:
 
 ```html
+import {NgxChessBoardService} from 'ngx-chess-board';
+
+  ...
+
   constructor(private ngxChessBoardService: NgxChessBoardService) { }
 ```
 
