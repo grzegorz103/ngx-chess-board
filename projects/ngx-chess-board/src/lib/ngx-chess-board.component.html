@@ -1,9 +1,9 @@
 <div id="board" [style.height.px]="size" [style.width.px]="size" #boardRef>
   <div id="drag" (mousedown)="onMouseDown($event)">
-    <div *ngFor="let row of board; let i = index" class="board-row">
+    <div *ngFor="let row of board.board; let i = index" class="board-row">
       <div *ngFor="let col of row; let j = index" class="board-col"
            [style.background-color]="((i + j) %2 === 0 ) ?  lightTileColor : darkTileColor"
-           [ngClass]="[isXYInActiveMove(i,j) ? 'current-selection':'' ,isXYInPossibleMoves(i,j) ? 'possible-point' : '', isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', isXYInSourceMove(i,j)?'source-move':'',isXYInDestMove(i,j)?'dest-move':'']">
+           [ngClass]="[board.isXYInActiveMove(i,j) ? 'current-selection':'' ,board.isXYInPossibleMoves(i,j) ? 'possible-point' : '', board.isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', board.isXYInSourceMove(i,j)?'source-move':'',board.isXYInDestMove(i,j)?'dest-move':'']">
         <div *ngIf="getPieceByPoint(i, j)" style="height:100%; width:100%">
           <div
             class="piece" [style.font-size]="pieceSize + 'px'" [innerHTML]="getPieceByPoint(i,j).image">

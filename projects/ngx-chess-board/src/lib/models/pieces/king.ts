@@ -2,7 +2,7 @@ import {Piece} from './piece';
 import {Color} from './color';
 import {Point} from './point';
 import {Rook} from "./rook";
-import {NgxChessBoardComponent} from '../ngx-chess-board.component';
+import {NgxChessBoardComponent} from '../../ngx-chess-board.component';
 
 export class King extends Piece {
 
