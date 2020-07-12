@@ -1,5 +1,6 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ViewChild} from '@angular/core';
 import {NgxChessBoardService} from 'ngx-chess-board';
+import {NgxChessBoardView} from 'ngx-chess-board';
 
 @Component({
   selector: 'app-root',
@@ -12,11 +13,14 @@ export class AppComponent {
   darkTileColor: string = 'rgb(97, 84, 61)';
   lightTileColor: string = '#BAA378';
 
+  @ViewChild('board', {static: false}) board: NgxChessBoardView;
+
   constructor(private ngxService: NgxChessBoardService) {
   }
 
   reset() {
-    this.ngxService.reset();
+    alert('Resetting game');
+    this.board.reset();
   }
 
 }

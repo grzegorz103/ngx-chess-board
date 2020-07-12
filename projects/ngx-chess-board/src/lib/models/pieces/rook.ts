@@ -8,8 +8,8 @@ export class Rook extends Piece {
 
   isMovedAlready = false;
 
-  constructor(point: Point, color: Color, image: string) {
-        super(point, color, image, 5);
+    constructor(point: Point, color: Color, image: string, ngxChessBoardComponent: NgxChessBoardComponent) {
+        super(point, color, image, 5, ngxChessBoardComponent);
     }
 
     getPossibleMoves(): Point[] {
@@ -19,7 +19,7 @@ export class Rook extends Piece {
         let col = this.point.col;
 
         for (let i = row + 1; i < 8; ++i) { // dol
-            if (NgxChessBoardComponent.isFieldEmpty(i, col)) {
+            if (this.ngxChessBoardComponent.isFieldEmpty(i, col)) {
                 possiblePoints.push(new Point(i, col));
             } else {
                 break;
@@ -27,7 +27,7 @@ export class Rook extends Piece {
         }
 
         for (let i = row - 1; i >= 0; --i) { // gora
-            if (NgxChessBoardComponent.isFieldEmpty(i, col)) {
+            if (this.ngxChessBoardComponent.isFieldEmpty(i, col)) {
                 possiblePoints.push(new Point(i, col));
             } else {
                 break;
@@ -35,7 +35,7 @@ export class Rook extends Piece {
         }
 
         for (let j = col - 1; j >= 0; --j) { // lewo
-            if (NgxChessBoardComponent.isFieldEmpty(row, j)) {
+            if (this.ngxChessBoardComponent.isFieldEmpty(row, j)) {
                 possiblePoints.push(new Point(row, j));
             } else {
                 break;
@@ -43,7 +43,7 @@ export class Rook extends Piece {
         }
 
         for (let j = col + 1; j < 8; ++j) { // prawo
-            if (NgxChessBoardComponent.isFieldEmpty(row, j)) {
+            if (this.ngxChessBoardComponent.isFieldEmpty(row, j)) {
                 possiblePoints.push(new Point(row, j));
             } else {
                 break;
@@ -60,44 +60,44 @@ export class Rook extends Piece {
         let col = this.point.col;
 
         for (let i = row + 1; i < 8; ++i) { // dol
-            if (NgxChessBoardComponent.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (this.ngxChessBoardComponent.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(i, col));
                 break;
             } else {
-                if (!NgxChessBoardComponent.isFieldEmpty(i, col)) {
+                if (!this.ngxChessBoardComponent.isFieldEmpty(i, col)) {
                     break;
                 }
             }
         }
 
         for (let i = row - 1; i >= 0; --i) { // gora
-            if (NgxChessBoardComponent.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (this.ngxChessBoardComponent.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(i, col));
                 break;
             } else {
-                if (!NgxChessBoardComponent.isFieldEmpty(i, col)) {
+                if (!this.ngxChessBoardComponent.isFieldEmpty(i, col)) {
                     break;
                 }
             }
         }
 
         for (let j = col - 1; j >= 0; --j) { // lewo
-            if (NgxChessBoardComponent.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(row,j));
                 break;
             } else {
-                if (!NgxChessBoardComponent.isFieldEmpty(row,j)) {
+                if (!this.ngxChessBoardComponent.isFieldEmpty(row,j)) {
                     break;
                 }
             }
         }
 
         for (let j = col + 1; j < 8; ++j) { // prawo
-            if (NgxChessBoardComponent.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(row, j));
                 break;
             } else {
-                if (!NgxChessBoardComponent.isFieldEmpty(row, j)) {
+                if (!this.ngxChessBoardComponent.isFieldEmpty(row, j)) {
                     break;
                 }
             }
@@ -114,10 +114,10 @@ export class Rook extends Piece {
         let col = this.point.col;
 
         for (let i = row + 1; i < 8; ++i) { // dol
-            if (NgxChessBoardComponent.isFieldEmpty(i, col)){
+            if (this.ngxChessBoardComponent.isFieldEmpty(i, col)){
                 possiblePoints.push(new Point(i, col));
             } else {
-                if (!(NgxChessBoardComponent.getPieceByField instanceof King)) {
+                if (!(this.ngxChessBoardComponent.getPieceByField instanceof King)) {
                     possiblePoints.push(new Point(i, col));
                     break;
                 }
@@ -125,10 +125,10 @@ export class Rook extends Piece {
         }
 
         for (let i = row - 1; i >= 0; --i) { // gora
-            if (NgxChessBoardComponent.isFieldEmpty(i, col)){
+            if (this.ngxChessBoardComponent.isFieldEmpty(i, col)){
                 possiblePoints.push(new Point(i, col));
             } else {
-                if (!(NgxChessBoardComponent.getPieceByField instanceof King)) {
+                if (!(this.ngxChessBoardComponent.getPieceByField instanceof King)) {
                     possiblePoints.push(new Point(i, col));
                     break;
                 }
@@ -136,10 +136,10 @@ export class Rook extends Piece {
         }
 
         for (let j = col - 1; j >= 0; --j) { // lewo
-            if (NgxChessBoardComponent.isFieldEmpty(row, j)){
+            if (this.ngxChessBoardComponent.isFieldEmpty(row, j)){
                 possiblePoints.push(new Point(row, j));
             } else {
-                if (!(NgxChessBoardComponent.getPieceByField instanceof King)) {
+                if (!(this.ngxChessBoardComponent.getPieceByField instanceof King)) {
                     possiblePoints.push(new Point(row, j));
                     break;
                 }
@@ -147,10 +147,10 @@ export class Rook extends Piece {
         }
 
         for (let j = col + 1; j < 8; ++j) { // prawo
-            if (NgxChessBoardComponent.isFieldEmpty(row, j)){
+            if (this.ngxChessBoardComponent.isFieldEmpty(row, j)){
                 possiblePoints.push(new Point(row, j));
             } else {
-                if (!(NgxChessBoardComponent.getPieceByField instanceof King)) {
+                if (!(this.ngxChessBoardComponent.getPieceByField instanceof King)) {
                     possiblePoints.push(new Point(row, j));
                     break;
                 }
