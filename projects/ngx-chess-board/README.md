@@ -24,16 +24,22 @@ import { NgxChessBoardModule } from "ngx-chess-board";
   ...
   imports: [
     ...
-    NgxChessBoardModule,
+    NgxChessBoardModule.forRoot()
     ...
    ],
    ...
 })
 export class AppModule { }
 ```
-Next, add following tag in your component's view to render the chess board.
+Next, add following tag in your component's view to render the chess board:
 ```html
 <ngx-chess-board></ngx-chess-board>
+```
+
+Then you can inject NgxChessBoardService into your component:
+
+```html
+  constructor(private ngxChessBoardService: NgxChessBoardService) { }
 ```
 
 ## API
@@ -51,3 +57,9 @@ Input | Type | Description
 Name | Type | Description  
 | :---: | :---: | :---: |
 `(onMove)` | EventEmitter\<any> | Dispatch event when piece has moved
+
+NgxChessBoardService methods
+
+Method | Return type | Description
+| :---: | :---: | :---: |
+reset() | void | Resets chess board state

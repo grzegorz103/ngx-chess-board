@@ -10,6 +10,7 @@ import {Pawn} from './models/pieces/pawn';
 import {Board} from './models/board';
 import {MoveUtils} from './utils/move-utils';
 import {AvailableMoveFilter} from './piece-decorator/available-move-filter';
+import {NgxChessBoardService} from './service/ngx-chess-board.service';
 
 
 @Component({
@@ -39,11 +40,15 @@ export class NgxChessBoardComponent implements OnInit {
 
   board: Board;
 
-  constructor() {
-    this.board = new Board();
+  constructor(private ngxChessBoardService: NgxChessBoardService) {
+if(!this.darkTileColor){
+
+}
+    this.board = new Board(ngxChessBoardService);
   }
 
   ngOnInit() {
+    this.ngxChessBoardService.componentMethodCalled$.subscribe(() => this.board.reset());
     this.pieceSize = this.size / 9;
   }
 
@@ -81,8 +86,8 @@ export class NgxChessBoardComponent implements OnInit {
         }
         this.board.activePiece = pieceClicked;
         this.selected = true;
-        this.board.possibleCaptures = new AvailableMoveFilter(pieceClicked,pointClicked,this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveFilter(pieceClicked,pointClicked,this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK).getPossibleMoves();
+        this.board.possibleCaptures = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK).getPossibleCaptures();
+        this.board.possibleMoves = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK).getPossibleMoves();
       }
     }
   }
@@ -238,16 +243,12 @@ export class NgxChessBoardComponent implements OnInit {
   }
 
   private static checkIfPawnTakesEnPassant(newPoint: Point) {
-    if (NgxChessBoardComponent.isEqual(newPoint, Board.enPassantPoint)) {
+    if (newPoint.isEqual(Board.enPassantPoint)) {
       Board.pieces = Board.pieces
         .filter(piece => piece !== Board.enPassantPiece);
       Board.enPassantPoint = null;
       Board.enPassantPiece = null;
     }
-  }
-
-  private static isEqual(first: Point, second: Point) {
-    return first && second && first.col === second.col && first.row === second.row;
   }
 
 }

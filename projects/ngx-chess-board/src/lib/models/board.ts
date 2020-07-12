@@ -8,18 +8,18 @@ import {Bishop} from './pieces/bishop';
 import {Queen} from './pieces/queen';
 import {King} from './pieces/king';
 import {Piece} from './pieces/piece';
+import {NgxChessBoardService} from '../service/ngx-chess-board.service';
 
 export class Board {
 
   board: number[][];
-
 
   static pieces: Piece[] = [];
   static enPassantPoint: Point = null;
   static enPassantPiece: Piece = null;
   lastMoveSrc: Point = null;
   lastMoveDest: Point = null;
-   activePiece: Piece;
+  activePiece: Piece;
 
   blackKingChecked: boolean;
   possibleCaptures: any[] = [];
@@ -28,7 +28,8 @@ export class Board {
 
   currentWhitePlayer = true;
 
-  constructor() {
+  constructor(private ngxChessBoardService: NgxChessBoardService) {
+
     this.board = [];
     for (var i: number = 0; i < 8; ++i) {
       this.board[i] = [];
