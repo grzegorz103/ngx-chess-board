@@ -1,1 +1,12 @@
-<ngx-chess-board [size]="400"></ngx-chess-board>
+<div style="width:400px; margin-left: auto; margin-right: auto">
+  <h1 style="text-align: center">ngx-chess-board example</h1>
+  <ngx-chess-board [size]="400" [lightTileColor]="lightTileColor" [darkTileColor]="darkTileColor"></ngx-chess-board>
+  <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
+  <button (click)="reset()" style="margin-top:5px">Reset</button>
+
+  <br>
+  Light tile color: <input placeholder="blue" [(ngModel)]="lightTileColor">
+  <br>
+  Dark tile color: <input placeholder="blue" [(ngModel)]="darkTileColor">
+
+</div>

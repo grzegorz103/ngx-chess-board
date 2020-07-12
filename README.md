@@ -8,6 +8,9 @@ ngx-chess-board is a project which allows to add chess game for two players on y
 npm i ngx-chess-board
 ```
 
+## Demo
+See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/)
+
 ## Screenshots
 ![alt scr](https://i.imgur.com/IgPDO19.png)
 ![alt scr](https://i.imgur.com/z819ALt.png)
@@ -24,16 +27,22 @@ import { NgxChessBoardModule } from "ngx-chess-board";
   ...
   imports: [
     ...
-    NgxChessBoardModule,
+    NgxChessBoardModule.forRoot()
     ...
    ],
    ...
 })
 export class AppModule { }
 ```
-Next, add following tag in your component's view to render the chess board.
+Next, add following tag in your component's view to render the chess board:
 ```html
 <ngx-chess-board></ngx-chess-board>
+```
+
+Then you can inject NgxChessBoardService into your component:
+
+```html
+  constructor(private ngxChessBoardService: NgxChessBoardService) { }
 ```
 
 ## API
@@ -51,3 +60,9 @@ Input | Type | Description
 Name | Type | Description  
 | :---: | :---: | :---: |
 `(onMove)` | EventEmitter\<any> | Dispatch event when piece has moved
+
+NgxChessBoardService methods
+
+Method | Return type | Description
+| :---: | :---: | :---: |
+reset() | void | Resets chess game
