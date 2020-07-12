@@ -11,14 +11,14 @@ import {Board} from './models/board';
 import {MoveUtils} from './utils/move-utils';
 import {AvailableMoveFilter} from './piece-decorator/available-move-filter';
 import {NgxChessBoardService} from './service/ngx-chess-board.service';
-
+import {NgxChessBoardView} from './ngx-chess-board-view';
 
 @Component({
   selector: 'ngx-chess-board',
   templateUrl: './ngx-chess-board.component.html',
   styleUrls: ['./ngx-chess-board.component.scss']
 })
-export class NgxChessBoardComponent implements OnInit {
+export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   @Input('size')
   size: number = 400;
@@ -41,10 +41,7 @@ export class NgxChessBoardComponent implements OnInit {
   board: Board;
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
-if(!this.darkTileColor){
-
-}
-    this.board = new Board(ngxChessBoardService);
+    this.board = new Board(ngxChessBoardService, this);
   }
 
   ngOnInit() {
@@ -64,8 +61,8 @@ if(!this.darkTileColor){
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
 
-        this.board.blackKingChecked = NgxChessBoardComponent.isKingInCheck(Color.BLACK, Board.pieces);
-        this.board.whiteKingChecked = NgxChessBoardComponent.isKingInCheck(Color.WHITE, Board.pieces);
+        this.board.blackKingChecked = this.isKingInCheck(Color.BLACK, this.board.pieces);
+        this.board.whiteKingChecked = this.isKingInCheck(Color.WHITE, this.board.pieces);
 
         this.checkForPossibleMoves(Color.BLACK, 'Checkmate!');
         this.checkForPossibleMoves(Color.WHITE, 'Checkmate!');
@@ -86,8 +83,8 @@ if(!this.darkTileColor){
         }
         this.board.activePiece = pieceClicked;
         this.selected = true;
-        this.board.possibleCaptures = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK).getPossibleMoves();
+        this.board.possibleCaptures = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleCaptures();
+        this.board.possibleMoves = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleMoves();
       }
     }
   }
@@ -95,7 +92,7 @@ if(!this.darkTileColor){
   getPieceByPoint(row: number, col: number): Piece {
     row = Math.floor(row);
     col = Math.floor(col);
-    return Board.pieces.find(e => e.point.col === col && e.point.row === row);
+    return this.board.pieces.find(e => e.point.col === col && e.point.row === row);
   }
 
   isKingChecked(piece: Piece) {
@@ -104,33 +101,33 @@ if(!this.darkTileColor){
     }
   }
 
-  static isFieldEmpty(row: number, col: number): boolean {
+  isFieldEmpty(row: number, col: number): boolean {
     if (row > 7 || row < 0 || col > 7 || col < 0) {
       return false;
     }
-    return !Board.pieces.some(e => e.point.col === col && e.point.row === row);
+    return !this.board.pieces.some(e => e.point.col === col && e.point.row === row);
   }
 
-  static isFieldTakenByEnemy(row: number, col: number, enemyColor: Color): boolean {
+  isFieldTakenByEnemy(row: number, col: number, enemyColor: Color): boolean {
     if (row > 7 || row < 0 || col > 7 || col < 0) {
       return false;
     }
-    return Board.pieces.some(e => e.point.col === col && e.point.row === row && e.color === enemyColor);
+    return this.board.pieces.some(e => e.point.col === col && e.point.row === row && e.color === enemyColor);
   }
 
 
-  static isFieldUnderAttack(row: number, col: number, color: Color) {
+  isFieldUnderAttack(row: number, col: number, color: Color) {
     let found = false;
-    return Board.pieces.filter(e => e.color === color).some(e => e.getCoveredFields().some(f => f.col === col && f.row === row));
+    return this.board.pieces.filter(e => e.color === color).some(e => e.getCoveredFields().some(f => f.col === col && f.row === row));
   }
 
-  static getPieceByField(row: number, col: number): Piece {
-    if (NgxChessBoardComponent.isFieldEmpty(row, col)) {
+  getPieceByField(row: number, col: number): Piece {
+    if (this.isFieldEmpty(row, col)) {
       //   throw new Error('Piece not found');
       return undefined;
     }
 
-    return Board.pieces.find(e => e.point.col === col && e.point.row === row);
+    return this.board.pieces.find(e => e.point.col === col && e.point.row === row);
   }
 
   getClickPoint(event) {
@@ -140,10 +137,10 @@ if(!this.darkTileColor){
   }
 
   async movePiece(piece: Piece, newPoint: Point) {
-    let destPiece = Board.pieces.find(e => e.point.col === newPoint.col && e.point.row === newPoint.row);
+    let destPiece = this.board.pieces.find(e => e.point.col === newPoint.col && e.point.row === newPoint.row);
 
     if (destPiece && piece.color != destPiece.color) {
-      Board.pieces = Board.pieces.filter(e => e !== destPiece);
+      this.board.pieces = this.board.pieces.filter(e => e !== destPiece);
     } else if (destPiece && piece.color === destPiece.color) {
       return;
     }
@@ -151,18 +148,18 @@ if(!this.darkTileColor){
       let squaresMoved = Math.abs(newPoint.col - piece.point.col);
       if (squaresMoved > 1) {
         if (newPoint.col < 3) {
-          let leftRook = NgxChessBoardComponent.getPieceByField(piece.point.row, 0);
+          let leftRook = this.getPieceByField(piece.point.row, 0);
           leftRook.point.col = 3;
         } else {
-          let rightRook = NgxChessBoardComponent.getPieceByField(piece.point.row, 7);
+          let rightRook = this.getPieceByField(piece.point.row, 7);
           rightRook.point.col = 5;
         }
       }
     }
 
     if (piece instanceof Pawn) {
-      NgxChessBoardComponent.checkIfPawnTakesEnPassant(newPoint);
-      NgxChessBoardComponent.checkIfPawnEnpassanted(piece, newPoint);
+      this.checkIfPawnTakesEnPassant(newPoint);
+      this.checkIfPawnEnpassanted(piece, newPoint);
     }
 
     piece.point = newPoint;
@@ -190,7 +187,7 @@ if(!this.darkTileColor){
     }
   }
 
-  static isKingInCheck(color: Color, piece: Piece[]): boolean {
+  isKingInCheck(color: Color, piece: Piece[]): boolean {
     let king = piece
       .find(e => e.color === color && e instanceof King);
 
@@ -207,8 +204,8 @@ if(!this.darkTileColor){
     }
 
     if (piece.point.row === 0 || piece.point.row === 7) {
-      Board.pieces = Board.pieces.filter(e => e !== piece);
-      Board.pieces.push(new Queen(piece.point, piece.color, UnicodeConstants.BLACK_QUEEN));
+      this.board.pieces = this.board.pieces.filter(e => e !== piece);
+      this.board.pieces.push(new Queen(piece.point, piece.color, UnicodeConstants.BLACK_QUEEN, this));
     }
   }
 
@@ -217,9 +214,9 @@ if(!this.darkTileColor){
   }
 
   private checkForPossibleMoves(color: Color, text: string) {
-    if (!Board.pieces.filter(e => e.color === color)
-      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col)
-        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col))))) {
+    if (!this.board.pieces.filter(e => e.color === color)
+      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this)
+        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this))))) {
       alert(text);
     }
   }
@@ -232,23 +229,27 @@ if(!this.darkTileColor){
     }
   }
 
-  private static checkIfPawnEnpassanted(piece: Pawn, newPoint: Point) {
+  private checkIfPawnEnpassanted(piece: Pawn, newPoint: Point) {
     if (Math.abs(piece.point.row - newPoint.row) > 1) {
-      Board.enPassantPiece = piece;
-      Board.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
+      this.board.enPassantPiece = piece;
+      this.board.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
     } else {
-      Board.enPassantPoint = null;
-      Board.enPassantPiece = null;
+      this.board.enPassantPoint = null;
+      this.board.enPassantPiece = null;
     }
   }
 
-  private static checkIfPawnTakesEnPassant(newPoint: Point) {
-    if (newPoint.isEqual(Board.enPassantPoint)) {
-      Board.pieces = Board.pieces
-        .filter(piece => piece !== Board.enPassantPiece);
-      Board.enPassantPoint = null;
-      Board.enPassantPiece = null;
+  private checkIfPawnTakesEnPassant(newPoint: Point) {
+    if (newPoint.isEqual(this.board.enPassantPoint)) {
+      this.board.pieces = this.board.pieces
+        .filter(piece => piece !== this.board.enPassantPiece);
+      this.board.enPassantPoint = null;
+      this.board.enPassantPiece = null;
     }
+  }
+
+  reset() {
+    this.board.reset();
   }
 
 }

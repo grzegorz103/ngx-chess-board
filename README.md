@@ -17,8 +17,12 @@ See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/)
 
 ## Use example
 
-`ngx-chess-board` exports 1 module.
+`ngx-chess-board` exports following components:
+* `NgxChessBoardModule`
+* `NgxChessBoardService`
+* `NgxChessBoardView`
 
+To start, you have to import the `NgxChessBoardModule`:
 ```typescript
 import { NgxChessBoardModule } from "ngx-chess-board";
 
@@ -49,6 +53,25 @@ import {NgxChessBoardService} from 'ngx-chess-board';
   constructor(private ngxChessBoardService: NgxChessBoardService) { }
 ```
 
+You can add reference to `NgxChessBoardView` to interact with specified chess board:
+HTML file:
+```html
+<ngx-chess-board #board></ngx-chess-board>
+```
+.ts file:
+```html
+@ViewChild('board', {static: false}) board: NgxChessBoardView;
+
+   ...
+
+    reset() {
+        this.board.reset();
+    }
+
+   ...
+```
+
+
 ## API
 
 @Inputs()
@@ -65,8 +88,8 @@ Name | Type | Description
 | :---: | :---: | :---: |
 `(onMove)` | EventEmitter\<any> | Dispatch event when piece has moved
 
-NgxChessBoardService methods
+NgxChessBoardView methods
 
 Method | Return type | Description
 | :---: | :---: | :---: |
-reset() | void | Resets chess game
+reset() | void | Resets specified chess game
