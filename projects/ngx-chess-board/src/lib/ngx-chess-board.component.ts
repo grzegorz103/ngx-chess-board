@@ -9,9 +9,9 @@ import {Queen} from './models/pieces/queen';
 import {Pawn} from './models/pieces/pawn';
 import {Board} from './models/board';
 import {MoveUtils} from './utils/move-utils';
-import {AvailableMoveFilter} from './piece-decorator/available-move-filter';
 import {NgxChessBoardService} from './service/ngx-chess-board.service';
 import {NgxChessBoardView} from './ngx-chess-board-view';
+import {AvailableMoveDecorator} from './piece-decorator/available-move-decorator';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -83,8 +83,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
         this.board.activePiece = pieceClicked;
         this.selected = true;
-        this.board.possibleCaptures = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveFilter(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleMoves();
+        this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleCaptures();
+        this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleMoves();
       }
     }
   }
@@ -205,7 +205,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
     if (piece.point.row === 0 || piece.point.row === 7) {
       this.board.pieces = this.board.pieces.filter(e => e !== piece);
-      this.board.pieces.push(new Queen(piece.point, piece.color, UnicodeConstants.BLACK_QUEEN, this));
+      this.board.pieces.push(new Queen(piece.point, piece.color, piece.color === Color.WHITE ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, this));
     }
   }
 
@@ -250,6 +250,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   reset() {
     this.board.reset();
+  }
+
+  reverse() {
+    this.board.reverse();
   }
 
 }

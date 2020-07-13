@@ -23,4 +23,8 @@ export class AppComponent {
     this.board.reset();
   }
 
+  reverse() {
+    alert('Reverting board');
+    this.board.reverse();
+  }
 }
