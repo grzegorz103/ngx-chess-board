@@ -2,7 +2,6 @@ import {Piece} from './piece';
 import {Color} from './color';
 import {Point} from './point';
 import {NgxChessBoardComponent} from '../../ngx-chess-board.component';
-import {Board} from '../board';
 
 export class Pawn extends Piece {
 
@@ -16,7 +15,7 @@ export class Pawn extends Piece {
     let possiblePoints = [];
     let row = this.point.row;
     let col = this.point.col;
-    if (this.color === Color.WHITE) {
+    if ((!this.ngxChessBoardComponent.board.reverted && this.color === Color.WHITE) || (this.ngxChessBoardComponent.board.reverted && this.color===Color.BLACK)) {
       if (this.ngxChessBoardComponent.isFieldEmpty(row - 1, col)) {
         possiblePoints.push(new Point(row - 1, col));
 
@@ -40,18 +39,19 @@ export class Pawn extends Piece {
     let possiblePoints = [];
     let row = this.point.row;
     let col = this.point.col;
-    if (this.color === Color.WHITE) {
-      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col - 1, Color.BLACK)) {
+
+    if ((!this.ngxChessBoardComponent.board.reverted && this.color === Color.WHITE) || (this.ngxChessBoardComponent.board.reverted && this.color===Color.BLACK)) {
+      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col - 1,this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row - 1, col - 1));
       }
-      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col + 1, Color.BLACK)) {
+      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row - 1, col + 1,this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row - 1, col + 1));
       }
     } else {
-      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col - 1, Color.WHITE)) {
+      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row + 1, col - 1));
       }
-      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col + 1, Color.WHITE)) {
+      if (this.ngxChessBoardComponent.isFieldTakenByEnemy(row + 1, col + 1,this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row + 1, col + 1));
       }
     }
@@ -70,7 +70,7 @@ export class Pawn extends Piece {
     let row = this.point.row;
     let col = this.point.col;
 
-    if (this.color === Color.WHITE) {
+    if ((!this.ngxChessBoardComponent.board.reverted && this.color === Color.WHITE) || (this.ngxChessBoardComponent.board.reverted && this.color===Color.BLACK)) {
 
       possiblePoints.push(new Point(row - 1, col - 1));
 

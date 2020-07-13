@@ -60,6 +60,10 @@ HTML file:
 ```
 .ts file:
 ```html
+import {NgxChessBoardView} from 'ngx-chess-board';
+
+   ...
+
 @ViewChild('board', {static: false}) board: NgxChessBoardView;
 
    ...
@@ -93,3 +97,4 @@ NgxChessBoardView methods
 Method | Return type | Description
 | :---: | :---: | :---: |
 reset() | void | Resets specified chess game
+reverse() | void | Reverse specified chess board

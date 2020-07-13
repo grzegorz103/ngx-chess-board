@@ -5,7 +5,7 @@ import {MoveUtils} from '../utils/move-utils';
 import {Color} from '../models/pieces/color';
 import {NgxChessBoardComponent} from '../ngx-chess-board.component';
 
-export class AvailableMoveFilter extends PieceAbstractDecorator {
+export class AvailableMoveDecorator extends PieceAbstractDecorator {
 
   private pointClicked: Point;
   private color: Color;
