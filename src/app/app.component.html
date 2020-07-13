@@ -18,9 +18,13 @@
            aria-describedby="basic-addon3">
   </div>
 
-  <div>
+  <div style="display:flex; margin-top: 10px">
     <button type="button" class="btn btn-primary"
-            style="margin-top:10px;display:flex;margin-left:auto;margin-right:auto" (click)="reset()">Reset
+            style="margin-left:auto; margin-right: 10px" (click)="reset()">Reset
+    </button>
+
+    <button type="button" class="btn btn-warning"
+            style="margin-right:auto" (click)="reverse()">Reverse
     </button>
   </div>
 

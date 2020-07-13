@@ -15,9 +15,9 @@ export class Board {
 
   board: number[][];
 
-   pieces: Piece[] = [];
-   enPassantPoint: Point = null;
-   enPassantPiece: Piece = null;
+  pieces: Piece[] = [];
+  enPassantPoint: Point = null;
+  enPassantPiece: Piece = null;
   lastMoveSrc: Point = null;
   lastMoveDest: Point = null;
   activePiece: Piece;
@@ -28,6 +28,7 @@ export class Board {
   whiteKingChecked: boolean;
 
   currentWhitePlayer = true;
+  reverted: boolean = false;
 
   constructor(private ngxChessBoardService: NgxChessBoardService,
               private ngxChessBoardComponent: NgxChessBoardComponent) {
@@ -107,8 +108,37 @@ export class Board {
     this.lastMoveSrc = null;
     this.whiteKingChecked = false;
     this.blackKingChecked = false;
+    this.possibleCaptures = [];
+    this.possibleMoves = [];
     this.activePiece = null;
+    this.reverted = false;
     this.currentWhitePlayer = true;
+    this.enPassantPoint = null;
+    this.enPassantPiece = null;
+  }
+
+  reverse() {
+    this.reverted = !this.reverted;
+    this.ngxChessBoardComponent.selected = false;
+    this.activePiece = null;
+    this.possibleMoves = [];
+    this.possibleCaptures = [];
+    for (let i = 0; i < this.pieces.length; ++i) {
+      this.reversePoint(this.pieces[i].point);
+    }
+
+    this.reversePoint(this.lastMoveSrc);
+
+    if (this.enPassantPoint && this.enPassantPiece) {
+      this.reversePoint(this.enPassantPoint);
+    }
+  }
+
+  private reversePoint(point: Point) {
+    if (point) {
+      point.row = Math.abs(point.row - 7);
+      point.col = Math.abs(point.col - 7);
+    }
   }
 
 }
