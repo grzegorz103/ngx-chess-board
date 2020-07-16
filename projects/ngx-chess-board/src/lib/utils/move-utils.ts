@@ -32,7 +32,6 @@ export class MoveUtils {
   }
 
   public static format(sourcePoint: Point, destPoint: Point, reverted: boolean) {
-
     if (reverted) {
       let sourceX = 104 - sourcePoint.col;
       let destX = 104 - destPoint.col;
@@ -40,7 +39,6 @@ export class MoveUtils {
         + String.fromCharCode(destX) + (destPoint.row + 1);
     } else {
       let incrementX = 97;
-      console.log(sourcePoint.row);
       return String.fromCharCode(sourcePoint.col + incrementX) + (Math.abs(sourcePoint.row - 7) + 1)
         + String.fromCharCode(destPoint.col + incrementX) + (Math.abs(destPoint.row - 7) + 1);
     }
