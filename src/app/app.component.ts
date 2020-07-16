@@ -27,4 +27,13 @@ export class AppComponent {
     alert('Reverting board');
     this.board.reverse();
   }
+
+  undo() {
+    this.board.undo();
+  }
+
+  showMoveHistory() {
+    alert(this.board.getMoveHistory());
+  }
+
 }

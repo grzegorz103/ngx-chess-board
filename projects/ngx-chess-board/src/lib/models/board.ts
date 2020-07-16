@@ -10,6 +10,7 @@ import {King} from './pieces/king';
 import {Piece} from './pieces/piece';
 import {NgxChessBoardService} from '../service/ngx-chess-board.service';
 import {NgxChessBoardComponent} from '../ngx-chess-board.component';
+import {cloneDeep} from 'lodash';
 
 export class Board {
 
@@ -139,6 +140,10 @@ export class Board {
       point.row = Math.abs(point.row - 7);
       point.col = Math.abs(point.col - 7);
     }
+  }
+
+  clone(): Board {
+    return cloneDeep(this);
   }
 
 }

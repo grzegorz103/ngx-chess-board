@@ -12,6 +12,10 @@ import {MoveUtils} from './utils/move-utils';
 import {NgxChessBoardService} from './service/ngx-chess-board.service';
 import {NgxChessBoardView} from './ngx-chess-board-view';
 import {AvailableMoveDecorator} from './piece-decorator/available-move-decorator';
+import {BoardStateProvider} from './board-state-provider/board-state-provider';
+import {BoardState} from './board-state-provider/board-state';
+import {HistoryMove} from './history-move-provider/history-move';
+import {HistoryMoveProvider} from './history-move-provider/history-move-provider';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -39,9 +43,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   boardRef: ElementRef;
 
   board: Board;
+  boardStateProvider: BoardStateProvider;
+  moveHistoryProvider: HistoryMoveProvider;
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
     this.board = new Board(ngxChessBoardService, this);
+    this.boardStateProvider = new BoardStateProvider();
+    this.moveHistoryProvider = new HistoryMoveProvider();
   }
 
   ngOnInit() {
@@ -54,7 +62,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     if (this.selected) {
       //   this.possibleMoves = activePiece.getPossibleMoves();
       if (this.board.isPointInPossibleMoves(pointClicked) || this.board.isPointInPossibleCaptures(pointClicked)) {
-        this.board.lastMoveSrc = this.board.activePiece.point;
+        this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
         this.board.lastMoveDest = pointClicked;
         await this.movePiece(this.board.activePiece, pointClicked);
         this.checkIfPawnFirstMove(this.board.activePiece);
@@ -137,6 +145,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   async movePiece(piece: Piece, newPoint: Point) {
+    this.saveClone();
+    this.moveHistoryProvider.addMove(new HistoryMove(MoveUtils.format(piece.point, newPoint, this.board.reverted), piece.constructor.name, piece.color === Color.WHITE ? 'white' : 'black'));
     let destPiece = this.board.pieces.find(e => e.point.col === newPoint.col && e.point.row === newPoint.row);
 
     if (destPiece && piece.color != destPiece.color) {
@@ -165,7 +175,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     piece.point = newPoint;
     this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
     this.onMove.emit();
-
     return this.checkForPawnPromote(piece);
   }
 
@@ -254,6 +263,32 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   reverse() {
     this.board.reverse();
+  }
+
+  private saveClone() {
+    let clone = this.board.clone();
+
+    if (this.board.reverted) {
+      clone.reverse();
+    }
+    this.boardStateProvider.addMove(new BoardState(clone));
+  }
+
+  undo() {
+    if (!this.boardStateProvider.isEmpty()) {
+      let lastBoard = this.boardStateProvider.pop().board;
+      if (this.board.reverted) {
+        lastBoard.reverse();
+      }
+      this.board = lastBoard;
+      this.board.possibleCaptures = [];
+      this.board.possibleMoves = [];
+      this.moveHistoryProvider.pop();
+    }
+  }
+
+  getMoveHistory() {
+    return JSON.stringify(this.moveHistoryProvider.getAll());
   }
 
 }
