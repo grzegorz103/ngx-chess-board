@@ -1,6 +1,7 @@
 import {Color} from '../models/pieces/color';
 import {Board} from '../models/board';
 import {NgxChessBoardComponent} from '../ngx-chess-board.component';
+import {Point} from '../models/pieces/point';
 
 export class MoveUtils {
 
@@ -28,6 +29,21 @@ export class MoveUtils {
     }
 
     return isBound;
+  }
+
+  public static format(sourcePoint: Point, destPoint: Point, reverted: boolean) {
+
+    if (reverted) {
+      let sourceX = 104 - sourcePoint.col;
+      let destX = 104 - destPoint.col;
+      return String.fromCharCode(sourceX) + (sourcePoint.row + 1)
+        + String.fromCharCode(destX) + (destPoint.row + 1);
+    } else {
+      let incrementX = 97;
+      console.log(sourcePoint.row);
+      return String.fromCharCode(sourcePoint.col + incrementX) + (Math.abs(sourcePoint.row - 7) + 1)
+        + String.fromCharCode(destPoint.col + incrementX) + (Math.abs(destPoint.row - 7) + 1);
+    }
   }
 
 }

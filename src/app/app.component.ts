@@ -27,4 +27,8 @@ export class AppComponent {
     alert('Reverting board');
     this.board.reverse();
   }
+
+  undo() {
+    this.board.undo();
+  }
 }
