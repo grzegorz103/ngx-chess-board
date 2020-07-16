@@ -86,6 +86,7 @@ Input | Type | Description
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
 
+
 @Outputs()
 
 Name | Type | Description  
@@ -99,3 +100,4 @@ Method | Return type | Description
 reset() | void | Resets specified chess game
 reverse() | void | Reverse specified chess board
 undo() | void | Undo the last move
+getMoveHistory() | JSON | Returns array in JSON format which contains information about every move

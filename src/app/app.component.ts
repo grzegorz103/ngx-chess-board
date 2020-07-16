@@ -31,4 +31,9 @@ export class AppComponent {
   undo() {
     this.board.undo();
   }
+
+  showMoveHistory() {
+    alert(this.board.getMoveHistory());
+  }
+
 }

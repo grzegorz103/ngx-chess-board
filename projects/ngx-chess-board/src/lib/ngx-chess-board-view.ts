@@ -4,4 +4,6 @@ export interface NgxChessBoardView {
   reverse();
 
   undo();
+
+  getMoveHistory();
 }
