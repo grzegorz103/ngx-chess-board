@@ -12,6 +12,8 @@ import {MoveUtils} from './utils/move-utils';
 import {NgxChessBoardService} from './service/ngx-chess-board.service';
 import {NgxChessBoardView} from './ngx-chess-board-view';
 import {AvailableMoveDecorator} from './piece-decorator/available-move-decorator';
+import {BoardStateProvider} from './board-state-provider/board-state-provider';
+import {BoardState} from './board-state-provider/board-state';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -39,9 +41,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   boardRef: ElementRef;
 
   board: Board;
+  moveHistoryProvider: BoardStateProvider;
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
     this.board = new Board(ngxChessBoardService, this);
+    this.moveHistoryProvider = new BoardStateProvider();
   }
 
   ngOnInit() {
@@ -54,7 +58,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     if (this.selected) {
       //   this.possibleMoves = activePiece.getPossibleMoves();
       if (this.board.isPointInPossibleMoves(pointClicked) || this.board.isPointInPossibleCaptures(pointClicked)) {
-        this.board.lastMoveSrc = this.board.activePiece.point;
+        this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
         this.board.lastMoveDest = pointClicked;
         await this.movePiece(this.board.activePiece, pointClicked);
         this.checkIfPawnFirstMove(this.board.activePiece);
@@ -137,6 +141,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   async movePiece(piece: Piece, newPoint: Point) {
+    this.saveClone();
     let destPiece = this.board.pieces.find(e => e.point.col === newPoint.col && e.point.row === newPoint.row);
 
     if (destPiece && piece.color != destPiece.color) {
@@ -254,6 +259,27 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   reverse() {
     this.board.reverse();
+  }
+
+  private saveClone() {
+    let clone = this.board.clone();
+
+    if (this.board.reverted) {
+      clone.reverse();
+    }
+    this.moveHistoryProvider.addMove(new BoardState(clone));
+  }
+
+  undo() {
+    if (!this.moveHistoryProvider.isEmpty()) {
+      let lastBoard = this.moveHistoryProvider.pop().board;
+      if (this.board.reverted) {
+        lastBoard.reverse();
+      }
+      this.board = lastBoard;
+      this.board.possibleCaptures = [];
+      this.board.possibleMoves = [];
+    }
   }
 
 }

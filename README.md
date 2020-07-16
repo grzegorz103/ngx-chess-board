@@ -98,3 +98,4 @@ Method | Return type | Description
 | :---: | :---: | :---: |
 reset() | void | Resets specified chess game
 reverse() | void | Reverse specified chess board
+undo() | void | Undo the last move
