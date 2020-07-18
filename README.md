@@ -45,7 +45,7 @@ Next, add following tag in your component's view to render the chess board:
 
 Then you can inject NgxChessBoardService into your component:
 
-```html
+```typescript
 import {NgxChessBoardService} from 'ngx-chess-board';
 
   ...
@@ -59,7 +59,7 @@ HTML file:
 <ngx-chess-board #board></ngx-chess-board>
 ```
 .ts file:
-```html
+```typescript
 import {NgxChessBoardView} from 'ngx-chess-board';
 
    ...
@@ -78,22 +78,23 @@ import {NgxChessBoardView} from 'ngx-chess-board';
 
 ## API
 
-@Inputs()
+#### @Inputs()
 
 Input | Type | Description    
 | :---: | :---: | :---: |
 `[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
+<hr>
 
-
-@Outputs()
+#### @Outputs()
 
 Name | Type | Description  
 | :---: | :---: | :---: |
 `(onMove)` | EventEmitter\<any> | Dispatch event when piece has moved
+<hr>
 
-NgxChessBoardView methods
+#### NgxChessBoardView methods
 
 Method | Return type | Description
 | :---: | :---: | :---: |
