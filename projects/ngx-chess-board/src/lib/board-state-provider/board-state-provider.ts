@@ -24,4 +24,8 @@ export class BoardStateProvider {
     return this.moves.length === 0;
   }
 
+  clear() {
+    this.moves = [];
+  }
+
 }

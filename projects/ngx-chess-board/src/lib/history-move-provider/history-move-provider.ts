@@ -20,4 +20,8 @@ export class HistoryMoveProvider {
     return this.historyMoves;
   }
 
+  clear() {
+    this.historyMoves = [];
+  }
+
 }
