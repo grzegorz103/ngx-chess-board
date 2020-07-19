@@ -16,6 +16,7 @@ import {BoardStateProvider} from './board-state-provider/board-state-provider';
 import {BoardState} from './board-state-provider/board-state';
 import {HistoryMove} from './history-move-provider/history-move';
 import {HistoryMoveProvider} from './history-move-provider/history-move-provider';
+import {Constants} from './utils/constants';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -25,13 +26,22 @@ import {HistoryMoveProvider} from './history-move-provider/history-move-provider
 export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   @Input('size')
-  size: number = 400;
+  public set size(size: number) {
+    if (size && size >= Constants.MIN_BOARD_SIZE && size <= Constants.MAX_BOARD_SIZE) {
+      this._size = size;
+    } else {
+      this._size = Constants.DEFAULT_SIZE;
+    }
+    this.calculatePieceSize();
+  }
+
+  _size: number = Constants.DEFAULT_SIZE;
 
   @Input('darkTileColor')
-  darkTileColor: string = 'rgb(97, 84, 61)';
+  darkTileColor: string = Constants.DEFAULT_DARK_TILE_COLOR;
 
   @Input('lightTileColor')
-  lightTileColor: string = '#BAA378';
+  lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
 
   @Output()
   onMove: EventEmitter<any> = new EventEmitter<any>();
@@ -54,7 +64,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   ngOnInit() {
     this.ngxChessBoardService.componentMethodCalled$.subscribe(() => this.board.reset());
-    this.pieceSize = this.size / 9;
+    this.calculatePieceSize();
   }
 
   async onMouseDown(event) {
@@ -291,6 +301,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   getMoveHistory() {
     return JSON.stringify(this.moveHistoryProvider.getAll());
+  }
+
+  private calculatePieceSize() {
+    this.pieceSize = this._size / 10;
   }
 
 }

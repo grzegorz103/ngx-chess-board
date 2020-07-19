@@ -1,6 +1,6 @@
 <div style="width:400px; margin-left: auto; margin-right: auto">
   <h1 style="text-align: center">ngx-chess-board example</h1>
-  <ngx-chess-board #board [size]="400" [lightTileColor]="lightTileColor"
+  <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor"
                    [darkTileColor]="darkTileColor"></ngx-chess-board>
   <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
   <hr>
@@ -17,6 +17,15 @@
     <input type="text" class="form-control" placeholder="blue" [(ngModel)]="darkTileColor" id="darkTile"
            aria-describedby="basic-addon3">
   </div>
+
+  <br>
+  <label for="size">Size:</label>
+  <div class="input-group">
+    <input type="number" class="form-control" placeholder="Between 100 and 4000" [(ngModel)]="size" id="size"
+           aria-describedby="basic-addon3">
+    <span class="input-group-addon">px</span>
+  </div>
+
 
   <div style="display:flex; margin-top: 10px">
     <button type="button" class="btn btn-primary"

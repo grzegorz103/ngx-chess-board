@@ -1,4 +1,4 @@
-import {Component, Input, ViewChild} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {NgxChessBoardService} from 'ngx-chess-board';
 import {NgxChessBoardView} from 'ngx-chess-board';
 
@@ -12,6 +12,7 @@ export class AppComponent {
 
   darkTileColor: string = 'rgb(97, 84, 61)';
   lightTileColor: string = '#BAA378';
+  size: number = 400;
 
   @ViewChild('board', {static: false}) board: NgxChessBoardView;
 

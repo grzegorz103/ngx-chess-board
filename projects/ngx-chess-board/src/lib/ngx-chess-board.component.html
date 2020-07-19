@@ -1,4 +1,4 @@
-<div id="board" [style.height.px]="size" [style.width.px]="size" #boardRef>
+<div id="board" [style.height.px]="_size" [style.width.px]="_size" #boardRef>
   <div id="drag" (mousedown)="onMouseDown($event)">
     <div *ngFor="let row of board.board; let i = index" class="board-row">
       <div *ngFor="let col of row; let j = index" class="board-col"
