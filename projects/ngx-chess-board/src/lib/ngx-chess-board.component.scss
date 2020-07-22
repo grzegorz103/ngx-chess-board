@@ -2,11 +2,13 @@
   display: block;
   width: 100%;
   height: 12.5%;
+  position: relative;
 }
 
 .board-col {
   display: inline-block;
   width: 12.5%;
+  position: relative;
   vertical-align: top;
   cursor: default;
   height: 100%;
@@ -22,7 +24,7 @@
   justify-content: center;
   text-align: center;
   //margin-top: -10px;
-  color:black !important;
+  color: black !important;
 }
 
 .piece::after {
@@ -50,15 +52,35 @@
   box-sizing: border-box;
 }
 
-.source-move{
+.source-move {
   background-color: rgba(146, 111, 26, 0.79) !important;
 }
 
-.dest-move{
+.dest-move {
   background-color: #B28E1A !important;
 }
 
-.current-selection{
+.current-selection {
   background-color: #D3A91E !important;
+}
+
+.yCoord {
+  position: absolute;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  right: 0.2em;
+  font-family: "Courier New", serif;
+  box-sizing: border-box;
+}
+
+.xCoord {
+  position: absolute;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  bottom: 0;
+  left: 0.2em;
+  box-sizing: border-box;
 }
 

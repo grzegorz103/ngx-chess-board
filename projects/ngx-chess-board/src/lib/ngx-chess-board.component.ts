@@ -17,6 +17,7 @@ import {BoardState} from './board-state-provider/board-state';
 import {HistoryMove} from './history-move-provider/history-move';
 import {HistoryMoveProvider} from './history-move-provider/history-move-provider';
 import {Constants} from './utils/constants';
+import {CoordsProvider} from './coords/coords-provider';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -55,6 +56,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   board: Board;
   boardStateProvider: BoardStateProvider;
   moveHistoryProvider: HistoryMoveProvider;
+  coords: CoordsProvider = new CoordsProvider();
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
     this.board = new Board(ngxChessBoardService, this);
@@ -271,10 +273,12 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.boardStateProvider.clear();
     this.moveHistoryProvider.clear();
     this.board.reset();
+    this.coords.reset();
   }
 
   reverse() {
     this.board.reverse();
+    this.coords.reverse();
   }
 
   private saveClone() {
