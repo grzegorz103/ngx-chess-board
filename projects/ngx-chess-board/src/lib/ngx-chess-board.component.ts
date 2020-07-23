@@ -18,6 +18,7 @@ import {HistoryMove} from './history-move-provider/history-move';
 import {HistoryMoveProvider} from './history-move-provider/history-move-provider';
 import {Constants} from './utils/constants';
 import {CoordsProvider} from './coords/coords-provider';
+import {BoardLoader} from './board-state-provider/board-loader';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -59,16 +60,21 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   board: Board;
   boardStateProvider: BoardStateProvider;
   moveHistoryProvider: HistoryMoveProvider;
+  boardLoader: BoardLoader;
   coords: CoordsProvider = new CoordsProvider();
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
-    this.board = new Board(ngxChessBoardService, this);
+    this.board = new Board();
+    this.boardLoader = new BoardLoader(this.board);
+    this.boardLoader.addPieces();
     this.boardStateProvider = new BoardStateProvider();
     this.moveHistoryProvider = new HistoryMoveProvider();
   }
 
   ngOnInit() {
-    this.ngxChessBoardService.componentMethodCalled$.subscribe(() => this.board.reset());
+    this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
+      this.board.reset();
+    });
     this.calculatePieceSize();
   }
 
@@ -85,8 +91,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
 
-        this.board.blackKingChecked = this.isKingInCheck(Color.BLACK, this.board.pieces);
-        this.board.whiteKingChecked = this.isKingInCheck(Color.WHITE, this.board.pieces);
+        this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
+        this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
 
         this.checkForPossibleMoves(Color.BLACK, 'Checkmate!');
         this.checkForPossibleMoves(Color.WHITE, 'Checkmate!');
@@ -107,8 +113,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
         this.board.activePiece = pieceClicked;
         this.selected = true;
-        this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this).getPossibleMoves();
+        this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
+        this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
       }
     }
   }
@@ -123,35 +129,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     if (piece instanceof King) {
       return piece.color === Color.WHITE ? this.board.whiteKingChecked : this.board.blackKingChecked;
     }
-  }
-
-  isFieldEmpty(row: number, col: number): boolean {
-    if (row > 7 || row < 0 || col > 7 || col < 0) {
-      return false;
-    }
-    return !this.board.pieces.some(e => e.point.col === col && e.point.row === row);
-  }
-
-  isFieldTakenByEnemy(row: number, col: number, enemyColor: Color): boolean {
-    if (row > 7 || row < 0 || col > 7 || col < 0) {
-      return false;
-    }
-    return this.board.pieces.some(e => e.point.col === col && e.point.row === row && e.color === enemyColor);
-  }
-
-
-  isFieldUnderAttack(row: number, col: number, color: Color) {
-    let found = false;
-    return this.board.pieces.filter(e => e.color === color).some(e => e.getCoveredFields().some(f => f.col === col && f.row === row));
-  }
-
-  getPieceByField(row: number, col: number): Piece {
-    if (this.isFieldEmpty(row, col)) {
-      //   throw new Error('Piece not found');
-      return undefined;
-    }
-
-    return this.board.pieces.find(e => e.point.col === col && e.point.row === row);
   }
 
   getClickPoint(event) {
@@ -173,10 +150,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
       let squaresMoved = Math.abs(newPoint.col - piece.point.col);
       if (squaresMoved > 1) {
         if (newPoint.col < 3) {
-          let leftRook = this.getPieceByField(piece.point.row, 0);
+          let leftRook = this.board.getPieceByField(piece.point.row, 0);
           leftRook.point.col = 3;
         } else {
-          let rightRook = this.getPieceByField(piece.point.row, 7);
+          let rightRook = this.board.getPieceByField(piece.point.row, 7);
           rightRook.point.col = 5;
         }
       }
@@ -211,17 +188,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
   }
 
-  isKingInCheck(color: Color, piece: Piece[]): boolean {
-    let king = piece
-      .find(e => e.color === color && e instanceof King);
-
-    if (king) {
-      return piece.some(e => e.getPossibleCaptures().some(e => e.col === king.point.col && e.row === king.point.row) && e.color !== color);
-    }
-    return false;
-  }
-
-
   async checkForPawnPromote(piece: Piece) {
     if (!(piece instanceof Pawn)) {
       return;
@@ -229,7 +195,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
     if (piece.point.row === 0 || piece.point.row === 7) {
       this.board.pieces = this.board.pieces.filter(e => e !== piece);
-      this.board.pieces.push(new Queen(piece.point, piece.color, piece.color === Color.WHITE ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, this));
+      this.board.pieces.push(new Queen(piece.point, piece.color, piece.color === Color.WHITE ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, this.board));
     }
   }
 
@@ -239,8 +205,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   private checkForPossibleMoves(color: Color, text: string) {
     if (!this.board.pieces.filter(e => e.color === color)
-      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this)
-        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this))))) {
+      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board)
+        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board))))) {
       alert(text);
     }
   }
@@ -275,11 +241,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   reset() {
     this.boardStateProvider.clear();
     this.moveHistoryProvider.clear();
+    this.boardLoader.addPieces();
     this.board.reset();
     this.coords.reset();
   }
 
   reverse() {
+    this.selected = false;
     this.board.reverse();
     this.coords.reverse();
   }
