@@ -9,7 +9,7 @@ npm i ngx-chess-board
 ```
 
 ## Demo
-See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/)
+See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/index.html)
 
 ## Screenshots
 ![alt scr](https://i.imgur.com/647jzkp.png)
