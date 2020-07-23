@@ -6,9 +6,9 @@
 }
 
 .board-col {
+  position: relative;
   display: inline-block;
   width: 12.5%;
-  position: relative;
   vertical-align: top;
   cursor: default;
   height: 100%;
@@ -39,6 +39,7 @@
 
 .possible-point {
   border: 3px solid rgb(0, 0, 0);
+  position: static;
   box-sizing: border-box;
 }
 
@@ -70,7 +71,7 @@
   -webkit-user-select: none;
   cursor: pointer;
   right: 0.2em;
-  font-family: "Courier New", serif;
+  font-family: "Lucida Console", Courier, monospace;
   box-sizing: border-box;
 }
 
@@ -79,8 +80,9 @@
   user-select: none;
   -webkit-user-select: none;
   cursor: pointer;
-  bottom: 0;
   left: 0.2em;
+  bottom: 0;
+  font-family: "Lucida Console", Courier, monospace;
   box-sizing: border-box;
 }
 

@@ -85,6 +85,7 @@ Input | Type | Description
 `[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>. Size must be in range between 100-4000.
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
+`[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
 <hr>
 
 #### Outputs

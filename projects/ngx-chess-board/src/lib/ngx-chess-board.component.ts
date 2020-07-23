@@ -44,6 +44,9 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   @Input('lightTileColor')
   lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
 
+  @Input('showCoords')
+  showCoords: boolean = true;
+
   @Output()
   onMove: EventEmitter<any> = new EventEmitter<any>();
 
