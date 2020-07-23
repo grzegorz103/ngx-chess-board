@@ -1,13 +1,12 @@
 import {Color} from '../models/pieces/color';
 import {Board} from '../models/board';
-import {NgxChessBoardComponent} from '../ngx-chess-board.component';
 import {Point} from '../models/pieces/point';
 
 export class MoveUtils {
 
-  public static willMoveCauseCheck(currentColor: Color, row: number, col: number, destRow: number, destCol: number, ngxChessBoardComponent: NgxChessBoardComponent) {
-    let srcPiece = ngxChessBoardComponent.getPieceByField(row, col);
-    let destPiece = ngxChessBoardComponent.getPieceByField(destRow, destCol);
+  public static willMoveCauseCheck(currentColor: Color, row: number, col: number, destRow: number, destCol: number, board: Board) {
+    let srcPiece = board.getPieceByField(row, col);
+    let destPiece = board.getPieceByField(destRow, destCol);
 
     if (srcPiece) {
       srcPiece.point.row = destRow;
@@ -15,9 +14,9 @@ export class MoveUtils {
     }
 
     if (destPiece) {
-      ngxChessBoardComponent.board.pieces = ngxChessBoardComponent.board.pieces.filter(e => e !== destPiece);
+      board.pieces = board.pieces.filter(e => e !== destPiece);
     }
-    let isBound = ngxChessBoardComponent.isKingInCheck(currentColor, ngxChessBoardComponent.board.pieces);
+    let isBound = board.isKingInCheck(currentColor, board.pieces);
 
     if (srcPiece) {
       srcPiece.point.col = col;
@@ -25,7 +24,7 @@ export class MoveUtils {
     }
 
     if (destPiece) {
-      ngxChessBoardComponent.board.pieces.push(destPiece);
+      board.pieces.push(destPiece);
     }
 
     return isBound;

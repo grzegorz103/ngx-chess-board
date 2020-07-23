@@ -4,10 +4,10 @@
       <div *ngFor="let col of row; let j = index" class="board-col"
            [style.background-color]="((i + j) %2 === 0 ) ?  lightTileColor : darkTileColor"
            [ngClass]="[board.isXYInActiveMove(i,j) ? 'current-selection':'' ,board.isXYInPossibleMoves(i,j) ? 'possible-point' : '', board.isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', board.isXYInSourceMove(i,j)?'source-move':'',board.isXYInDestMove(i,j)?'dest-move':'']">
-        <span *ngIf="j === 7" class="yCoord" [style.color]="(i % 2 === 0)? lightTileColor : darkTileColor"
-              [style.font-size.px]="pieceSize / 5">{{coords.yCoords[i]}}</span>
-        <span *ngIf="i === 7" class="xCoord" [style.color]="(j % 2 === 0)? lightTileColor : darkTileColor"
-              [style.font-size.px]="pieceSize / 5">{{coords.xCoords[j]}}</span>
+        <span *ngIf="showCoords && j === 7" class="yCoord" [style.color]="(i % 2 === 0)? lightTileColor : darkTileColor"
+              [style.font-size.px]="pieceSize / 4">{{coords.yCoords[i]}}</span>
+        <span *ngIf="showCoords && i === 7" class="xCoord" [style.color]="(j % 2 === 0)? lightTileColor : darkTileColor"
+              [style.font-size.px]="pieceSize / 4">{{coords.xCoords[j]}}</span>
         <div *ngIf="getPieceByPoint(i, j)" style="height:100%; width:100%">
           <div
             class="piece" [style.font-size]="pieceSize + 'px'" [innerHTML]="getPieceByPoint(i,j).image">

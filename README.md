@@ -12,8 +12,8 @@ npm i ngx-chess-board
 See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/)
 
 ## Screenshots
-![alt scr](https://i.imgur.com/IgPDO19.png)
-![alt scr](https://i.imgur.com/z819ALt.png)
+![alt scr](https://i.imgur.com/647jzkp.png)
+![alt scr](https://i.imgur.com/Xb01Blb.png)
 
 ## Use example
 
@@ -85,6 +85,7 @@ Input | Type | Description
 `[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>. Size must be in range between 100-4000.
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
+`[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
 <hr>
 
 #### Outputs
