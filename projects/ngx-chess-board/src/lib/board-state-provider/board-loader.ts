@@ -7,9 +7,7 @@ import {Knight} from '../models/pieces/knight';
 import {Bishop} from '../models/pieces/bishop';
 import {Queen} from '../models/pieces/queen';
 import {King} from '../models/pieces/king';
-import {Piece} from '../models/pieces/piece';
 import {Board} from '../models/board';
-import {NgxChessBoardComponent} from '../ngx-chess-board.component';
 
 export class BoardLoader {
   private board: Board;

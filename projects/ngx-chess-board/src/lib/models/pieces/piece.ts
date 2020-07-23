@@ -1,7 +1,6 @@
 import {Point} from './point';
 import {Color} from './color';
 import {AbstractPiece} from '../../piece-decorator/abstract-piece';
-import {NgxChessBoardComponent} from '../../ngx-chess-board.component';
 import {Board} from '../board';
 
 export abstract class Piece implements AbstractPiece {

@@ -1,15 +1,7 @@
-import {Pawn} from './pieces/pawn';
 import {Point} from './pieces/point';
 import {Color} from './pieces/color';
-import {UnicodeConstants} from '../utils/unicode-constants';
-import {Rook} from './pieces/rook';
-import {Knight} from './pieces/knight';
-import {Bishop} from './pieces/bishop';
-import {Queen} from './pieces/queen';
 import {King} from './pieces/king';
 import {Piece} from './pieces/piece';
-import {NgxChessBoardService} from '../service/ngx-chess-board.service';
-import {NgxChessBoardComponent} from '../ngx-chess-board.component';
 import {cloneDeep} from 'lodash';
 
 export class Board {
