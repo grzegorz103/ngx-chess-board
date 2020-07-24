@@ -15,7 +15,7 @@ export class Pawn extends Piece {
     let possiblePoints = [];
     let row = this.point.row;
     let col = this.point.col;
-    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color===Color.BLACK)) {
+    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color === Color.BLACK)) {
       if (this.board.isFieldEmpty(row - 1, col)) {
         possiblePoints.push(new Point(row - 1, col));
 
@@ -40,24 +40,24 @@ export class Pawn extends Piece {
     let row = this.point.row;
     let col = this.point.col;
 
-    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color===Color.BLACK)) {
-      if (this.board.isFieldTakenByEnemy(row - 1, col - 1,this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color === Color.BLACK)) {
+      if (this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row - 1, col - 1));
       }
-      if (this.board.isFieldTakenByEnemy(row - 1, col + 1,this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+      if (this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row - 1, col + 1));
       }
     } else {
       if (this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row + 1, col - 1));
       }
-      if (this.board.isFieldTakenByEnemy(row + 1, col + 1,this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+      if (this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
         possiblePoints.push(new Point(row + 1, col + 1));
       }
     }
 
     if (this.board.enPassantPoint && this.board.enPassantPiece.color === (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-      if (row === this.board.enPassantPiece.point.row) {
+      if (row === this.board.enPassantPiece.point.row && Math.abs(this.board.enPassantPiece.point.col - col) === 1) {
         possiblePoints.push(this.board.enPassantPoint);
       }
     }
@@ -70,7 +70,7 @@ export class Pawn extends Piece {
     let row = this.point.row;
     let col = this.point.col;
 
-    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color===Color.BLACK)) {
+    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color === Color.BLACK)) {
 
       possiblePoints.push(new Point(row - 1, col - 1));
 
