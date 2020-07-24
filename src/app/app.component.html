@@ -25,7 +25,15 @@
            aria-describedby="basic-addon3">
     <span class="input-group-addon">px</span>
   </div>
-
+  <br>
+  <label for="fen">FEN:</label>
+  <div class="input-group">
+    <input type="text" class="form-control" placeholder="FEN" [(ngModel)]="fen" id="fen"
+           aria-describedby="basic-addon3">
+  </div>
+  <button type="button" class="btn btn-success"
+          style="margin-right:auto" (click)="setFen()">Set FEN
+  </button>
 
   <div style="display:flex; margin-top: 10px">
     <button type="button" class="btn btn-primary"

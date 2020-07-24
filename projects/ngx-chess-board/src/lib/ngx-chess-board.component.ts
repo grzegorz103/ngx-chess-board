@@ -282,4 +282,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.pieceSize = this._size / 10;
   }
 
+  setFEN(fen: string) {
+    this.boardLoader.loadFEN(fen);
+  }
+
 }

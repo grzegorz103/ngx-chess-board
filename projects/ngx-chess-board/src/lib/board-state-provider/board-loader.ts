@@ -46,4 +46,68 @@ export class BoardLoader {
     this.board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
   }
 
+  loadFEN(fen: string) {
+    if (fen) {
+      this.board.pieces = [];
+      let split = fen.split('/');
+      console.log(split.length);
+      for (let i = 0; i < split.length; ++i) {
+        let pointer = 0;
+        console.log(split[i].length);
+        for (let j = 0; j < split[i].length; ++j) {
+          let chunk = split[i].charAt(j);
+          if (chunk.match(/[0-9]/)) {
+            pointer += Number(chunk);
+          } else {
+            switch (chunk) {
+              case 'r':
+                this.board.pieces.push(new Rook(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
+                break;
+              case 'n':
+                this.board.pieces.push(new Knight(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
+
+                break;
+              case 'b':
+                this.board.pieces.push(new Bishop(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
+                break;
+              case 'q':
+                this.board.pieces.push(new Queen(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.board));
+                break;
+              case 'k':
+                this.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
+                break;
+              case 'p':
+                this.board.pieces.push(new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board));
+                break;
+              case 'R':
+                this.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
+
+                break;
+              case 'N':
+                this.board.pieces.push(new Knight(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
+                break;
+
+              case 'B':
+                this.board.pieces.push(new Bishop(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
+                break;
+
+              case 'Q':
+                this.board.pieces.push(new Queen(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.board));
+                break;
+
+              case 'K':
+                this.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
+                break;
+
+              case 'P':
+                this.board.pieces.push(new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board));
+                break;
+            }
+            ++pointer;
+          }
+        }
+      }
+    }
+  }
+
 }
