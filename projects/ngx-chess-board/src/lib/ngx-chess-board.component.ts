@@ -165,6 +165,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     piece.point = newPoint;
+    this.increaseFullMoveCount();
+    this.board.calculateFEN();
     this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
     this.onMove.emit();
     return this.checkForPawnPromote(piece);
@@ -268,6 +270,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         lastBoard.reverse();
       }
       this.board = lastBoard;
+      this.boardLoader.setBoard(this.board);
       this.board.possibleCaptures = [];
       this.board.possibleMoves = [];
       this.moveHistoryProvider.pop();
@@ -284,6 +287,16 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   setFEN(fen: string) {
     this.boardLoader.loadFEN(fen);
+  }
+
+  getFEN() {
+    return this.board.fen;
+  }
+
+  private increaseFullMoveCount() {
+    if (!this.board.currentWhitePlayer) {
+      ++this.board.fullMoveCount;
+    }
   }
 
 }

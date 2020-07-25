@@ -12,6 +12,7 @@ import {Board} from '../models/board';
 export class BoardLoader {
   private board: Board;
 
+
   constructor(board: Board) {
     this.board = board;
   }
@@ -48,13 +49,12 @@ export class BoardLoader {
 
   loadFEN(fen: string) {
     if (fen) {
+      this.board.reverted = false;
       this.board.pieces = [];
       let split = fen.split('/');
-      console.log(split.length);
-      for (let i = 0; i < split.length; ++i) {
+      for (let i = 0; i < 8; ++i) {
         let pointer = 0;
-        console.log(split[i].length);
-        for (let j = 0; j < split[i].length; ++j) {
+        for (let j = 0; j < 8; ++j) {
           let chunk = split[i].charAt(j);
           if (chunk.match(/[0-9]/)) {
             pointer += Number(chunk);
@@ -76,9 +76,14 @@ export class BoardLoader {
               case 'k':
                 this.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
                 break;
-              case 'p':
-                this.board.pieces.push(new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board));
+              case 'p': {
+                let pawn = new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board);
+                if ((pawn.color === Color.BLACK && pawn.point.row !== 1) || (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
+                  pawn.isMovedAlready = true;
+                }
+                this.board.pieces.push(pawn);
                 break;
+              }
               case 'R':
                 this.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
 
@@ -99,15 +104,34 @@ export class BoardLoader {
                 this.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
                 break;
 
-              case 'P':
-                this.board.pieces.push(new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board));
+              case 'P': {
+                let pawn = new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board);
+                if ((pawn.color === Color.BLACK && pawn.point.row !== 1) || (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
+                  pawn.isMovedAlready = true;
+                }
+                this.board.pieces.push(pawn);
                 break;
+              }
             }
             ++pointer;
           }
         }
       }
+
+      this.setCurrentPlayer(fen);
     }
+  }
+
+
+  private setCurrentPlayer(fen: string) {
+    if (fen) {
+      let split = fen.split(' ');
+      this.board.currentWhitePlayer = split[1] === 'w';
+    }
+  }
+
+  setBoard(board: Board) {
+    this.board = board;
   }
 
 }

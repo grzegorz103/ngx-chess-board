@@ -13,7 +13,7 @@ export class AppComponent {
   darkTileColor: string = 'rgb(97, 84, 61)';
   lightTileColor: string = '#BAA378';
   size: number = 400;
-  fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
+  fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
   @ViewChild('board', {static: false}) board: NgxChessBoardView;
 
@@ -32,6 +32,7 @@ export class AppComponent {
 
   undo() {
     this.board.undo();
+    this.fen = this.board.getFEN();
   }
 
   showMoveHistory() {
@@ -42,4 +43,14 @@ export class AppComponent {
     alert('Setting FEN');
     this.board.setFEN(this.fen);
   }
+
+  getFEN() {
+    let fen = this.board.getFEN();
+    alert(fen);
+  }
+
+  moveCallback() {
+    this.fen = this.board.getFEN();
+  }
+
 }

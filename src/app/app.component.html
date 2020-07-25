@@ -1,19 +1,23 @@
 <div style="width:400px; margin-left: auto; margin-right: auto">
-  <h1 style="text-align: center">ngx-chess-board example</h1>
-  <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor"
+  <h2 style="text-align: center">ngx-chess-board example</h2>
+  <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (onMove)="moveCallback()"
                    [darkTileColor]="darkTileColor"></ngx-chess-board>
   <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
   <hr>
   <label for="lightTile">Light tile color:</label>
   <div class="input-group">
-    <span class="input-group-addon" id="basic-addon3" [style.background-color]="lightTileColor"></span>
+    <div class="input-group-prepend">
+      <span class="input-group-text" id="basic-addon3" [style.background-color]="lightTileColor"></span>
+    </div>
     <input type="text" class="form-control" placeholder="blue" [(ngModel)]="lightTileColor" id="lightTile"
            aria-describedby="basic-addon3">
   </div>
   <br>
   <label for="darkTile">Dark tile color:</label>
   <div class="input-group">
-    <span class="input-group-addon" id="darkTileSpan" [style.background-color]="darkTileColor"></span>
+    <div class="input-group-prepend">
+      <span class="input-group-text" id="darkTileSpan" [style.background-color]="darkTileColor"></span>
+    </div>
     <input type="text" class="form-control" placeholder="blue" [(ngModel)]="darkTileColor" id="darkTile"
            aria-describedby="basic-addon3">
   </div>
@@ -23,19 +27,13 @@
   <div class="input-group">
     <input type="number" class="form-control" placeholder="Between 100 and 4000" [(ngModel)]="size" id="size"
            aria-describedby="basic-addon3">
-    <span class="input-group-addon">px</span>
+    <div class="input-group-append">
+      <span class="input-group-text">px</span>
+    </div>
   </div>
   <br>
-  <label for="fen">FEN:</label>
-  <div class="input-group">
-    <input type="text" class="form-control" placeholder="FEN" [(ngModel)]="fen" id="fen"
-           aria-describedby="basic-addon3">
-  </div>
-  <button type="button" class="btn btn-success"
-          style="margin-right:auto" (click)="setFen()">Set FEN
-  </button>
 
-  <div style="display:flex; margin-top: 10px">
+  <div style="display:flex;">
     <button type="button" class="btn btn-primary"
             style="margin-left:auto; margin-right: 10px" (click)="reset()">Reset
     </button>
@@ -53,4 +51,23 @@
     </button>
   </div>
 
+  <hr style="border-color: gray">
+
+  <div class="form-group input-group-sm">
+    <label for="fen">FEN</label>
+    <input type="text" class="form-control  form-control-lg" id="fen" aria-describedby="fen" [(ngModel)]="fen"
+           placeholder="FEN">
+  </div>
+
+  <div style="display:flex;">
+    <button type="button" class="btn btn-success"
+            style="margin-left:auto; margin-right: 10px" (click)="setFen()">Set FEN
+    </button>
+
+    <button type="button" class="btn btn-info"
+            style="margin-right:auto" (click)="getFEN()">Show FEN
+    </button>
+  </div>
+
 </div>
+
