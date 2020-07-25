@@ -12,6 +12,7 @@ import {Board} from '../models/board';
 export class BoardLoader {
   private board: Board;
 
+
   constructor(board: Board) {
     this.board = board;
   }
@@ -44,6 +45,93 @@ export class BoardLoader {
     this.board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
     this.board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
     this.board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
+  }
+
+  loadFEN(fen: string) {
+    if (fen) {
+      this.board.reverted = false;
+      this.board.pieces = [];
+      let split = fen.split('/');
+      for (let i = 0; i < 8; ++i) {
+        let pointer = 0;
+        for (let j = 0; j < 8; ++j) {
+          let chunk = split[i].charAt(j);
+          if (chunk.match(/[0-9]/)) {
+            pointer += Number(chunk);
+          } else {
+            switch (chunk) {
+              case 'r':
+                this.board.pieces.push(new Rook(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
+                break;
+              case 'n':
+                this.board.pieces.push(new Knight(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
+
+                break;
+              case 'b':
+                this.board.pieces.push(new Bishop(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
+                break;
+              case 'q':
+                this.board.pieces.push(new Queen(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.board));
+                break;
+              case 'k':
+                this.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
+                break;
+              case 'p': {
+                let pawn = new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board);
+                if ((pawn.color === Color.BLACK && pawn.point.row !== 1) || (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
+                  pawn.isMovedAlready = true;
+                }
+                this.board.pieces.push(pawn);
+                break;
+              }
+              case 'R':
+                this.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
+
+                break;
+              case 'N':
+                this.board.pieces.push(new Knight(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
+                break;
+
+              case 'B':
+                this.board.pieces.push(new Bishop(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
+                break;
+
+              case 'Q':
+                this.board.pieces.push(new Queen(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.board));
+                break;
+
+              case 'K':
+                this.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
+                break;
+
+              case 'P': {
+                let pawn = new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board);
+                if ((pawn.color === Color.BLACK && pawn.point.row !== 1) || (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
+                  pawn.isMovedAlready = true;
+                }
+                this.board.pieces.push(pawn);
+                break;
+              }
+            }
+            ++pointer;
+          }
+        }
+      }
+
+      this.setCurrentPlayer(fen);
+    }
+  }
+
+
+  private setCurrentPlayer(fen: string) {
+    if (fen) {
+      let split = fen.split(' ');
+      this.board.currentWhitePlayer = split[1] === 'w';
+    }
+  }
+
+  setBoard(board: Board) {
+    this.board = board;
   }
 
 }

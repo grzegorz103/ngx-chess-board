@@ -3,6 +3,11 @@ import {Color} from './pieces/color';
 import {King} from './pieces/king';
 import {Piece} from './pieces/piece';
 import {cloneDeep} from 'lodash';
+import {Rook} from './pieces/rook';
+import {Knight} from './pieces/knight';
+import {Bishop} from './pieces/bishop';
+import {Queen} from './pieces/queen';
+import {Pawn} from './pieces/pawn';
 
 export class Board {
 
@@ -22,6 +27,8 @@ export class Board {
 
   currentWhitePlayer = true;
   reverted: boolean = false;
+  fullMoveCount: number = 1;
+  fen: string;
 
   constructor() {
 
@@ -74,6 +81,7 @@ export class Board {
     this.currentWhitePlayer = true;
     this.enPassantPoint = null;
     this.enPassantPiece = null;
+    this.fullMoveCount = 1;
   }
 
   reverse() {
@@ -139,6 +147,101 @@ export class Board {
       return piece.some(e => e.getPossibleCaptures().some(e => e.col === king.point.col && e.row === king.point.row) && e.color !== color);
     }
     return false;
+  }
+
+  getKingByColor(color: Color): King {
+    return <King> this.pieces.find(e => (e instanceof King) && e.color === color);
+  }
+
+  getCastleFENString(color: Color) {
+    let king = this.getKingByColor(color);
+
+    if (king.isMovedAlready) {
+      return '';
+    }
+
+    let fen = '';
+    let leftRook = this.getPieceByField(king.point.row, 0);
+    let rightRook = this.getPieceByField(king.point.row, 7);
+
+    if (rightRook instanceof Rook && rightRook.color === color) {
+      if (!rightRook.isMovedAlready) {
+        fen += 'k';
+      }
+    }
+
+    if (leftRook instanceof Rook && leftRook.color === color) {
+      if (!leftRook.isMovedAlready) {
+        fen += 'q';
+      }
+    }
+
+    return color === Color.BLACK ? fen : fen.toUpperCase();
+  }
+
+  getEnPassantFENString() {
+    if (this.enPassantPoint) {
+      if (this.reverted) {
+        return String.fromCharCode(104 - this.enPassantPoint.col) + (this.enPassantPoint.row + 1);
+      } else {
+        return String.fromCharCode(97 + this.enPassantPoint.col) + (Math.abs(this.enPassantPoint.row - 7) + 1);
+      }
+    } else {
+      return '-';
+    }
+  }
+
+
+  calculateFEN() {
+    let fen = '';
+    for (let i = 0; i < 8; ++i) {
+      let emptyFields = 0;
+      for (let j = 0; j < 8; ++j) {
+        let piece = this.pieces.find(e => e.point.col === j && e.point.row === i);
+        if (piece) {
+          if (emptyFields > 0) {
+            fen += emptyFields;
+            emptyFields = 0;
+          }
+
+          if (piece instanceof Rook) {
+            fen += piece.color === Color.BLACK ? 'r' : 'R';
+          } else if (piece instanceof Knight) {
+            fen += piece.color === Color.BLACK ? 'n' : 'N';
+          } else if (piece instanceof Bishop) {
+            fen += piece.color === Color.BLACK ? 'b' : 'B';
+          } else if (piece instanceof Queen) {
+            fen += piece.color === Color.BLACK ? 'q' : 'Q';
+          } else if (piece instanceof King) {
+            fen += piece.color === Color.BLACK ? 'k' : 'K';
+          } else if (piece instanceof Pawn) {
+            fen += piece.color === Color.BLACK ? 'p' : 'P';
+          }
+        } else {
+          ++emptyFields;
+        }
+      }
+
+      if (emptyFields > 0) {
+        fen += emptyFields;
+      }
+
+      fen += '/';
+    }
+
+    fen = fen.substr(0, fen.length - 1);
+
+    if (this.reverted) {
+      fen = fen.split('').reverse().join('');
+    }
+
+    fen += (' ' + (this.currentWhitePlayer ? 'w' : 'b'));
+    fen += (' ' + this.getCastleFENString(Color.WHITE));
+    fen += (this.getCastleFENString(Color.BLACK));
+    fen += (' ' + (this.getEnPassantFENString()));
+    fen += ' ' + 0;
+    fen += ' ' + this.fullMoveCount;
+    this.fen = fen;
   }
 
 }
