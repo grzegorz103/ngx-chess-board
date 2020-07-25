@@ -6,4 +6,9 @@ export interface NgxChessBoardView {
   undo();
 
   getMoveHistory();
+
+  setFEN(fen: string);
+
+  getFEN();
+
 }
