@@ -1,6 +1,6 @@
 {
   "name": "ngx-chess-board",
-  "version": "1.6.3",
+  "version": "1.7.1",
   "peerDependencies": {
     "@angular/common": "^8.2.14",
     "@angular/core": "^8.2.14"
@@ -16,8 +16,11 @@
     "angular",
     "chess",
     "game",
+    "ng",
+    "player",
     "multiplayer",
-    "board"
+    "board",
+    "fen",
   ],
   "license": "MIT"
 }

@@ -82,6 +82,7 @@ export class Board {
     this.enPassantPoint = null;
     this.enPassantPiece = null;
     this.fullMoveCount = 1;
+    this.calculateFEN();
   }
 
   reverse() {
@@ -166,16 +167,17 @@ export class Board {
 
     if (rightRook instanceof Rook && rightRook.color === color) {
       if (!rightRook.isMovedAlready) {
-        fen += 'k';
+        fen += this.reverted ? 'q' : 'k';
       }
     }
 
     if (leftRook instanceof Rook && leftRook.color === color) {
       if (!leftRook.isMovedAlready) {
-        fen += 'q';
+        fen += this.reverted ? 'k' : 'q';
       }
     }
 
+    fen = fen.split('').sort().join("");
     return color === Color.BLACK ? fen : fen.toUpperCase();
   }
 
@@ -236,8 +238,14 @@ export class Board {
     }
 
     fen += (' ' + (this.currentWhitePlayer ? 'w' : 'b'));
-    fen += (' ' + this.getCastleFENString(Color.WHITE));
-    fen += (this.getCastleFENString(Color.BLACK));
+    let whiteEnPassant = this.getCastleFENString(Color.WHITE);
+    let blackEnPassant = this.getCastleFENString(Color.BLACK);
+    let concatedEnPassant = whiteEnPassant + blackEnPassant;
+    if (!concatedEnPassant) {
+      concatedEnPassant = '-';
+    }
+
+    fen += (' ' + concatedEnPassant);
     fen += (' ' + (this.getEnPassantFENString()));
     fen += ' ' + 0;
     fen += ' ' + this.fullMoveCount;

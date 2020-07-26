@@ -103,3 +103,5 @@ reset() | void | Resets specified chess game
 reverse() | void | Reverse specified chess board
 undo() | void | Undo the last move
 getMoveHistory() | JSON | Returns array in JSON format which contains information about every move
+setFEN(fen: string) | void | Allows to import specified board position by FEN
+getFEN() | string | Returns current board FEN position
