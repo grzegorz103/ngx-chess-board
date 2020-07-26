@@ -45,6 +45,8 @@ export class BoardLoader {
     this.board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
     this.board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
     this.board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
+
+    this.board.calculateFEN();
   }
 
   loadFEN(fen: string) {
@@ -119,6 +121,11 @@ export class BoardLoader {
       }
 
       this.setCurrentPlayer(fen);
+      this.setCastles(fen);
+      this.setEnPassant(fen);
+      this.setFullMoveCount(fen);
+    } else {
+      throw Error('Incorrect FEN provided');
     }
   }
 
@@ -134,4 +141,48 @@ export class BoardLoader {
     this.board = board;
   }
 
+  private setCastles(fen: string) {
+    if (fen) {
+      let split = fen.split(' ');
+      let castleChunk = split[2];
+
+      if (!castleChunk.includes('K')) {
+        this.setRookAlreadyMoved(Color.WHITE, 7);
+      }
+
+      if (!castleChunk.includes('Q')) {
+        this.setRookAlreadyMoved(Color.WHITE, 0);
+      }
+
+      if (!castleChunk.includes('k')) {
+        this.setRookAlreadyMoved(Color.BLACK, 7);
+      }
+
+      if (!castleChunk.includes('q')) {
+        this.setRookAlreadyMoved(Color.BLACK, 0);
+      }
+    }
+  }
+
+  private setFullMoveCount(fen: string) {
+
+  }
+
+  private setEnPassant(fen: string) {
+    if (fen) {
+      let split = fen.split(' ');
+      let enPassantPoint = split[3];
+
+      if (enPassantPoint === '-') {
+        return;
+      }
+
+      // if()
+    }
+  }
+
+  private setRookAlreadyMoved(color: Color, col: number) {
+    let rook = <Rook> this.board.pieces.find(e => e.color === color && e instanceof Rook && e.point.col === col);
+    rook.isMovedAlready = true;
+  }
 }

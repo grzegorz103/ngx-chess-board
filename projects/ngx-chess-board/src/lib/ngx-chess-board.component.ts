@@ -97,8 +97,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.checkForPossibleMoves(Color.BLACK, 'Checkmate!');
         this.checkForPossibleMoves(Color.WHITE, 'Checkmate!');
 
+        this.board.calculateFEN();
         this.checkForPat(Color.BLACK);
         this.checkForPat(Color.WHITE);
+        this.onMove.emit();
       }
       this.selected = false;
       this.board.possibleCaptures = [];
@@ -166,9 +168,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
     piece.point = newPoint;
     this.increaseFullMoveCount();
-    this.board.calculateFEN();
     this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
-    this.onMove.emit();
     return this.checkForPawnPromote(piece);
   }
 
@@ -286,7 +286,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   setFEN(fen: string) {
-    this.boardLoader.loadFEN(fen);
+    try {
+      this.boardLoader.loadFEN(fen);
+    } catch (e) {
+      this.boardLoader.addPieces();
+    }
   }
 
   getFEN() {
