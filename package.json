@@ -22,7 +22,8 @@
     "ngx-chess-board": "file:projects/ngx-chess-board",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
-    "zone.js": "~0.9.1"
+    "zone.js": "~0.9.1",
+    "@angular/cdk": "~8.2.3"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.803.20",

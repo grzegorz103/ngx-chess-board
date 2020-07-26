@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Piece} from './models/pieces/piece';
 import {Color} from './models/pieces/color';
 import {King} from './models/pieces/king';
@@ -19,6 +19,7 @@ import {HistoryMoveProvider} from './history-move-provider/history-move-provider
 import {Constants} from './utils/constants';
 import {CoordsProvider} from './coords/coords-provider';
 import {BoardLoader} from './board-state-provider/board-loader';
+import {CdkDragEnd, CdkDragStart} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -35,6 +36,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
       this._size = Constants.DEFAULT_SIZE;
     }
     this.calculatePieceSize();
+  }
+
+  @HostListener('contextmenu', ['$event'])
+  onRightClick(event) {
+    event.preventDefault();
   }
 
   _size: number = Constants.DEFAULT_SIZE;
@@ -87,25 +93,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
         this.board.lastMoveDest = pointClicked;
         await this.movePiece(this.board.activePiece, pointClicked);
-        this.checkIfPawnFirstMove(this.board.activePiece);
-        this.checkIfRookMoved(this.board.activePiece);
-        this.checkIfKingMoved(this.board.activePiece);
-
-        this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
-        this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
-
-        this.checkForPossibleMoves(Color.BLACK, 'Checkmate!');
-        this.checkForPossibleMoves(Color.WHITE, 'Checkmate!');
-
-        this.board.calculateFEN();
-        this.checkForPat(Color.BLACK);
-        this.checkForPat(Color.WHITE);
-        this.onMove.emit();
+        this.afterMoveActions();
       }
-      this.selected = false;
-      this.board.possibleCaptures = [];
-      this.board.activePiece = null;
-      this.board.possibleMoves = [];
+
+      this.disableSelection();
     } else {
       let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
       if (pieceClicked) {
@@ -113,12 +104,41 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) || (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
           return;
         }
-        this.board.activePiece = pieceClicked;
-        this.selected = true;
-        this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
+
+        this.prepareActivePiece(pieceClicked, pointClicked);
       }
     }
+  }
+
+  afterMoveActions() {
+    this.checkIfPawnFirstMove(this.board.activePiece);
+    this.checkIfRookMoved(this.board.activePiece);
+    this.checkIfKingMoved(this.board.activePiece);
+
+    this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
+    this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
+
+    this.checkForPossibleMoves(Color.BLACK, 'Checkmate!');
+    this.checkForPossibleMoves(Color.WHITE, 'Checkmate!');
+
+    this.board.calculateFEN();
+    this.checkForPat(Color.BLACK);
+    this.checkForPat(Color.WHITE);
+    this.onMove.emit();
+  }
+
+  disableSelection() {
+    this.selected = false;
+    this.board.possibleCaptures = [];
+    this.board.activePiece = null;
+    this.board.possibleMoves = [];
+  }
+
+  prepareActivePiece(pieceClicked: Piece, pointClicked: Point) {
+    this.board.activePiece = pieceClicked;
+    this.selected = true;
+    this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
+    this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
   }
 
   getPieceByPoint(row: number, col: number): Piece {
@@ -207,8 +227,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   private checkForPossibleMoves(color: Color, text: string) {
     if (!this.board.pieces.filter(e => e.color === color)
-      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board)
-        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board))))) {
+      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board))
+        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board)))) {
       alert(text);
     }
   }
@@ -303,4 +323,30 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
   }
 
+  dragEnded(event: CdkDragEnd) {
+    let element = event.source.getRootElement();
+    let newPos = element.getBoundingClientRect();
+    event.source.reset();
+    event.source.element.nativeElement.style.zIndex = '0';
+  }
+
+  dragStart(event: CdkDragStart) {
+    let style = event.source.element.nativeElement.style;
+    style.position = 'relative';
+    style.zIndex = '1000';
+    let pointClicked = new Point(
+      Math.floor((event.source.element.nativeElement.getBoundingClientRect().top - this.boardRef.nativeElement.getBoundingClientRect().top) / (this.boardRef.nativeElement.getBoundingClientRect().height / 8)),
+      Math.floor((event.source.element.nativeElement.getBoundingClientRect().left - this.boardRef.nativeElement.getBoundingClientRect().left) / (this.boardRef.nativeElement.getBoundingClientRect().width / 8))
+    );
+
+    let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
+    if (pieceClicked) {
+
+      if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) || (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+        return;
+      }
+
+      this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+  }
 }
