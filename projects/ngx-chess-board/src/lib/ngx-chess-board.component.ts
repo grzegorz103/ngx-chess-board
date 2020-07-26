@@ -223,8 +223,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   private checkForPossibleMoves(color: Color, text: string) {
     if (!this.board.pieces.filter(e => e.color === color)
-      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board)
-        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board))))) {
+      .some(e => e.getPossibleMoves().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board))
+        || e.getPossibleCaptures().some(f => !MoveUtils.willMoveCauseCheck(color, e.point.row, e.point.col, f.row, f.col, this.board)))) {
       alert(text);
     }
   }
