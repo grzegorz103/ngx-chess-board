@@ -1,6 +1,6 @@
 <div id="board" [style.height.px]="_size" [style.width.px]="_size" #boardRef>
-  <div id="drag" (mousedown)="onMouseDown($event)">
-    <div *ngFor="let row of board.board; let i = index" class="board-row">
+  <div id="drag" (click)="onMouseDown($event)">
+    <div *ngFor="let row of board.board; let i = index" class="board-row" cdkDropList>
       <div *ngFor="let col of row; let j = index" class="board-col"
            [style.background-color]="((i + j) %2 === 0 ) ?  lightTileColor : darkTileColor"
            [ngClass]="[board.isXYInActiveMove(i,j) ? 'current-selection':'' ,board.isXYInPossibleMoves(i,j) ? 'possible-point' : '', board.isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', board.isXYInSourceMove(i,j)?'source-move':'',board.isXYInDestMove(i,j)?'dest-move':'']">
@@ -9,8 +9,10 @@
         <span *ngIf="showCoords && i === 7" class="xCoord" [style.color]="(j % 2 === 0)? lightTileColor : darkTileColor"
               [style.font-size.px]="pieceSize / 4">{{coords.xCoords[j]}}</span>
         <div *ngIf="getPieceByPoint(i, j)" style="height:100%; width:100%">
-          <div
-            class="piece" [style.font-size]="pieceSize + 'px'" [innerHTML]="getPieceByPoint(i,j).image">
+          <div cdkDrag
+               (cdkDragStarted)="dragStart($event)"
+               (cdkDragEnded)="dragEnded($event)"
+               class="piece" [style.font-size]="pieceSize + 'px'" [innerHTML]="getPieceByPoint(i,j).image">
           </div>
         </div>
       </div>
