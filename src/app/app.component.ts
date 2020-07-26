@@ -23,6 +23,7 @@ export class AppComponent {
   reset() {
     alert('Resetting game');
     this.board.reset();
+    this.fen = this.board.getFEN();
   }
 
   reverse() {
