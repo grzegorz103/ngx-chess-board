@@ -17,10 +17,11 @@
     "chess",
     "game",
     "ng",
+    "ngx",
     "player",
     "multiplayer",
     "board",
-    "fen",
+    "fen"
   ],
   "license": "MIT"
 }
