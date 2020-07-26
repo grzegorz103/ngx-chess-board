@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Piece} from './models/pieces/piece';
 import {Color} from './models/pieces/color';
 import {King} from './models/pieces/king';
@@ -36,6 +36,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
       this._size = Constants.DEFAULT_SIZE;
     }
     this.calculatePieceSize();
+  }
+
+  @HostListener('contextmenu', ['$event'])
+  onRightClick(event) {
+    event.preventDefault();
   }
 
   _size: number = Constants.DEFAULT_SIZE;
@@ -80,7 +85,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   async onMouseDown(event) {
-    console.log('onmouve');
     let pointClicked = this.getClickPoint(event);
     if (this.selected) {
       //   this.possibleMoves = activePiece.getPossibleMoves();
@@ -324,19 +328,17 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     let newPos = element.getBoundingClientRect();
     event.source.reset();
     event.source.element.nativeElement.style.zIndex = '0';
-    console.log('a');
   }
 
   dragStart(event: CdkDragStart) {
-    console.log(event.source.element.nativeElement.getBoundingClientRect().top);
+    let style = event.source.element.nativeElement.style;
+    style.position = 'relative';
+    style.zIndex = '1000';
     let pointClicked = new Point(
       Math.floor((event.source.element.nativeElement.getBoundingClientRect().top - this.boardRef.nativeElement.getBoundingClientRect().top) / (this.boardRef.nativeElement.getBoundingClientRect().height / 8)),
       Math.floor((event.source.element.nativeElement.getBoundingClientRect().left - this.boardRef.nativeElement.getBoundingClientRect().left) / (this.boardRef.nativeElement.getBoundingClientRect().width / 8))
     );
 
-    console.log(pointClicked);
-    let style = event.source.element.nativeElement.style;
-    console.log('start');
     let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
     if (pieceClicked) {
 
@@ -346,7 +348,5 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
       this.prepareActivePiece(pieceClicked, pointClicked);
     }
-    style.position = 'relative';
-    style.zIndex = '1000';
   }
 }
