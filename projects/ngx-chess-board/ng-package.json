@@ -3,5 +3,8 @@
   "dest": "../../dist/ngx-chess-board",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "whitelistedNonPeerDependencies": [
+    "@angular/cdk"
+  ]
 }
