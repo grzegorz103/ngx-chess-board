@@ -38,11 +38,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.calculatePieceSize();
   }
 
-  @HostListener('contextmenu', ['$event'])
-  onRightClick(event) {
-    event.preventDefault();
-  }
-
   _size: number = Constants.DEFAULT_SIZE;
 
   @Input('darkTileColor')
@@ -87,16 +82,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   async onMouseDown(event) {
     let pointClicked = this.getClickPoint(event);
     if (this.selected) {
+      this.handleClickEvent(pointClicked);
       //   this.possibleMoves = activePiece.getPossibleMoves();
-      if (this.board.isPointInPossibleMoves(pointClicked) || this.board.isPointInPossibleCaptures(pointClicked)) {
-        this.saveClone();
-        this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
-        this.board.lastMoveDest = pointClicked;
-        await this.movePiece(this.board.activePiece, pointClicked);
-        this.afterMoveActions();
-      }
-
-      this.disableSelection();
     } else {
       let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
       if (pieceClicked) {
@@ -324,8 +311,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   dragEnded(event: CdkDragEnd) {
-    let element = event.source.getRootElement();
-    let newPos = element.getBoundingClientRect();
     event.source.reset();
     event.source.element.nativeElement.style.zIndex = '0';
   }
@@ -348,5 +333,17 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
       this.prepareActivePiece(pieceClicked, pointClicked);
     }
+  }
+
+  private async handleClickEvent(pointClicked: Point) {
+    if (this.board.isPointInPossibleMoves(pointClicked) || this.board.isPointInPossibleCaptures(pointClicked)) {
+      this.saveClone();
+      this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
+      this.board.lastMoveDest = pointClicked;
+      await this.movePiece(this.board.activePiece, pointClicked);
+      this.afterMoveActions();
+    }
+
+    this.disableSelection();
   }
 }
