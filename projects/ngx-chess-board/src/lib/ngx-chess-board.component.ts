@@ -38,11 +38,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.calculatePieceSize();
   }
 
-  @HostListener('contextmenu', ['$event'])
-  onRightClick(event) {
-    event.preventDefault();
-  }
-
   _size: number = Constants.DEFAULT_SIZE;
 
   @Input('darkTileColor')
