@@ -17,6 +17,8 @@ export class AppComponent {
 
   @ViewChild('board', {static: false}) board: NgxChessBoardView;
 
+  dragDisabled: boolean = false;
+
   constructor(private ngxService: NgxChessBoardService) {
   }
 
@@ -52,6 +54,10 @@ export class AppComponent {
 
   moveCallback() {
     this.fen = this.board.getFEN();
+  }
+
+  switchDrag() {
+    this.dragDisabled = !this.dragDisabled;
   }
 
 }

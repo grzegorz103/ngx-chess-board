@@ -49,6 +49,9 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   @Input('showCoords')
   showCoords: boolean = true;
 
+  @Input('dragDisabled')
+  dragDisabled: boolean = false;
+
   @Output()
   onMove: EventEmitter<any> = new EventEmitter<any>();
 
