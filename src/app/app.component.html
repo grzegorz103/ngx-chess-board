@@ -1,6 +1,7 @@
 <div style="width:400px; margin-left: auto; margin-right: auto">
   <h2 style="text-align: center">ngx-chess-board example</h2>
   <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (onMove)="moveCallback()"
+                   [dragDisabled]="dragDisabled"
                    [darkTileColor]="darkTileColor"></ngx-chess-board>
   <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
   <hr>
@@ -50,6 +51,12 @@
             style="margin-right:auto" (click)="showMoveHistory()">Display moves
     </button>
   </div>
+
+  <label class="switch mt-3">
+    <input type="checkbox" checked (click)="switchDrag()">
+    <span class="slider round"></span>
+  </label>
+  Piece dragging is {{ dragDisabled ? 'OFF' : 'ON'}}
 
   <hr style="border-color: gray">
 
