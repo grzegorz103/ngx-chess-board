@@ -1,5 +1,5 @@
 <div id="board" [style.height.px]="_size" [style.width.px]="_size" #boardRef>
-  <div id="drag" (pointerup)="onMouseDown($event)">
+  <div id="drag" (pointerdown)="onMouseDown($event)" (pointerup)="onMouseUp($event)">
     <div *ngFor="let row of board.board; let i = index" class="board-row">
       <div *ngFor="let col of row; let j = index" class="board-col"
            [style.background-color]="((i + j) %2 === 0 ) ?  lightTileColor : darkTileColor"

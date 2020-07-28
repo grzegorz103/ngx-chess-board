@@ -82,8 +82,16 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.calculatePieceSize();
   }
 
-  async onMouseDown(event) {
+  async onMouseUp(event) {
+    if (this.dragDisabled) {
+      return;
+    }
     let pointClicked = this.getClickPoint(event);
+    if (this.board.activePiece && pointClicked.isEqual(this.board.activePiece.point) && this.disabling) {
+      this.disableSelection();
+      this.disabling = false;
+      return;
+    }
     if (this.selected) {
       this.handleClickEvent(pointClicked);
       //   this.possibleMoves = activePiece.getPossibleMoves();
@@ -115,6 +123,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.checkForPat(Color.BLACK);
     this.checkForPat(Color.WHITE);
     this.onMove.emit();
+    this.disabling = false;
   }
 
   disableSelection() {
@@ -322,20 +331,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     let style = event.source.element.nativeElement.style;
     style.position = 'relative';
     style.zIndex = '1000';
-    let pointClicked = new Point(
-      Math.floor((event.source.element.nativeElement.getBoundingClientRect().top - this.boardRef.nativeElement.getBoundingClientRect().top) / (this.boardRef.nativeElement.getBoundingClientRect().height / 8)),
-      Math.floor((event.source.element.nativeElement.getBoundingClientRect().left - this.boardRef.nativeElement.getBoundingClientRect().left) / (this.boardRef.nativeElement.getBoundingClientRect().width / 8))
-    );
-
-    let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-    if (pieceClicked) {
-
-      if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) || (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
-        return;
-      }
-
-      this.prepareActivePiece(pieceClicked, pointClicked);
-    }
   }
 
   private async handleClickEvent(pointClicked: Point) {
@@ -348,5 +343,40 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     this.disableSelection();
+    let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
+    if (pieceClicked) {
+
+      if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) || (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+        return;
+      }
+
+      this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+  }
+
+  disabling = false;
+
+  onMouseDown($event: any) {
+    let pointClicked = this.getClickPoint(event);
+
+    if (this.board.activePiece && pointClicked.isEqual(this.board.activePiece.point)) {
+      this.disabling = true;
+      return;
+    }
+
+    if (this.selected) {
+      this.handleClickEvent(pointClicked);
+      //   this.possibleMoves = activePiece.getPossibleMoves();
+    } else {
+      let pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
+      if (pieceClicked) {
+
+        if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) || (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+          return;
+        }
+
+        this.prepareActivePiece(pieceClicked, pointClicked);
+      }
+    }
   }
 }
