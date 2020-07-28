@@ -86,6 +86,7 @@ Input | Type | Description
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
+`[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
 <hr>
 
 #### Outputs
