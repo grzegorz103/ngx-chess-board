@@ -38,6 +38,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.calculatePieceSize();
   }
 
+  @HostListener('contextmenu', ['$event'])
+  onRightClick(event) {
+    event.preventDefault();
+  }
+
   _size: number = Constants.DEFAULT_SIZE;
 
   @Input('darkTileColor')
@@ -325,12 +330,16 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   dragEnded(event: CdkDragEnd) {
     event.source.reset();
     event.source.element.nativeElement.style.zIndex = '0';
+    event.source.element.nativeElement.style.pointerEvents = 'auto';
+    event.source.element.nativeElement.style.touchAction = 'auto';
   }
 
   dragStart(event: CdkDragStart) {
     let style = event.source.element.nativeElement.style;
     style.position = 'relative';
     style.zIndex = '1000';
+    style.touchAction = 'none';
+    style.pointerEvents = 'none';
   }
 
   private async handleClickEvent(pointClicked: Point) {
@@ -356,7 +365,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   disabling = false;
 
-  onMouseDown($event: any) {
+  onMouseDown(event: any) {
     let pointClicked = this.getClickPoint(event);
 
     if (this.board.activePiece && pointClicked.isEqual(this.board.activePiece.point)) {
@@ -379,4 +388,5 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
       }
     }
   }
+
 }
