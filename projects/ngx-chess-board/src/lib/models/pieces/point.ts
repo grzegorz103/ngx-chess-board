@@ -10,5 +10,9 @@ export class Point {
   isEqual(that: Point) {
     return that && this.row === that.row && this.col === that.col;
   }
+
+  hasCoordsEqual(row: number, col: number) {
+    return row && col && this.row === row && this.col === col;
+  }
 }
 

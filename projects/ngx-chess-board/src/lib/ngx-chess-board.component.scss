@@ -1,4 +1,4 @@
-#board{
+#board {
   font-family: "Courier New", serif;
 }
 
@@ -47,6 +47,10 @@
   box-sizing: border-box;
 }
 
+.possible-point:hover, .possible-capture:hover {
+  opacity: 0.4;
+}
+
 .possible-capture {
   border: 3px solid rgb(0, 255, 42);
   box-sizing: border-box;
@@ -88,4 +92,8 @@
   bottom: 0;
   font-family: "Lucida Console", Courier, monospace;
   box-sizing: border-box;
+}
+
+.hovering {
+  background-color: red !important;
 }
