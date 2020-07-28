@@ -22,7 +22,7 @@ export class Board {
 
   blackKingChecked: boolean;
   possibleCaptures: any[] = [];
-  possibleMoves: any[] = [];
+  possibleMoves: Point[] = [];
   whiteKingChecked: boolean;
 
   currentWhitePlayer = true;
