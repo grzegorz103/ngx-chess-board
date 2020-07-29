@@ -13,7 +13,7 @@ See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/ind
 
 ## Screenshots
 ![alt scr](https://i.imgur.com/647jzkp.png)
-![alt scr](https://i.imgur.com/Xb01Blb.png)
+![alt scr](https://i.imgur.com/qdX6zpj.png)
 
 ## Use example
 

@@ -13,7 +13,7 @@ See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/ind
 
 ## Screenshots
 ![alt scr](https://i.imgur.com/647jzkp.png)
-![alt scr](https://i.imgur.com/Xb01Blb.png)
+![alt scr](https://i.imgur.com/qdX6zpj.png)
 
 ## Use example
 
@@ -86,6 +86,7 @@ Input | Type | Description
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
+`[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
 <hr>
 
 #### Outputs

@@ -98,3 +98,16 @@
 .hovering {
   background-color: red !important;
 }
+
+.arrow{
+  stroke:#00ea0c;
+  stroke-width: 2;
+  marker-end: url(#markerArrow);
+}
+
+.markerArrow{
+}
+
+svg{
+  filter: drop-shadow(1px 1px 0px #111) drop-shadow(-1px 1px 0px #111) drop-shadow(1px -1px 0px #111) drop-shadow(-1px -1px 0px #111);
+}
