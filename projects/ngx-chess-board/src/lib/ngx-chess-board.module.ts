@@ -3,9 +3,10 @@ import {CommonModule} from '@angular/common';
 import {NgxChessBoardComponent} from './ngx-chess-board.component';
 import {NgxChessBoardService} from './service/ngx-chess-board.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import {PiecePromotionModalComponent} from './piece-promotion-modal/piece-promotion-modal.component';
 
 @NgModule({
-  declarations: [NgxChessBoardComponent],
+  declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
   imports: [
     CommonModule,
     DragDropModule,
