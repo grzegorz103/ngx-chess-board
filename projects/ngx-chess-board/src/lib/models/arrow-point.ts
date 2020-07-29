@@ -1,4 +1,4 @@
-export class ArrowPoint{
+export class ArrowPoint {
 
   x: number;
   y: number;
@@ -6,6 +6,10 @@ export class ArrowPoint{
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
+  }
+
+  isEqual(that: ArrowPoint) {
+    return that && that.x === this.x && this.y === that.y;
   }
 
 }
