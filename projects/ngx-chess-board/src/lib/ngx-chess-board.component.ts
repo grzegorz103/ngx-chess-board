@@ -23,6 +23,8 @@ import {CdkDragEnd, CdkDragStart} from '@angular/cdk/drag-drop';
 import {PiecePromotionModalComponent} from './piece-promotion-modal/piece-promotion-modal.component';
 import {Bishop} from './models/pieces/bishop';
 import {Knight} from './models/pieces/knight';
+import {Arrow} from './models/arrow';
+import {ArrowPoint} from './models/arrow-point';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -30,6 +32,8 @@ import {Knight} from './models/pieces/knight';
   styleUrls: ['./ngx-chess-board.component.scss']
 })
 export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
+  arrows: Arrow[] = [];
+  private arrow: Arrow;
 
   @Input('size')
   public set size(size: number) {
@@ -76,6 +80,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   moveHistoryProvider: HistoryMoveProvider;
   boardLoader: BoardLoader;
   coords: CoordsProvider = new CoordsProvider();
+  disabling = false;
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
     this.board = new Board();
@@ -93,10 +98,22 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   async onMouseUp(event) {
+    if (event.which !== 1) {
+      this.arrow.end = this.getArrowPoint(event.x, event.y);
+
+      if (!this.arrow.start.isEqual(this.arrow.end)) {
+        this.arrows.push(this.arrow);
+      }
+      return;
+    }
+
+    this.arrows = [];
+
     if (this.dragDisabled) {
       return;
     }
     let pointClicked = this.getClickPoint(event);
+
     if (this.board.activePiece && pointClicked.isEqual(this.board.activePiece.point) && this.disabling) {
       this.disableSelection();
       this.disabling = false;
@@ -294,6 +311,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.boardLoader.addPieces();
     this.board.reset();
     this.coords.reset();
+    this.arrows = [];
   }
 
   reverse() {
@@ -388,10 +406,16 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
   }
 
-  disabling = false;
-
   onMouseDown(event: any) {
+
+    if (event.which !== 1) {
+      this.arrow = new Arrow();
+      this.arrow.start = this.getArrowPoint(event.x, event.y);
+      return;
+    }
     let pointClicked = this.getClickPoint(event);
+
+    this.arrows = [];
 
     if (this.board.activePiece && pointClicked.isEqual(this.board.activePiece.point)) {
       this.disabling = true;
@@ -412,6 +436,16 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.prepareActivePiece(pieceClicked, pointClicked);
       }
     }
+  }
+
+  getArrowPoint(x: number, y: number) {
+    let squareSize = this._size / 8;
+    let xx = Math.floor((x - this.boardRef.nativeElement.getBoundingClientRect().left) / squareSize);
+    let yy = Math.floor((y - this.boardRef.nativeElement.getBoundingClientRect().top) / squareSize);
+    return new ArrowPoint(
+      Math.floor(xx * squareSize + squareSize / 2),
+      Math.floor(yy * squareSize + squareSize / 2),
+    );
   }
 
 }
