@@ -20,6 +20,9 @@ import {Constants} from './utils/constants';
 import {CoordsProvider} from './coords/coords-provider';
 import {BoardLoader} from './board-state-provider/board-loader';
 import {CdkDragEnd, CdkDragStart} from '@angular/cdk/drag-drop';
+import {PiecePromotionModalComponent} from './piece-promotion-modal/piece-promotion-modal.component';
+import {Bishop} from './models/pieces/bishop';
+import {Knight} from './models/pieces/knight';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -65,6 +68,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   @ViewChild('boardRef', {static: false})
   boardRef: ElementRef;
+
+  @ViewChild('modal', {static: false}) modal: PiecePromotionModalComponent;
 
   board: Board;
   boardStateProvider: BoardStateProvider;
@@ -127,7 +132,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.board.calculateFEN();
     this.checkForPat(Color.BLACK);
     this.checkForPat(Color.WHITE);
-    this.onMove.emit();
     this.disabling = false;
   }
 
@@ -221,12 +225,32 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
     if (piece.point.row === 0 || piece.point.row === 7) {
       this.board.pieces = this.board.pieces.filter(e => e !== piece);
-      this.board.pieces.push(new Queen(piece.point, piece.color, piece.color === Color.WHITE ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, this.board));
+      this.openPromoteDialog(piece);
     }
   }
 
   async openPromoteDialog(piece: Piece) {
-
+    this.modal.open((index) => {
+      let isWhite = piece.color === Color.WHITE;
+      switch (index) {
+        case 1:
+          this.board.pieces.push(new Queen(piece.point, piece.color, isWhite ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, this.board));
+          break;
+        case 2:
+          this.board.pieces.push(new Rook(piece.point, piece.color, isWhite ? UnicodeConstants.WHITE_ROOK : UnicodeConstants.BLACK_ROOK, this.board));
+          break;
+        case 3:
+          this.board.pieces.push(new Bishop(piece.point, piece.color, isWhite ? UnicodeConstants.WHITE_BISHOP : UnicodeConstants.BLACK_BISHOP, this.board));
+          break;
+        case 4:
+          this.board.pieces.push(new Knight(piece.point, piece.color, isWhite ? UnicodeConstants.WHITE_KNIGHT : UnicodeConstants.BLACK_KNIGHT, this.board));
+          break;
+        default:
+          this.board.pieces.push(new Queen(piece.point, piece.color, isWhite ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, this.board));
+          break;
+      }
+      this.afterMoveActions();
+    });
   }
 
   private checkForPossibleMoves(color: Color, text: string) {
@@ -349,6 +373,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
       this.board.lastMoveDest = pointClicked;
       await this.movePiece(this.board.activePiece, pointClicked);
       this.afterMoveActions();
+      this.onMove.emit();
     }
 
     this.disableSelection();
