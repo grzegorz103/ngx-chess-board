@@ -1,4 +1,4 @@
-export class ArrowPoint {
+export class DrawPoint {
 
   x: number;
   y: number;
@@ -8,7 +8,7 @@ export class ArrowPoint {
     this.y = y;
   }
 
-  isEqual(that: ArrowPoint) {
+  isEqual(that: DrawPoint) {
     return that && that.x === this.x && this.y === that.y;
   }
 

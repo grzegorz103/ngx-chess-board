@@ -23,8 +23,10 @@ import {CdkDragEnd, CdkDragStart} from '@angular/cdk/drag-drop';
 import {PiecePromotionModalComponent} from './piece-promotion-modal/piece-promotion-modal.component';
 import {Bishop} from './models/pieces/bishop';
 import {Knight} from './models/pieces/knight';
-import {Arrow} from './models/arrow';
-import {ArrowPoint} from './models/arrow-point';
+import {Arrow} from './drawing-tools/arrow';
+import {DrawPoint} from './drawing-tools/draw-point';
+import {Circle} from './drawing-tools/circle';
+import {DrawProvider} from './drawing-tools/draw-provider';
 
 @Component({
   selector: 'ngx-chess-board',
@@ -32,8 +34,6 @@ import {ArrowPoint} from './models/arrow-point';
   styleUrls: ['./ngx-chess-board.component.scss']
 })
 export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
-  arrows: Arrow[] = [];
-  private arrow: Arrow;
 
   @Input('size')
   public set size(size: number) {
@@ -42,6 +42,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     } else {
       this._size = Constants.DEFAULT_SIZE;
     }
+    this.drawProvider.clear();
     this.calculatePieceSize();
   }
 
@@ -81,6 +82,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   boardLoader: BoardLoader;
   coords: CoordsProvider = new CoordsProvider();
   disabling = false;
+  drawProvider: DrawProvider;
+  drawPoint: DrawPoint;
 
   constructor(private ngxChessBoardService: NgxChessBoardService) {
     this.board = new Board();
@@ -88,6 +91,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.boardLoader.addPieces();
     this.boardStateProvider = new BoardStateProvider();
     this.moveHistoryProvider = new HistoryMoveProvider();
+    this.drawProvider = new DrawProvider();
   }
 
   ngOnInit() {
@@ -99,15 +103,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
   async onMouseUp(event) {
     if (event.which !== 1) {
-      this.arrow.end = this.getArrowPoint(event.x, event.y);
-
-      if (!this.arrow.start.isEqual(this.arrow.end)) {
-        this.arrows.push(this.arrow);
-      }
+      this.addDrawPoint(event.x, event.y);
       return;
     }
 
-    this.arrows = [];
+    this.drawProvider.clear();
 
     if (this.dragDisabled) {
       return;
@@ -311,7 +311,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     this.boardLoader.addPieces();
     this.board.reset();
     this.coords.reset();
-    this.arrows = [];
+    this.drawProvider.clear();
   }
 
   reverse() {
@@ -409,13 +409,12 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   onMouseDown(event: any) {
 
     if (event.which !== 1) {
-      this.arrow = new Arrow();
-      this.arrow.start = this.getArrowPoint(event.x, event.y);
+      this.drawPoint = this.getDrawingPoint(event.x, event.y);
       return;
     }
     let pointClicked = this.getClickPoint(event);
 
-    this.arrows = [];
+    this.drawProvider.clear();
 
     if (this.board.activePiece && pointClicked.isEqual(this.board.activePiece.point)) {
       this.disabling = true;
@@ -438,14 +437,33 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
   }
 
-  getArrowPoint(x: number, y: number) {
+  getDrawingPoint(x: number, y: number) {
     let squareSize = this._size / 8;
     let xx = Math.floor((x - this.boardRef.nativeElement.getBoundingClientRect().left) / squareSize);
     let yy = Math.floor((y - this.boardRef.nativeElement.getBoundingClientRect().top) / squareSize);
-    return new ArrowPoint(
+    return new DrawPoint(
       Math.floor(xx * squareSize + squareSize / 2),
       Math.floor(yy * squareSize + squareSize / 2),
     );
+  }
+
+  private addDrawPoint(x: any, y: any) {
+    let upPoint = this.getDrawingPoint(x, y);
+    if (this.drawPoint.isEqual(upPoint)) {
+      let circle = new Circle();
+      circle.drawPoint = upPoint;
+      if (!this.drawProvider.containsCircle(circle)) {
+        this.drawProvider.addCircle(circle);
+      }
+    } else {
+      let arrow = new Arrow();
+      arrow.start = this.drawPoint;
+      arrow.end = upPoint;
+
+      if (!this.drawProvider.containsArrow(arrow)) {
+        this.drawProvider.addArrow(arrow);
+      }
+    }
   }
 
 }
