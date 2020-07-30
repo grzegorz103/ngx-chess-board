@@ -252,4 +252,7 @@ export class Board {
     this.fen = fen;
   }
 
+  isXYInPointSelection(i: number, j: number) {
+    return false;
+  }
 }

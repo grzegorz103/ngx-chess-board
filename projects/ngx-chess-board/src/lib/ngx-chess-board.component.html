@@ -1,9 +1,10 @@
-<div id="board" [style.height.px]="_size" [style.width.px]="_size" #boardRef (pointerdown)="onMouseDown($event)" (pointerup)="onMouseUp($event)">
-  <div id="drag" >
+<div id="board" [style.height.px]="_size" [style.width.px]="_size" #boardRef (pointerdown)="onMouseDown($event)"
+     (pointerup)="onMouseUp($event)">
+  <div id="drag">
     <div *ngFor="let row of board.board; let i = index" class="board-row">
       <div *ngFor="let col of row; let j = index" class="board-col"
            [style.background-color]="((i + j) %2 === 0 ) ?  lightTileColor : darkTileColor"
-           [ngClass]="[board.isXYInActiveMove(i,j) ? 'current-selection':'' ,board.isXYInPossibleMoves(i,j) ? 'possible-point' : '', board.isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', board.isXYInSourceMove(i,j)?'source-move':'',board.isXYInDestMove(i,j)?'dest-move':'']">
+           [ngClass]="[board.isXYInPointSelection(i,j) ? 'point-circle':'',board.isXYInActiveMove(i,j) ? 'current-selection':'' ,board.isXYInPossibleMoves(i,j) ? 'possible-point' : '', board.isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', board.isXYInSourceMove(i,j)?'source-move':'',board.isXYInDestMove(i,j)?'dest-move':'']">
         <span *ngIf="showCoords && j === 7" class="yCoord" [style.color]="(i % 2 === 0)? lightTileColor : darkTileColor"
               [style.font-size.px]="pieceSize / 4">{{coords.yCoords[i]}}</span>
         <span *ngIf="showCoords && i === 7" class="xCoord" [style.color]="(j % 2 === 0)? lightTileColor : darkTileColor"
@@ -19,15 +20,19 @@
       </div>
     </div>
   </div>
-  <svg [attr.width]="_size" [attr.height]="_size" style="position:absolute;top:0; pointer-events: none" >
+  <svg [attr.width]="_size" [attr.height]="_size" style="position:absolute;top:0; pointer-events: none">
 
     <defs>
-      <marker id="markerArrow" style="marker-offset: 20px" markerWidth="13" markerHeight="13" refX="10" refY="6" orient="auto">
-        <path d="M2,2 L2,11 L10,6 L2,2" style="fill: #00ea0c;" />
+      <marker id="markerArrow" style="marker-offset: 20px" markerWidth="13" markerHeight="13" refX="10" refY="6"
+              orient="auto">
+        <path d="M2,2 L2,11 L10,6 L2,2" style="fill: #00ea0c;"/>
       </marker>
     </defs>
-    <line [attr.x1]="arrow.start.x" [attr.y1]="arrow.start.y" [attr.x2]="arrow.end.x" [attr.y2]="arrow.end.y" class="arrow"*ngFor="let arrow of arrows"  />
+    <line [attr.x1]="arrow.start.x" [attr.y1]="arrow.start.y" [attr.x2]="arrow.end.x" [attr.y2]="arrow.end.y"
+          class="arrow" *ngFor="let arrow of drawProvider.arrows"/>
 
+    <circle [attr.cx]="circle.drawPoint.x" [attr.cy]="circle.drawPoint.y" [attr.r]="_size/18" stroke="blueviolet"
+            stroke-width="0.8" fill-opacity="0.0" *ngFor="let circle of drawProvider.circles"/>
   </svg>
   <app-piece-promotion-modal #modal></app-piece-promotion-modal>
 
