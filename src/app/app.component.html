@@ -2,6 +2,7 @@
   <h2 style="text-align: center">ngx-chess-board example</h2>
   <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (onMove)="moveCallback()"
                    [dragDisabled]="dragDisabled"
+                   [drawDisabled]="drawDisabled"
                    [darkTileColor]="darkTileColor"></ngx-chess-board>
   <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
   <hr>
@@ -57,7 +58,12 @@
     <span class="slider round"></span>
   </label>
   Piece dragging is {{ dragDisabled ? 'OFF' : 'ON'}}
-
+  <br>
+  <label class="switch mt-3">
+    <input type="checkbox" checked (click)="switchDraw()">
+    <span class="slider round"></span>
+  </label>
+  Drawing with right mouse button is {{ drawDisabled ? 'OFF' : 'ON'}}
   <hr style="border-color: gray">
 
   <div class="form-group input-group-sm">
