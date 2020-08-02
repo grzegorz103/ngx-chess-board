@@ -65,6 +65,9 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   @Input('dragDisabled')
   dragDisabled: boolean = false;
 
+  @Input('drawDisabled')
+  drawDisabled: boolean = false;
+
   @Output()
   onMove: EventEmitter<any> = new EventEmitter<any>();
 
@@ -102,7 +105,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
   }
 
   async onMouseUp(event) {
-    if (event.which !== 1) {
+    if (event.which !== 1 && !this.drawDisabled) {
       this.addDrawPoint(event.x, event.y);
       return;
     }

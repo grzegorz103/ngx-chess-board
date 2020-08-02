@@ -18,6 +18,7 @@ export class AppComponent {
   @ViewChild('board', {static: false}) board: NgxChessBoardView;
 
   dragDisabled: boolean = false;
+  drawDisabled: boolean = false;
 
   constructor(private ngxService: NgxChessBoardService) {
   }
@@ -60,4 +61,7 @@ export class AppComponent {
     this.dragDisabled = !this.dragDisabled;
   }
 
+  switchDraw() {
+    this.drawDisabled = !this.drawDisabled;
+  }
 }
