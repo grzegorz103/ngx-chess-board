@@ -1,73 +1,67 @@
-import {Component, ViewChild} from '@angular/core';
-import {NgxChessBoardService} from 'ngx-chess-board';
-import {NgxChessBoardView} from 'ngx-chess-board';
+import { Component, ViewChild } from '@angular/core';
+import { MoveChange, NgxChessBoardComponent } from 'ngx-chess-board';
+import { FenComponent } from './components/fen/fen.component';
+import { MovesComponent } from './components/moves/moves.component';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  title = 'ngx-chess-board demo';
+    @ViewChild('boardManager', { static: false })
+    boardManager: NgxChessBoardComponent;
+    @ViewChild('movesManager', { static: false }) movesManager: MovesComponent;
+    @ViewChild('fenManager', { static: false }) fenManager: FenComponent;
+    public fen: string;
+    private currentStateIndex: number;
+    manualMove = 'd2d4';
 
-  darkTileColor: string = 'rgb(97, 84, 61)';
-  lightTileColor: string = '#BAA378';
-  size: number = 400;
-  fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    public reset(): void {
+        this.movesManager.clear();
+        this.boardManager.reset();
+        this.fen = this.boardManager.getFEN();
+    }
 
-  @ViewChild('board', {static: false}) board: NgxChessBoardView;
+    public reverse(): void {
+        this.boardManager.reverse();
+    }
 
-  dragDisabled: boolean = false;
-  drawDisabled: boolean = false;
-  manualMove: string = 'd2d4';
+    public undo(): void {
+        console.log('UNDO');
+        this.movesManager.undo();
+        this.boardManager.undo();
+        this.fen = this.boardManager.getFEN();
+    }
 
-  constructor(private ngxService: NgxChessBoardService) {
-  }
+    public setFen(fen: string): void {
+        if (this.fen !== fen) {
+            this.boardManager.setFEN(fen);
+        }
+    }
 
-  reset() {
-    alert('Resetting game');
-    this.board.reset();
-    this.fen = this.board.getFEN();
-  }
+    public switchBoard(stateIndex: number): void {
+        if (this.currentStateIndex !== stateIndex) {
+            this.currentStateIndex = stateIndex;
+            this.boardManager.updateBoard(
+                this.boardManager.moveHistoryProvider.historyMoves[stateIndex]
+                    .board
+            );
+        }
+    }
 
-  reverse() {
-    alert('Reverting board');
-    this.board.reverse();
-  }
+    public setLatestBoard(): void {
+        this.switchBoard(
+            this.boardManager.moveHistoryProvider.getLastMoveIndex()
+        );
+    }
 
-  undo() {
-    this.board.undo();
-    this.fen = this.board.getFEN();
-  }
+    public moveCallback(move: MoveChange): void {
+        this.fen = this.boardManager.getFEN();
+        this.movesManager.addMove(move);
+    }
 
-  showMoveHistory() {
-    alert(this.board.getMoveHistory());
-  }
-
-  setFen() {
-    alert('Setting FEN');
-    this.board.setFEN(this.fen);
-  }
-
-  getFEN() {
-    let fen = this.board.getFEN();
-    alert(fen);
-  }
-
-  moveCallback() {
-    this.fen = this.board.getFEN();
-  }
-
-  switchDrag() {
-    this.dragDisabled = !this.dragDisabled;
-  }
-
-  switchDraw() {
-    this.drawDisabled = !this.drawDisabled;
-  }
-
-  moveManual(){
-    this.board.move(this.manualMove);
-  }
-
+    public moveManual(): void {
+        this.boardManager.move(this.manualMove);
+    }
 }

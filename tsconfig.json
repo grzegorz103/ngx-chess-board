@@ -20,10 +20,10 @@
     ],
     "paths": {
       "ngx-chess-board": [
-        "dist/ngx-chess-board"
+        "./projects/ngx-chess-board/src/public-api"
       ],
       "ngx-chess-board/*": [
-        "dist/ngx-chess-board/*"
+        "./projects/ngx-chess-board/src/public-api/*"
       ]
     }
   },

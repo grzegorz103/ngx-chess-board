@@ -1,24 +1,24 @@
-import { Piece } from './piece';
+import { Board } from '../board';
 import { Color } from './color';
-import { Point } from './point';
 import { King } from './king';
-import {Board} from '../board';
+import { Piece } from './piece';
+import { Point } from './point';
 
 export class Rook extends Piece {
+    isMovedAlready = false;
 
-  isMovedAlready = false;
-
-  constructor(point: Point, color: Color, image: string, board: Board) {
+    constructor(point: Point, color: Color, image: string, board: Board) {
         super(point, color, image, 5, board);
     }
 
     getPossibleMoves(): Point[] {
-        let possiblePoints = [];
+        const possiblePoints = [];
 
-        let row = this.point.row;
-        let col = this.point.col;
+        const row = this.point.row;
+        const col = this.point.col;
 
-        for (let i = row + 1; i < 8; ++i) { // dol
+        for (let i = row + 1; i < 8; ++i) {
+            // dol
             if (this.board.isFieldEmpty(i, col)) {
                 possiblePoints.push(new Point(i, col));
             } else {
@@ -26,7 +26,8 @@ export class Rook extends Piece {
             }
         }
 
-        for (let i = row - 1; i >= 0; --i) { // gora
+        for (let i = row - 1; i >= 0; --i) {
+            // gora
             if (this.board.isFieldEmpty(i, col)) {
                 possiblePoints.push(new Point(i, col));
             } else {
@@ -34,7 +35,8 @@ export class Rook extends Piece {
             }
         }
 
-        for (let j = col - 1; j >= 0; --j) { // lewo
+        for (let j = col - 1; j >= 0; --j) {
+            // lewo
             if (this.board.isFieldEmpty(row, j)) {
                 possiblePoints.push(new Point(row, j));
             } else {
@@ -42,7 +44,8 @@ export class Rook extends Piece {
             }
         }
 
-        for (let j = col + 1; j < 8; ++j) { // prawo
+        for (let j = col + 1; j < 8; ++j) {
+            // prawo
             if (this.board.isFieldEmpty(row, j)) {
                 possiblePoints.push(new Point(row, j));
             } else {
@@ -54,12 +57,13 @@ export class Rook extends Piece {
     }
 
     getPossibleCaptures(): Point[] {
-        let possiblePoints = [];
+        const possiblePoints = [];
 
-        let row = this.point.row;
-        let col = this.point.col;
+        const row = this.point.row;
+        const col = this.point.col;
 
-        for (let i = row + 1; i < 8; ++i) { // dol
+        for (let i = row + 1; i < 8; ++i) {
+            // dol
             if (this.board.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(i, col));
                 break;
@@ -70,7 +74,8 @@ export class Rook extends Piece {
             }
         }
 
-        for (let i = row - 1; i >= 0; --i) { // gora
+        for (let i = row - 1; i >= 0; --i) {
+            // gora
             if (this.board.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(i, col));
                 break;
@@ -81,18 +86,20 @@ export class Rook extends Piece {
             }
         }
 
-        for (let j = col - 1; j >= 0; --j) { // lewo
+        for (let j = col - 1; j >= 0; --j) {
+            // lewo
             if (this.board.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-                possiblePoints.push(new Point(row,j));
+                possiblePoints.push(new Point(row, j));
                 break;
             } else {
-                if (!this.board.isFieldEmpty(row,j)) {
+                if (!this.board.isFieldEmpty(row, j)) {
                     break;
                 }
             }
         }
 
-        for (let j = col + 1; j < 8; ++j) { // prawo
+        for (let j = col + 1; j < 8; ++j) {
+            // prawo
             if (this.board.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
                 possiblePoints.push(new Point(row, j));
                 break;
@@ -106,15 +113,15 @@ export class Rook extends Piece {
         return possiblePoints;
     }
 
-
     getCoveredFields(): Point[] {
-        let possiblePoints = [];
+        const possiblePoints = [];
 
-        let row = this.point.row;
-        let col = this.point.col;
+        const row = this.point.row;
+        const col = this.point.col;
 
-        for (let i = row + 1; i < 8; ++i) { // dol
-            if (this.board.isFieldEmpty(i, col)){
+        for (let i = row + 1; i < 8; ++i) {
+            // dol
+            if (this.board.isFieldEmpty(i, col)) {
                 possiblePoints.push(new Point(i, col));
             } else {
                 if (!(this.board.getPieceByField instanceof King)) {
@@ -124,8 +131,9 @@ export class Rook extends Piece {
             }
         }
 
-        for (let i = row - 1; i >= 0; --i) { // gora
-            if (this.board.isFieldEmpty(i, col)){
+        for (let i = row - 1; i >= 0; --i) {
+            // gora
+            if (this.board.isFieldEmpty(i, col)) {
                 possiblePoints.push(new Point(i, col));
             } else {
                 if (!(this.board.getPieceByField instanceof King)) {
@@ -135,8 +143,9 @@ export class Rook extends Piece {
             }
         }
 
-        for (let j = col - 1; j >= 0; --j) { // lewo
-            if (this.board.isFieldEmpty(row, j)){
+        for (let j = col - 1; j >= 0; --j) {
+            // lewo
+            if (this.board.isFieldEmpty(row, j)) {
                 possiblePoints.push(new Point(row, j));
             } else {
                 if (!(this.board.getPieceByField instanceof King)) {
@@ -146,8 +155,9 @@ export class Rook extends Piece {
             }
         }
 
-        for (let j = col + 1; j < 8; ++j) { // prawo
-            if (this.board.isFieldEmpty(row, j)){
+        for (let j = col + 1; j < 8; ++j) {
+            // prawo
+            if (this.board.isFieldEmpty(row, j)) {
                 possiblePoints.push(new Point(row, j));
             } else {
                 if (!(this.board.getPieceByField instanceof King)) {
@@ -159,5 +169,4 @@ export class Rook extends Piece {
 
         return possiblePoints;
     }
-
 }

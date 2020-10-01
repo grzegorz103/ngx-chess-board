@@ -4,13 +4,15 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "npm run build-board && ng build --prod",
+    "build-board": "ng build ngx-chess-board",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
   "dependencies": {
     "@angular/animations": "~8.2.14",
+    "@angular/cdk": "^8.2.3",
     "@angular/common": "~8.2.14",
     "@angular/compiler": "~8.2.14",
     "@angular/core": "~8.2.14",
@@ -18,12 +20,12 @@
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
+    "bootstrap": "^4.5.2",
     "lodash": "^4.17.19",
     "ngx-chess-board": "file:projects/ngx-chess-board",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
-    "zone.js": "~0.9.1",
-    "@angular/cdk": "~8.2.3"
+    "zone.js": "~0.9.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.803.20",
