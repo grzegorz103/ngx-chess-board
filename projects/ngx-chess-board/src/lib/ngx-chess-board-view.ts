@@ -11,5 +11,7 @@ export interface NgxChessBoardView {
 
     setFEN(fen: string): void;
 
+    move(coords: string): void;
+
     getFEN(): string;
 }

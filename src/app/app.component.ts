@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { MoveChange, NgxChessBoardComponent } from 'ngx-chess-board';
 import { FenComponent } from './components/fen/fen.component';
 import { MovesComponent } from './components/moves/moves.component';
@@ -9,11 +9,13 @@ import { MovesComponent } from './components/moves/moves.component';
     styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-    @ViewChild('boardManager', { static: false }) boardManager: NgxChessBoardComponent;
+    @ViewChild('boardManager', { static: false })
+    boardManager: NgxChessBoardComponent;
     @ViewChild('movesManager', { static: false }) movesManager: MovesComponent;
     @ViewChild('fenManager', { static: false }) fenManager: FenComponent;
     public fen: string;
     private currentStateIndex: number;
+    manualMove = 'd2d4';
 
     public reset(): void {
         this.movesManager.clear();
@@ -41,16 +43,25 @@ export class AppComponent {
     public switchBoard(stateIndex: number): void {
         if (this.currentStateIndex !== stateIndex) {
             this.currentStateIndex = stateIndex;
-            this.boardManager.updateBoard(this.boardManager.moveHistoryProvider.historyMoves[stateIndex].board);
+            this.boardManager.updateBoard(
+                this.boardManager.moveHistoryProvider.historyMoves[stateIndex]
+                    .board
+            );
         }
     }
 
     public setLatestBoard(): void {
-        this.switchBoard(this.boardManager.moveHistoryProvider.getLastMoveIndex());
+        this.switchBoard(
+            this.boardManager.moveHistoryProvider.getLastMoveIndex()
+        );
     }
 
     public moveCallback(move: MoveChange): void {
         this.fen = this.boardManager.getFEN();
         this.movesManager.addMove(move);
+    }
+
+    public moveManual(): void {
+        this.boardManager.move(this.manualMove);
     }
 }

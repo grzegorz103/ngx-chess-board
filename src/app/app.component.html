@@ -7,6 +7,26 @@
         #actions
     ></app-actions>
     <app-settings #settings></app-settings>
+    <label for="manualMove">Manual move:</label>
+    <div class="input-group">
+        <div class="input-group-prepend"></div>
+        <input
+            type="text"
+            class="form-control"
+            placeholder="blue"
+            [(ngModel)]="manualMove"
+            id="manualMove"
+            aria-describedby="basic-addon3"
+        >
+        <button
+            type="button"
+            class="btn btn-primary"
+            style="margin-left:auto; margin-right: 10px"
+            (click)="moveManual()"
+        >
+            Move
+        </button>
+    </div>
 </div>
 <div class="middle-part">
     <ngx-chess-board

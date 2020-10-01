@@ -1,6 +1,7 @@
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
 import { Point } from '../models/pieces/point';
+import { MoveTranslation } from '../models/move-translation';
 
 export class MoveUtils {
     public static willMoveCauseCheck(
@@ -36,12 +37,19 @@ export class MoveUtils {
         return isBound;
     }
 
-    public static format(sourcePoint: Point, destPoint: Point, reverted: boolean) {
+    public static format(
+        sourcePoint: Point,
+        destPoint: Point,
+        reverted: boolean
+    ) {
         if (reverted) {
             const sourceX = 104 - sourcePoint.col;
             const destX = 104 - destPoint.col;
             return (
-                String.fromCharCode(sourceX) + (sourcePoint.row + 1) + String.fromCharCode(destX) + (destPoint.row + 1)
+                String.fromCharCode(sourceX) +
+                (sourcePoint.row + 1) +
+                String.fromCharCode(destX) +
+                (destPoint.row + 1)
             );
         } else {
             const incrementX = 97;
@@ -52,5 +60,19 @@ export class MoveUtils {
                 (Math.abs(destPoint.row - 7) + 1)
             );
         }
+    }
+
+    public static translateCoordsToIndex(coords: string, reverted: boolean) {
+        let xAxis: number;
+        let yAxis: number;
+        if (reverted) {
+            xAxis = 104 - coords.charCodeAt(0);
+            yAxis = +coords.charAt(1) - 1;
+        } else {
+            xAxis = coords.charCodeAt(0) - 97;
+            yAxis = Math.abs(+coords.charAt(1) - 7) + 1;
+        }
+
+        return new MoveTranslation(xAxis, yAxis, reverted);
     }
 }
