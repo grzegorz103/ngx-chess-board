@@ -4,7 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "npm run build-board && ng build --prod",
+    "build-board": "ng build ngx-chess-board",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
