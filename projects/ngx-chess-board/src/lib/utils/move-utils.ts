@@ -1,6 +1,7 @@
 import {Color} from '../models/pieces/color';
 import {Board} from '../models/board';
 import {Point} from '../models/pieces/point';
+import {MoveTranslation} from '../models/move-translation';
 
 export class MoveUtils {
 
@@ -41,6 +42,19 @@ export class MoveUtils {
       return String.fromCharCode(sourcePoint.col + incrementX) + (Math.abs(sourcePoint.row - 7) + 1)
         + String.fromCharCode(destPoint.col + incrementX) + (Math.abs(destPoint.row - 7) + 1);
     }
+  }
+
+  public static translateCoordsToIndex(coords: string, reverted: boolean){
+    let xAxis, yAxis;
+    if(reverted){
+      xAxis = 104 - (coords.charCodeAt(0));
+      yAxis= +coords.charAt(1) - 1;
+    } else {
+      xAxis = coords.charCodeAt(0) - 97;
+      yAxis = Math.abs(+coords.charAt(1) - 7) + 1;
+    }
+
+    return new MoveTranslation(xAxis, yAxis, reverted);
   }
 
 }

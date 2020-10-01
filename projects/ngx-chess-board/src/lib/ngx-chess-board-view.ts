@@ -9,6 +9,8 @@ export interface NgxChessBoardView {
 
   setFEN(fen: string);
 
-  getFEN();
+  getFEN()
+
+  move(coords: string);
 
 }

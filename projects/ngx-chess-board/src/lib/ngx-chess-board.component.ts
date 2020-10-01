@@ -469,4 +469,22 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
   }
 
+  async move(coords: string) {
+    if (coords) {
+      let sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this.board.reverted);
+      let destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this.board.reverted);
+
+      let srcPiece = this.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
+
+      if (srcPiece) {
+        this.saveClone();
+        this.board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
+        this.board.lastMoveDest = new Point(destIndexes.yAxis, sourceIndexes.xAxis);
+        await this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis));
+        this.afterMoveActions();
+        this.onMove.emit();
+      }
+    }
+  }
+
 }

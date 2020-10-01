@@ -19,6 +19,7 @@ export class AppComponent {
 
   dragDisabled: boolean = false;
   drawDisabled: boolean = false;
+  manualMove: string = 'd2d4';
 
   constructor(private ngxService: NgxChessBoardService) {
   }
@@ -64,4 +65,9 @@ export class AppComponent {
   switchDraw() {
     this.drawDisabled = !this.drawDisabled;
   }
+
+  moveManual(){
+    this.board.move(this.manualMove);
+  }
+
 }
