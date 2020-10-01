@@ -1,27 +1,40 @@
-import {HistoryMove} from './history-move';
+import { BehaviorSubject } from 'rxjs';
+import { HistoryMove } from './history-move';
 
 export class HistoryMoveProvider {
+    historyMovesSubject$ = new BehaviorSubject<HistoryMove[]>([]);
 
-  historyMoves: HistoryMove[];
+    get historyMoves(): HistoryMove[] {
+        return this.historyMovesSubject$.value;
+    }
 
-  constructor() {
-    this.historyMoves = [];
-  }
+    set historyMoves(states: HistoryMove[]) {
+        this.historyMovesSubject$.next(states);
+    }
 
-  addMove(historyMove: HistoryMove) {
-    this.historyMoves.push(historyMove);
-  }
+    addMove(historyMove: HistoryMove) {
+        this.historyMoves = [...this.historyMoves, historyMove];
+    }
 
-  pop() {
-    return this.historyMoves.pop();
-  }
+    pop(): HistoryMove {
+        const lastHistoryMove = this.getLastMove();
+        this.historyMoves = this.historyMoves.filter((state) => state !== lastHistoryMove);
+        return lastHistoryMove;
+    }
 
-  getAll() {
-    return this.historyMoves;
-  }
+    getAll() {
+        return this.historyMoves;
+    }
 
-  clear() {
-    this.historyMoves = [];
-  }
+    clear() {
+        this.historyMoves = [];
+    }
 
+    getLastMove() {
+        return this.historyMoves[this.getLastMoveIndex()];
+    }
+
+    getLastMoveIndex() {
+        return this.historyMoves.length - 1;
+    }
 }

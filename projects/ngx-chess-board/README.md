@@ -94,7 +94,7 @@ Input | Type | Description
 
 Name | Type | Description  
 | :---: | :---: | :---: |
-`(onMove)` | EventEmitter\<any> | Dispatch event when piece has moved
+`(moveChange)` | EventEmitter\<any> | Dispatch event when piece has moved
 <hr>
 
 #### NgxChessBoardView methods

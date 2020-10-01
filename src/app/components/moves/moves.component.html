@@ -1,0 +1,22 @@
+<div class="history-moves">
+    <ng-container *ngFor="let movement of whiteMoves$ | async; let index = index">
+        <div class="index-and-move">
+            <span>{{ index + 1 }}.</span>
+            <span
+                class="history-move"
+                [innerHTML]=" movement"
+                (click)="switchToMoveIndex.emit(2 * index)"
+            >
+            </span>
+        </div>
+    </ng-container>
+</div>
+<div class="history-moves">
+    <span
+        class="history-move"
+        [innerHTML]="movement"
+        (click)="switchToMoveIndex.emit(2 * index + 1)"
+        *ngFor="let movement of blackMoves$ | async; let index = index"
+    >
+    </span>
+</div>

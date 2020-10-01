@@ -1,14 +1,15 @@
+import { HistoryMove } from './history-move-provider/history-move';
+
 export interface NgxChessBoardView {
-  reset();
+    reset(): void;
 
-  reverse();
+    reverse(): void;
 
-  undo();
+    undo(): void;
 
-  getMoveHistory();
+    getMoveHistory(): HistoryMove[];
 
-  setFEN(fen: string);
+    setFEN(fen: string): void;
 
-  getFEN();
-
+    getFEN(): string;
 }

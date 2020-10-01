@@ -1,0 +1,74 @@
+<label for="lightTile">Light tile color:</label>
+<div class="input-group">
+    <div class="input-group-prepend">
+        <span
+            id="basic-addon3"
+            class="input-group-text"
+            [style.background-color]="lightTileColor"
+        ></span>
+    </div>
+    <input
+        id="lightTile"
+        class="form-control"
+        [(ngModel)]="lightTileColor"
+        type="text"
+        aria-describedby="basic-addon3"
+        placeholder="blue"
+    >
+</div>
+<br>
+<label for="darkTile">Dark tile color:</label>
+<div class="input-group">
+    <div class="input-group-prepend">
+        <span
+            id="darkTileSpan"
+            class="input-group-text"
+            [style.background-color]="darkTileColor"
+        ></span>
+    </div>
+    <input
+        id="darkTile"
+        class="form-control"
+        [(ngModel)]="darkTileColor"
+        type="text"
+        aria-describedby="basic-addon3"
+        placeholder="blue"
+    >
+</div>
+<label for="size">Size:</label>
+<div class="input-group">
+    <input
+        id="size"
+        class="form-control"
+        [(ngModel)]="size"
+        (ngModelChange)="sizeChange.emit($event)"
+        type="number"
+        aria-describedby="basic-addon3"
+        min="100"
+        max="4000"
+        placeholder="Between 100 and 4000"
+    >
+    <div class="input-group-append">
+        <span class="input-group-text">px</span>
+    </div>
+</div>
+<div class="draggables">
+    <label class="switch mt-3">
+        <input
+            (click)="dragDisabled =! drawDisabled"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Piece dragging is {{ dragDisabled ? 'OFF' : 'ON'}}
+    <label class="switch mt-3">
+        <input
+            (click)="drawDisabled =!drawDisabled"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Drawing with right mouse button is {{ drawDisabled ? 'OFF' : 'ON'}}
+</div>

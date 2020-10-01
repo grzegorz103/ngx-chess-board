@@ -1,31 +1,44 @@
-import {BoardState} from './board-state';
+import { BehaviorSubject } from 'rxjs';
+import { BoardState } from './board-state';
 
 export class BoardStateProvider {
+    statesSubject$ = new BehaviorSubject<BoardState[]>([]);
 
-  moves: BoardState[];
+    get states(): BoardState[] {
+        return this.statesSubject$.value;
+    }
 
-  constructor() {
-    this.moves = [];
-  }
+    set states(states: BoardState[]) {
+        this.statesSubject$.next(states);
+    }
 
-  addMove(moveHistory: BoardState) {
-    this.moves.push(moveHistory);
-  }
+    addMove(state: BoardState) {
+        this.states = [...this.states, state];
+    }
 
-  getMoves() {
-    return this.moves;
-  }
+    getStates(): BoardState[] {
+        return this.states;
+    }
 
-  pop() {
-    return this.moves.pop();
-  }
+    pop(): BoardState {
+        const lastState = this.getLastState();
+        this.states = this.states.filter((state) => state !== lastState);
+        return lastState;
+    }
 
-  isEmpty() {
-    return this.moves.length === 0;
-  }
+    isEmpty() {
+        return this.states.length === 0;
+    }
 
-  clear() {
-    this.moves = [];
-  }
+    clear() {
+        this.states = [];
+    }
 
+    getLastState() {
+        return this.states[this.getLastStateIndex()];
+    }
+
+    getLastStateIndex(): number {
+        return this.states.length - 1;
+    }
 }

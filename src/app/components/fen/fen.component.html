@@ -1,0 +1,16 @@
+<div class="form-group input-group-sm">
+    <input
+        id="fen"
+        class="form-control  form-control-lg"
+        [(ngModel)]="fen"
+        type="text"
+        aria-describedby="fen"
+        placeholder="FEN"
+    >
+</div>
+<button
+    class="btn btn-success"
+    (click)="fenChange.emit(fen)"
+>
+    Set FEN
+</button>

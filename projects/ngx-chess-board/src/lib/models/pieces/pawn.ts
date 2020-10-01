@@ -1,87 +1,107 @@
-import {Piece} from './piece';
-import {Color} from './color';
-import {Point} from './point';
-import {Board} from '../board';
+import { Board } from '../board';
+import { Color } from './color';
+import { Piece } from './piece';
+import { Point } from './point';
 
 export class Pawn extends Piece {
+    isMovedAlready = false;
 
-  isMovedAlready = false;
+    constructor(point: Point, color: Color, image: string, board: Board) {
+        super(point, color, image, 1, board);
+    }
 
-  constructor(point: Point, color: Color, image: string, board: Board) {
-    super(point, color, image, 1, board);
-  }
+    getPossibleMoves(): Point[] {
+        const possiblePoints = [];
+        const row = this.point.row;
+        const col = this.point.col;
+        if (
+            (!this.board.reverted && this.color === Color.WHITE) ||
+            (this.board.reverted && this.color === Color.BLACK)
+        ) {
+            if (this.board.isFieldEmpty(row - 1, col)) {
+                possiblePoints.push(new Point(row - 1, col));
 
-  getPossibleMoves(): Point[] {
-    let possiblePoints = [];
-    let row = this.point.row;
-    let col = this.point.col;
-    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color === Color.BLACK)) {
-      if (this.board.isFieldEmpty(row - 1, col)) {
-        possiblePoints.push(new Point(row - 1, col));
+                if (!this.isMovedAlready && this.board.isFieldEmpty(row - 2, col)) {
+                    possiblePoints.push(new Point(row - 2, col));
+                }
+            }
+        } else {
+            if (/*!board.isFieldTakenByEnemy(row + 1, col, Color.WHITE) &&*/ this.board.isFieldEmpty(row + 1, col)) {
+                possiblePoints.push(new Point(row + 1, col));
 
-        if (!this.isMovedAlready && this.board.isFieldEmpty(row - 2, col)) {
-          possiblePoints.push(new Point(row - 2, col));
+                if (!this.isMovedAlready && this.board.isFieldEmpty(row + 2, col)) {
+                    possiblePoints.push(new Point(row + 2, col));
+                }
+            }
         }
-      }
-    } else {
-      if (/*!board.isFieldTakenByEnemy(row + 1, col, Color.WHITE) &&*/ this.board.isFieldEmpty(row + 1, col)) {
-        possiblePoints.push(new Point(row + 1, col));
+        return possiblePoints;
+    }
 
-        if (!this.isMovedAlready && this.board.isFieldEmpty(row + 2, col)) {
-          possiblePoints.push(new Point(row + 2, col));
+    getPossibleCaptures(): Point[] {
+        const possiblePoints = [];
+        const row = this.point.row;
+        const col = this.point.col;
+
+        if (
+            (!this.board.reverted && this.color === Color.WHITE) ||
+            (this.board.reverted && this.color === Color.BLACK)
+        ) {
+            if (
+                this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            ) {
+                possiblePoints.push(new Point(row - 1, col - 1));
+            }
+            if (
+                this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            ) {
+                possiblePoints.push(new Point(row - 1, col + 1));
+            }
+        } else {
+            if (
+                this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            ) {
+                possiblePoints.push(new Point(row + 1, col - 1));
+            }
+            if (
+                this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            ) {
+                possiblePoints.push(new Point(row + 1, col + 1));
+            }
         }
-      }
-    }
-    return possiblePoints;
-  }
 
-  getPossibleCaptures(): Point[] {
-    let possiblePoints = [];
-    let row = this.point.row;
-    let col = this.point.col;
+        if (
+            this.board.enPassantPoint &&
+            this.board.enPassantPiece.color === (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+        ) {
+            if (
+                row === this.board.enPassantPiece.point.row &&
+                Math.abs(this.board.enPassantPiece.point.col - col) === 1
+            ) {
+                possiblePoints.push(this.board.enPassantPoint);
+            }
+        }
 
-    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color === Color.BLACK)) {
-      if (this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-        possiblePoints.push(new Point(row - 1, col - 1));
-      }
-      if (this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-        possiblePoints.push(new Point(row - 1, col + 1));
-      }
-    } else {
-      if (this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-        possiblePoints.push(new Point(row + 1, col - 1));
-      }
-      if (this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-        possiblePoints.push(new Point(row + 1, col + 1));
-      }
+        return possiblePoints;
     }
 
-    if (this.board.enPassantPoint && this.board.enPassantPiece.color === (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
-      if (row === this.board.enPassantPiece.point.row && Math.abs(this.board.enPassantPiece.point.col - col) === 1) {
-        possiblePoints.push(this.board.enPassantPoint);
-      }
+    getCoveredFields(): Point[] {
+        const possiblePoints = [];
+        const row = this.point.row;
+        const col = this.point.col;
+
+        if (
+            (!this.board.reverted && this.color === Color.WHITE) ||
+            (this.board.reverted && this.color === Color.BLACK)
+        ) {
+            possiblePoints.push(new Point(row - 1, col - 1));
+
+            possiblePoints.push(new Point(row - 1, col + 1));
+        } else {
+            possiblePoints.push(new Point(row + 1, col - 1));
+
+            possiblePoints.push(new Point(row + 1, col + 1));
+        }
+
+        return possiblePoints;
     }
-
-    return possiblePoints;
-  }
-
-  getCoveredFields(): Point[] {
-    let possiblePoints = [];
-    let row = this.point.row;
-    let col = this.point.col;
-
-    if ((!this.board.reverted && this.color === Color.WHITE) || (this.board.reverted && this.color === Color.BLACK)) {
-
-      possiblePoints.push(new Point(row - 1, col - 1));
-
-      possiblePoints.push(new Point(row - 1, col + 1));
-    } else {
-      possiblePoints.push(new Point(row + 1, col - 1));
-
-      possiblePoints.push(new Point(row + 1, col + 1));
-    }
-
-    return possiblePoints;
-  }
-
 }

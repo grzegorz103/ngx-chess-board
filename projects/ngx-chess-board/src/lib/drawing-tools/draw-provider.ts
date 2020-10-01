@@ -1,44 +1,56 @@
-import {Circle} from './circle';
-import {Arrow} from './arrow';
+import { BehaviorSubject } from 'rxjs';
+import { Arrow } from './arrow';
+import { Circle } from './circle';
 
 export class DrawProvider {
+    private arrowsSubject$ = new BehaviorSubject<Arrow[]>([]);
+    private circlesSubject$ = new BehaviorSubject<Circle[]>([]);
 
-  private _circles: Circle[];
-  private _arrows: Arrow[];
+    public arrows$ = this.arrowsSubject$.asObservable();
+    public circles$ = this.circlesSubject$.asObservable();
 
+    private get circles(): Circle[] {
+        return this.circlesSubject$.value;
+    }
 
-  constructor() {
-    this._arrows = [];
-    this._circles = [];
-  }
+    private set circles(circles: Circle[]) {
+        this.circlesSubject$.next(circles);
+    }
 
-  addCircle(circle: Circle) {
-    this.circles.push(circle);
-  }
+    private get arrows(): Arrow[] {
+        return this.arrowsSubject$.value;
+    }
 
-  addArrow(arrow: Arrow) {
-    this.arrows.push(arrow);
-  }
+    private set arrows(arrows: Arrow[]) {
+        this.arrowsSubject$.next(arrows);
+    }
 
-  get circles(): Circle[] {
-    return this._circles;
-  }
+    addCircle(circle: Circle) {
+        this.circles = [...this.circles, circle];
+    }
 
-  get arrows(): Arrow[] {
-    return this._arrows;
-  }
+    reomveCircle(removeCircle: Circle) {
+        this.circles = this.circles.filter((circle) => !circle.isEqual(removeCircle));
+    }
 
-  containsCircle(circle: Circle) {
-    return this.circles.some(e => e.isEqual(circle));
-  }
+    addArrow(arrow: Arrow) {
+        this.arrows = [...this.arrows, arrow];
+    }
 
-  containsArrow(arrow: Arrow) {
-    return this.arrows.some(e => e.isEqual(arrow));
-  }
+    removeArrow(removeArrow: Arrow) {
+        this.arrows = this.arrows.filter((arrow) => !arrow.isEqual(removeArrow));
+    }
 
-  clear() {
-    this._arrows = [];
-    this._circles = [];
-  }
+    containsCircle(checkCircle: Circle) {
+        return this.circles.some((circle) => circle.isEqual(checkCircle));
+    }
 
+    containsArrow(checkArrow: Arrow) {
+        return this.arrows.some((arrow: Arrow) => arrow.isEqual(checkArrow));
+    }
+
+    clear() {
+        this.arrows = [];
+        this.circles = [];
+    }
 }
