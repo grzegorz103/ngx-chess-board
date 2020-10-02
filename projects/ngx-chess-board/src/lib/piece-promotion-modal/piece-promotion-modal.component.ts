@@ -9,7 +9,7 @@ import { Color } from '../models/pieces/color';
 export class PiecePromotionModalComponent {
     @ViewChild('modal', { static: false }) modal: ElementRef;
 
-    selectedIndex = 1;
+    selectedIndex = 0;
     color: Color;
     Color = Color;
     opened = false;

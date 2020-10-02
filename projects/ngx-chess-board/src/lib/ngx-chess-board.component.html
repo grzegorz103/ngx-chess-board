@@ -13,8 +13,14 @@
         >
             <div
                 class="board-col"
-                [ngClass]="[board.isXYInPointSelection(i, j) ? 'point-circle' :'',board.isXYInActiveMove(i,j) ? 'current-selection':'' ,board.isXYInPossibleMoves(i,j) ? 'possible-point' : '', board.isXYInPossibleCaptures(i,j) ? 'possible-capture' : '',  isKingChecked(getPieceByPoint(i,j)) ? 'king-check' : '', board.isXYInSourceMove(i,j)?'source-move':'',board.isXYInDestMove(i,j)?'dest-move':'']"
-                [style.background-color]="((i + j) % 2 === 0 ) ?  lightTileColor : darkTileColor"
+                [class.current-selection]="board.isXYInActiveMove(i,j)"
+                [class.dest-move]="board.isXYInDestMove(i,j)"
+                [class.king-check]=" isKingChecked(getPieceByPoint(i,j))"
+                [class.point-circle]="board.isXYInPointSelection(i, j)"
+                [class.possible-capture]="board.isXYInPossibleCaptures(i, j)"
+                [class.possible-point]="board.isXYInPossibleMoves(i, j)"
+                [class.source-move]="board.isXYInSourceMove(i, j)"
+                [style.background-color]="((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor"
                 *ngFor="let col of row; let j = index"
             >
                 <span
@@ -80,7 +86,6 @@
             [attr.y2]="arrow.end.y"
             *ngFor="let arrow of drawProvider.arrows$ | async"
         ></line>
-
         <circle
             [attr.cx]="circle.drawPoint.x"
             [attr.cy]="circle.drawPoint.y"
@@ -92,5 +97,4 @@
         ></circle>
     </svg>
     <app-piece-promotion-modal #modal></app-piece-promotion-modal>
-
 </div>
