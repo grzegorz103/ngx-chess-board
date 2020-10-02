@@ -1,13 +1,16 @@
+import { Board } from '../models/board';
+
 export class HistoryMove {
+    move: string;
+    piece: string;
+    color: string;
+    x: boolean;
+    board: Board;
 
-  move: string;
-  piece: string;
-  color: string;
-
-  constructor(move: string, piece: string, color: string) {
-    this.move = move;
-    this.piece = piece;
-    this.color = color;
-  }
-
+    constructor(move: string, piece: string, color: string, captured: boolean) {
+        this.move = move;
+        this.piece = piece;
+        this.color = color;
+        this.x = captured;
+    }
 }

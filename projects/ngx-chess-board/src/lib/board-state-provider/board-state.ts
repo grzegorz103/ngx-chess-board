@@ -1,12 +1,11 @@
-import {Piece} from '../models/pieces/piece';
-import {Board} from '../models/board';
+import { Board } from '../models/board';
 
-export class BoardState{
+export class BoardState {
 
-  board: Board;
+    board: Board;
 
-  constructor(board: Board) {
-    this.board = board;
-  }
+    constructor(board: Board) {
+        this.board = board;
+    }
 
 }

@@ -1,16 +1,16 @@
-import {AbstractPiece} from './abstract-piece';
-import {Point} from '../models/pieces/point';
+import { Point } from '../models/pieces/point';
+import { AbstractPiece } from './abstract-piece';
 
-export abstract class PieceAbstractDecorator implements AbstractPiece{
+export abstract class PieceAbstractDecorator implements AbstractPiece {
 
-  piece: AbstractPiece;
+    piece: AbstractPiece;
 
-  protected constructor(piece: AbstractPiece) {
-    this.piece = piece;
-  }
+    protected constructor(piece: AbstractPiece) {
+        this.piece = piece;
+    }
 
-  abstract getPossibleCaptures(): Point[];
+    abstract getPossibleCaptures(): Point[];
 
-  abstract getPossibleMoves(): Point[];
+    abstract getPossibleMoves(): Point[];
 
 }

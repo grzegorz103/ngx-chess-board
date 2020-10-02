@@ -1,0 +1,22 @@
+:host {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.history-moves {
+    display: flex;
+    flex-direction: column;
+    width: 45%;
+    min-width: 50px;
+    .index-and-move {
+        display: flex;
+    }
+}
+
+.history-move {
+    cursor: pointer;
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+    width: 100%;
+}

@@ -1,113 +1,114 @@
 #board {
-  font-family: "Courier New", serif;
-  position: relative;
+    font-family: 'Courier New', serif;
+    position: relative;
 }
 
 .board-row {
-  display: block;
-  width: 100%;
-  height: 12.5%;
-  position: relative;
+    display: block;
+    width: 100%;
+    height: 12.5%;
+    position: relative;
 }
 
 .board-col {
-  position: relative;
-  display: inline-block;
-  width: 12.5%;
-  vertical-align: top;
-  cursor: default;
-  height: 100%;
+    position: relative;
+    display: inline-block;
+    width: 12.5%;
+    vertical-align: top;
+    cursor: default;
+    height: 100%;
 }
 
 .piece {
-  height: 100%;
-  cursor: grab;
-  width: 100%;
-  user-select: none;
-  -webkit-user-select: none;
-  background-size: cover;
-  justify-content: center;
-  text-align: center;
-  //margin-top: -10px;
-  color: black !important;
+    height: 100%;
+    cursor: grab;
+    width: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    background-size: cover;
+    justify-content: center;
+    text-align: center;
+    //margin-top: -10px;
+    color: black !important;
 }
 
 .piece::after {
-  content: '\200b';
+    content: '\200b';
 }
 
 #drag {
-  height: 100%;
-  // border: 3px solid blue;
-  width: 100%;
+    height: 100%;
+    // border: 3px solid blue;
+    width: 100%;
 }
 
 .possible-point {
-  border: 3px solid rgb(0, 0, 0);
-  position: static;
-  box-sizing: border-box;
+    background: radial-gradient(rgba(20, 85, 30, 0.5) 19%, rgba(0, 0, 0, 0) 20%);
 }
 
-.possible-point:hover, .possible-capture:hover {
-  opacity: 0.4;
+.possible-point:hover,
+.possible-capture:hover {
+    opacity: 0.4;
 }
 
 .possible-capture {
-  border: 3px solid rgb(0, 255, 42);
-  box-sizing: border-box;
+    background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 85, 0, 0.3) 80%);
+    box-sizing: border-box;
 }
 
 .king-check {
-  border: 3px solid red;
-  box-sizing: border-box;
+    background: radial-gradient(
+        ellipse at center,
+        red 0%,
+        #e70000 25%,
+        rgba(169, 0, 0, 0) 89%,
+        rgba(158, 0, 0, 0) 100%
+    );
 }
 
 .source-move {
-  background-color: rgba(146, 111, 26, 0.79) !important;
+    background-color: rgba(146, 111, 26, 0.79) !important;
 }
 
 .dest-move {
-  background-color: #B28E1A !important;
+    background-color: #b28e1a !important;
 }
 
 .current-selection {
-  background-color: rgba(255,255,255,0.5) !important;
+    background-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .yCoord {
-  position: absolute;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: pointer;
-  right: 0.2em;
-  font-family: "Lucida Console", Courier, monospace;
-  box-sizing: border-box;
+    position: absolute;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    right: 0.2em;
+    font-family: 'Lucida Console', Courier, monospace;
+    box-sizing: border-box;
 }
 
 .xCoord {
-  position: absolute;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: pointer;
-  left: 0.2em;
-  bottom: 0;
-  font-family: "Lucida Console", Courier, monospace;
-  box-sizing: border-box;
+    position: absolute;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    left: 0.2em;
+    bottom: 0;
+    font-family: 'Lucida Console', Courier, monospace;
+    box-sizing: border-box;
 }
 
 .hovering {
-  background-color: red !important;
+    background-color: red !important;
 }
 
 .arrow {
-  stroke: #00ea0c;
-  stroke-width: 2;
-  marker-end: url(#markerArrow);
-}
-
-.markerArrow {
+    stroke-width: 2;
 }
 
 svg {
-  filter: drop-shadow(1px 1px 0px #111) drop-shadow(-1px 1px 0px #111) drop-shadow(1px -1px 0px #111) drop-shadow(-1px -1px 0px #111);
+    filter: drop-shadow(1px 1px 0px #111) drop-shadow(-1px 1px 0px #111) drop-shadow(1px -1px 0px #111)
+        drop-shadow(-1px -1px 0px #111);
 }
+
