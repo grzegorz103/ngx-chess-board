@@ -45,8 +45,10 @@
                 >
                     <div
                         [cdkDragDisabled]="dragDisabled"
-                        [class]="'piece ' + piece.image"
+                        [innerHTML]="pieceIconManager.isDefaultIcons() ? getPieceByPoint(i,j).image : ''"
+                        [ngClass]="'piece'"
                         [style.font-size]="pieceSize + 'px'"
+                        [ngStyle]="pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(getPieceByPoint(i,j))"
                         (cdkDragEnded)="dragEnded($event)"
                         (cdkDragStarted)="dragStart($event)"
                         cdkDrag

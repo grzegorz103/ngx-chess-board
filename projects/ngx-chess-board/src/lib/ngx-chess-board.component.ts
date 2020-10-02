@@ -35,8 +35,11 @@ import { AvailableMoveDecorator } from './piece-decorator/available-move-decorat
 import { PiecePromotionModalComponent } from './piece-promotion-modal/piece-promotion-modal.component';
 import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { Constants } from './utils/constants';
+import { PieceIconInput } from './utils/inputs/piece-icon-input';
+import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { MoveUtils } from './utils/move-utils';
 import { UnicodeConstants } from './utils/unicode-constants';
+import { DomSanitizer, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 
 export interface MoveChange extends HistoryMove {
     check: boolean;
@@ -72,14 +75,16 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     disabling = false;
     drawProvider: DrawProvider;
     drawPoint: DrawPoint;
+    pieceIconManager: PieceIconInputManager;
 
-    constructor(private ngxChessBoardService: NgxChessBoardService) {
+    constructor(private ngxChessBoardService: NgxChessBoardService,private _sanitizer: DomSanitizer) {
         this.board = new Board();
         this.boardLoader = new BoardLoader(this.board);
         this.boardLoader.addPieces();
         this.boardStateProvider = new BoardStateProvider();
         this.moveHistoryProvider = new HistoryMoveProvider();
         this.drawProvider = new DrawProvider();
+        this.pieceIconManager = new PieceIconInputManager();
     }
 
     heightAndWidth: number = Constants.DEFAULT_SIZE;
@@ -97,6 +102,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
         this.drawProvider.clear();
         this.calculatePieceSize();
+    }
+
+    @Input('pieceIcons')
+    public set pieceIcons(pieceIcons: PieceIconInput){
+        this.pieceIconManager.pieceIconInput = pieceIcons;
     }
 
     @HostListener('contextmenu', ['$event'])
@@ -750,4 +760,9 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             }
         }
     }
+
+    getCustomPieceIcons(piece: Piece) {
+        return JSON.parse(`{ "background-image": "url('${this.pieceIconManager.getPieceIcon(piece)}')"}`)
+    }
+
 }

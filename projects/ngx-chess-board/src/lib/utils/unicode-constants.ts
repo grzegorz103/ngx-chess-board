@@ -1,16 +1,17 @@
 // tslint:disable:max-line-length
 
 export enum UnicodeConstants {
-    WHITE_KING = 'white-king',
-    WHITE_QUEEN = 'white-queen',
-    WHITE_KNIGHT = 'white-knight',
-    WHITE_ROOK = 'white-rook',
-    WHITE_PAWN = 'white-pawn',
-    WHITE_BISHOP = 'white-bishop',
-    BLACK_KING = 'black-king',
-    BLACK_QUEEN = 'black-queen',
-    BLACK_KNIGHT = 'black-knight',
-    BLACK_ROOK = 'black-rook',
-    BLACK_PAWN = 'black-pawn',
-    BLACK_BISHOP = 'black-bishop',
+    WHITE_KING = '&#x2654;',
+    WHITE_QUEEN = '&#x2655;',
+    WHITE_KNIGHT = '&#x2658;',
+    WHITE_ROOK = '&#x2656;',
+    WHITE_PAWN = '&#x2659;',
+    WHITE_BISHOP = '&#x2657;',
+  
+    BLACK_KING = '&#x265A;',
+    BLACK_QUEEN = '&#x265B;',
+    BLACK_KNIGHT = '&#x265E;',
+    BLACK_ROOK = '&#x265C;',
+    BLACK_PAWN = '&#x265F;',
+    BLACK_BISHOP = '&#x265D;'
 }
