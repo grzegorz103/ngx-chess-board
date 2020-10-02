@@ -4,20 +4,18 @@
 >
     <div class="wrapper">
         <div
-            *ngFor="let piece of ['queen', 'rook', 'bishop', 'knight']; let index = index"
             class="piece"
-            [ngClass]="{
-                'white-queen': piece === 'queen' && color === Color.WHITE,
-                'black-queen': piece === 'queen' && color === Color.BLACK,
-                'white-rook': piece === 'rook' && color === Color.WHITE,
-                'black-rook': piece === 'rook' && color === Color.BLACK,
-                'white-bishop': piece === 'bishop' && color === Color.WHITE,
-                'black-bishop': piece === 'bishop' && color === Color.BLACK,
-                'white-knight': piece === 'knight' && color === Color.WHITE,
-                'black-knight': piece === 'knight' && color === Color.BLACK
-            }"
+            [class.black-bishop]="piece === 'bishop' && color === Color.BLACK"
+            [class.black-knight]="piece === 'knight' && color === Color.BLACK"
+            [class.black-queen]="piece === 'queen' && color === Color.BLACK"
+            [class.black-rook]="piece === 'rook' && color === Color.BLACK"
             [class.selected]="selectedIndex === index + 1"
+            [class.white-bishop]="piece === 'bishop' && color === Color.WHITE"
+            [class.white-knight]="piece === 'knight' && color === Color.WHITE"
+            [class.white-queen]="piece === 'queen' && color === Color.WHITE"
+            [class.white-rook]="piece === 'rook' && color === Color.WHITE"
             (click)="changeSelection(index + 1)"
+            *ngFor="let piece of ['queen', 'rook', 'bishop', 'knight']; let index = index"
         >
         </div>
     </div>

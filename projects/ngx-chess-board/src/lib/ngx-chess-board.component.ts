@@ -409,6 +409,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
     updateBoard(board: Board) {
         this.board = board;
+        this.boardLoader.setBoard(this.board);
         this.board.possibleCaptures = [];
         this.board.possibleMoves = [];
     }
@@ -433,6 +434,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     setFEN(fen: string): void {
         try {
             this.boardLoader.loadFEN(fen);
+            this.board.possibleCaptures = [];
+            this.board.possibleMoves = [];
         } catch (exception) {
             this.boardLoader.addPieces();
         }
