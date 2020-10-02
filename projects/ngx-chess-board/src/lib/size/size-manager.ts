@@ -1,7 +1,6 @@
-export class SizeManager{
+export class SizeManager {
 
-  size: number;
-
+    size: number;
 
 
 }

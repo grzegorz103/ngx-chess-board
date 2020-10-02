@@ -1,27 +1,32 @@
 export class CoordsProvider {
+    private defaultXCoords: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    private reversedXCoords: string[] = ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
 
-  private _xCoords: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  private _yCoords: number[] = [8, 7, 6, 5, 4, 3, 2, 1];
+    private defaultYCoords: number[] = [8, 7, 6, 5, 4, 3, 2, 1];
+    private reversedYCoords: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
 
-  reverse() {
-    this._xCoords = this._xCoords.reverse();
-    this._yCoords = this._yCoords.reverse();
-  }
+    private currentXCoords: string[] = this.defaultXCoords;
+    private currentYCoords: number[] = this.defaultYCoords;
 
-  get xCoords(): string[] {
-    return this._xCoords;
-  }
+    get xCoords(): string[] {
+        return this.currentXCoords;
+    }
 
-  get yCoords(): number[] {
-    return this._yCoords;
-  }
+    get yCoords(): number[] {
+        return this.currentYCoords;
+    }
 
-  reset() {
-    this.init();
-  }
+    reverse() {
+        this.currentXCoords = this.reversedXCoords;
+        this.currentYCoords = this.reversedYCoords;
+    }
 
-  private init() {
-    this._xCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    this._yCoords = [8, 7, 6, 5, 4, 3, 2, 1];
-  }
+    reset() {
+        this.init();
+    }
+
+    private init() {
+        this.currentXCoords = this.defaultXCoords;
+        this.currentYCoords = this.defaultYCoords;
+    }
 }

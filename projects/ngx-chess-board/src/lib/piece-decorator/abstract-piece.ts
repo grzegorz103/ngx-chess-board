@@ -1,9 +1,9 @@
-import {Point} from '../models/pieces/point';
+import { Point } from '../models/pieces/point';
 
-export interface AbstractPiece{
+export interface AbstractPiece {
 
-   getPossibleMoves(): Point[];
+    getPossibleMoves(): Point[];
 
-   getPossibleCaptures(): Point[];
+    getPossibleCaptures(): Point[];
 
 }
