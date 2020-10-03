@@ -725,12 +725,14 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             }
         }
     }
+
     move(coords: string) {
         if (coords) {
             const sourceIndexes = MoveUtils.translateCoordsToIndex(
                 coords.substring(0, 2),
                 this.board.reverted
             );
+
             const destIndexes = MoveUtils.translateCoordsToIndex(
                 coords.substring(2, 4),
                 this.board.reverted
@@ -742,21 +744,39 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             );
 
             if (srcPiece) {
-                this.saveClone();
-                this.board.lastMoveSrc = new Point(
-                    sourceIndexes.yAxis,
-                    sourceIndexes.xAxis
-                );
-                this.board.lastMoveDest = new Point(
-                    destIndexes.yAxis,
-                    sourceIndexes.xAxis
-                );
-                this.movePiece(
-                    srcPiece,
-                    new Point(destIndexes.yAxis, destIndexes.xAxis)
-                );
-                this.afterMoveActions();
-                this.moveChange.emit();
+                if (
+                    (this.board.currentWhitePlayer &&
+                        srcPiece.color === Color.BLACK) ||
+                    (!this.board.currentWhitePlayer &&
+                        srcPiece.color === Color.WHITE)
+                ) {
+                    return;
+                }
+
+                this.prepareActivePiece(srcPiece, srcPiece.point);
+
+                if(this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis))
+                    || this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                    this.saveClone();
+                    this.movePiece(
+                        srcPiece,
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    );
+
+                    this.board.lastMoveSrc = new Point(
+                        sourceIndexes.yAxis,
+                        sourceIndexes.xAxis
+                    );
+                    this.board.lastMoveDest = new Point(
+                        destIndexes.yAxis,
+                        destIndexes.xAxis
+                    );
+
+                    this.afterMoveActions();
+                    this.disableSelection();
+                } else {
+                    this.disableSelection();
+                }
             }
         }
     }
