@@ -172,7 +172,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
     }
 
-    afterMoveActions() {
+    afterMoveActions(promotionIndex?: number) {
         this.checkIfPawnFirstMove(this.board.activePiece);
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
@@ -196,8 +196,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.saveBoardToLastMove();
         this.disabling = false;
         this.board.calculateFEN();
+
+        let lastMove = this.moveHistoryProvider.getLastMove();
+        if(lastMove && promotionIndex){
+            lastMove.move += promotionIndex;
+        }
         this.moveChange.emit({
-            ...this.moveHistoryProvider.getLastMove(),
+            ...lastMove,
             check,
             checkmate,
             stalemate,
@@ -271,7 +276,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         );
     }
 
-    movePiece(toMovePiece: Piece, newPoint: Point) {
+    movePiece(toMovePiece: Piece, newPoint: Point, promotionIndex?: number) {
         const destPiece = this.board.pieces.find(
             (piece) =>
                 piece.point.col === newPoint.col &&
@@ -290,7 +295,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
         const move = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
-            toMovePiece.image.split('-')[1],
+            toMovePiece.constructor.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece
         );
@@ -323,7 +328,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         toMovePiece.point = newPoint;
         this.increaseFullMoveCount();
         this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
-        return this.checkForPawnPromote(toMovePiece);
+
+        if(!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+            this.afterMoveActions();
+        }
     }
 
     checkIfPawnFirstMove(piece: Piece) {
@@ -332,7 +340,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
     }
 
-    checkForPawnPromote(toPromotePiece: Piece) {
+    checkForPawnPromote(toPromotePiece: Piece, promotionIndex?: number) {
         if (!(toPromotePiece instanceof Pawn)) {
             return;
         }
@@ -341,65 +349,79 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             this.board.pieces = this.board.pieces.filter(
                 (piece) => piece !== toPromotePiece
             );
-            this.openPromoteDialog(toPromotePiece);
+
+            // When we make move manually, we pass promotion index already, so we don't need
+            // to acquire it from promote dialog
+            if (!promotionIndex) {
+                this.openPromoteDialog(toPromotePiece);
+            } else {
+                this.resolvePromotionChoice(toPromotePiece, promotionIndex);
+                this.afterMoveActions(promotionIndex);
+            }
+
+            return true;
         }
     }
 
     openPromoteDialog(piece: Piece) {
         this.modal.open(piece.color, (index) => {
-            const isWhite = piece.color === Color.WHITE;
-            switch (index) {
-                case 1:
-                    this.board.pieces.push(
-                        new Queen(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_QUEEN
-                                : UnicodeConstants.BLACK_QUEEN,
-                            this.board
-                        )
-                    );
-                    break;
-                case 2:
-                    this.board.pieces.push(
-                        new Rook(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_ROOK
-                                : UnicodeConstants.BLACK_ROOK,
-                            this.board
-                        )
-                    );
-                    break;
-                case 3:
-                    this.board.pieces.push(
-                        new Bishop(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_BISHOP
-                                : UnicodeConstants.BLACK_BISHOP,
-                            this.board
-                        )
-                    );
-                    break;
-                case 4:
-                    this.board.pieces.push(
-                        new Knight(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_KNIGHT
-                                : UnicodeConstants.BLACK_KNIGHT,
-                            this.board
-                        )
-                    );
-                    break;
-            }
-            this.afterMoveActions();
+            this.resolvePromotionChoice(piece, index);
+            this.afterMoveActions(index);
         });
+    }
+
+    resolvePromotionChoice(piece: Piece, index: number){
+        const isWhite = piece.color === Color.WHITE;
+        switch (index) {
+            case 1:
+                this.board.pieces.push(
+                    new Queen(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_QUEEN
+                            : UnicodeConstants.BLACK_QUEEN,
+                        this.board
+                    )
+                );
+                break;
+            case 2:
+                this.board.pieces.push(
+                    new Rook(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_ROOK
+                            : UnicodeConstants.BLACK_ROOK,
+                        this.board
+                    )
+                );
+                break;
+            case 3:
+                this.board.pieces.push(
+                    new Bishop(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_BISHOP
+                            : UnicodeConstants.BLACK_BISHOP,
+                        this.board
+                    )
+                );
+                break;
+            case 4:
+                this.board.pieces.push(
+                    new Knight(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_KNIGHT
+                            : UnicodeConstants.BLACK_KNIGHT,
+                        this.board
+                    )
+                );
+                break;
+        }
     }
 
     reset(): void {
@@ -675,7 +697,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             );
             this.board.lastMoveDest = pointClicked;
             this.movePiece(this.board.activePiece, pointClicked);
-            this.afterMoveActions();
         }
 
         this.disableSelection();
@@ -760,7 +781,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                     this.saveClone();
                     this.movePiece(
                         srcPiece,
-                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                        new Point(destIndexes.yAxis, destIndexes.xAxis),
+                        coords.length === 5 ? +coords.substring(4,5) : 0
                     );
 
                     this.board.lastMoveSrc = new Point(
@@ -772,7 +794,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                         destIndexes.xAxis
                     );
 
-                    this.afterMoveActions();
                     this.disableSelection();
                 } else {
                     this.disableSelection();
