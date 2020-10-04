@@ -91,7 +91,7 @@ export class AppComponent {
     }
 
     showMoveHistory() {
-        alert(this.boardManager.getMoveHistory())
+        alert(this.boardManager.getMoveHistory());
     }
 
     switchDrag() {
