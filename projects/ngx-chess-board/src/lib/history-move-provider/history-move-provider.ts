@@ -2,7 +2,8 @@ import { BehaviorSubject } from 'rxjs';
 import { HistoryMove } from './history-move';
 
 export class HistoryMoveProvider {
-    historyMovesSubject$ = new BehaviorSubject<HistoryMove[]>([]);
+    private historyMovesSubject$ = new BehaviorSubject<HistoryMove[]>([]);
+    public historyMoves$ = this.historyMovesSubject$.asObservable();
 
     get historyMoves(): HistoryMove[] {
         return this.historyMovesSubject$.value;
@@ -18,7 +19,9 @@ export class HistoryMoveProvider {
 
     pop(): HistoryMove {
         const lastHistoryMove = this.getLastMove();
-        this.historyMoves = this.historyMoves.filter((state) => state !== lastHistoryMove);
+        this.historyMoves = this.historyMoves.filter(
+            (state) => state !== lastHistoryMove
+        );
         return lastHistoryMove;
     }
 

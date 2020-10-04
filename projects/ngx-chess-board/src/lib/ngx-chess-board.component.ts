@@ -9,6 +9,7 @@ import {
     Output,
     ViewChild,
 } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { BoardLoader } from './board-state-provider/board-loader';
 import { BoardState } from './board-state-provider/board-state';
 import { BoardStateProvider } from './board-state-provider/board-state-provider';
@@ -39,7 +40,6 @@ import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { MoveUtils } from './utils/move-utils';
 import { UnicodeConstants } from './utils/unicode-constants';
-import { DomSanitizer, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 
 export interface MoveChange extends HistoryMove {
     check: boolean;
@@ -77,7 +77,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     drawPoint: DrawPoint;
     pieceIconManager: PieceIconInputManager;
 
-    constructor(private ngxChessBoardService: NgxChessBoardService,private _sanitizer: DomSanitizer) {
+    constructor(private ngxChessBoardService: NgxChessBoardService) {
         this.board = new Board();
         this.boardLoader = new BoardLoader(this.board);
         this.boardLoader.addPieces();
@@ -105,7 +105,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     @Input('pieceIcons')
-    public set pieceIcons(pieceIcons: PieceIconInput){
+    public set pieceIcons(pieceIcons: PieceIconInput) {
         this.pieceIconManager.pieceIconInput = pieceIcons;
     }
 
@@ -177,45 +177,12 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
 
-        this.board.blackKingChecked = this.board.isKingInCheck(
-            Color.BLACK,
-            this.board.pieces
-        );
-        this.board.whiteKingChecked = this.board.isKingInCheck(
-            Color.WHITE,
-            this.board.pieces
-        );
-        const check =
-            this.board.blackKingChecked || this.board.whiteKingChecked;
-        const checkmate =
-            this.checkForPossibleMoves(Color.BLACK) ||
-            this.checkForPossibleMoves(Color.WHITE);
-        const stalemate =
-            this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
-
-        this.saveBoardToLastMove();
         this.disabling = false;
-        this.board.calculateFEN();
 
-        let lastMove = this.moveHistoryProvider.getLastMove();
-        if(lastMove && promotionIndex){
+        const lastMove = this.moveHistoryProvider.getLastMove();
+        if (lastMove && promotionIndex) {
             lastMove.move += promotionIndex;
         }
-        this.moveChange.emit({
-            ...lastMove,
-            check,
-            checkmate,
-            stalemate,
-        });
-    }
-
-    private saveBoardToLastMove() {
-        const clone = this.board.clone();
-
-        if (this.board.reverted) {
-            clone.reverse();
-        }
-        this.moveHistoryProvider.getLastMove().board = clone;
     }
 
     disableSelection() {
@@ -293,14 +260,36 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             }
         }
 
+        this.board.blackKingChecked = this.board.isKingInCheck(
+            Color.BLACK,
+            this.board.pieces
+        );
+        this.board.whiteKingChecked = this.board.isKingInCheck(
+            Color.WHITE,
+            this.board.pieces
+        );
+        const check =
+            this.board.blackKingChecked || this.board.whiteKingChecked;
+        const checkmate =
+            this.checkForPossibleMoves(Color.BLACK) ||
+            this.checkForPossibleMoves(Color.WHITE);
+        const stalemate =
+            this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+
+        this.board.calculateFEN();
+
         const move = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
             toMovePiece.constructor.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
-            !!destPiece
+            !!destPiece,
+            check,
+            checkmate,
+            stalemate,
+            this.board.fen
         );
         this.moveHistoryProvider.addMove(move);
-
+        this.moveChange.emit(move);
         if (toMovePiece instanceof King) {
             const squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
             if (squaresMoved > 1) {
@@ -329,7 +318,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.increaseFullMoveCount();
         this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
 
-        if(!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+        if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
             this.afterMoveActions();
         }
     }
@@ -370,7 +359,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         });
     }
 
-    resolvePromotionChoice(piece: Piece, index: number){
+    resolvePromotionChoice(piece: Piece, index: number) {
         const isWhite = piece.color === Color.WHITE;
         switch (index) {
             case 1:
@@ -776,13 +765,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
-                if(this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis))
-                    || this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                if (
+                    this.board.isPointInPossibleMoves(
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    ) ||
+                    this.board.isPointInPossibleCaptures(
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    )
+                ) {
                     this.saveClone();
                     this.movePiece(
                         srcPiece,
                         new Point(destIndexes.yAxis, destIndexes.xAxis),
-                        coords.length === 5 ? +coords.substring(4,5) : 0
+                        coords.length === 5 ? +coords.substring(4, 5) : 0
                     );
 
                     this.board.lastMoveSrc = new Point(
@@ -803,7 +798,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     getCustomPieceIcons(piece: Piece) {
-        return JSON.parse(`{ "background-image": "url('${this.pieceIconManager.getPieceIcon(piece)}')"}`)
+        return JSON.parse(
+            `{ "background-image": "url('${this.pieceIconManager.getPieceIcon(
+                piece
+            )}')"}`
+        );
     }
-
 }
