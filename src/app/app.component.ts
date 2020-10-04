@@ -55,30 +55,15 @@ export class AppComponent {
         this.fen = this.boardManager.getFEN();
     }
 
-    public setFen(fen: string): void {
-        if (this.fen !== fen) {
-            this.boardManager.setFEN(fen);
+    public setFen(): void {
+        if (this.fen) {
+            this.boardManager.setFEN(this.fen);
         }
-    }
-
-    public switchBoard(stateIndex: number): void {
-        if (this.currentStateIndex !== stateIndex) {
-            this.currentStateIndex = stateIndex;
-            this.boardManager.updateBoard(
-                this.boardManager.moveHistoryProvider.historyMoves[stateIndex]
-                    .board
-            );
-        }
-    }
-
-    public setLatestBoard(): void {
-        this.switchBoard(
-            this.boardManager.moveHistoryProvider.getLastMoveIndex()
-        );
     }
 
     public moveCallback(move: MoveChange): void {
         this.fen = this.boardManager.getFEN();
+        console.log(move);
     }
 
     public moveManual(): void {
@@ -91,7 +76,7 @@ export class AppComponent {
     }
 
     showMoveHistory() {
-        alert(this.boardManager.getMoveHistory());
+        alert(JSON.stringify(this.boardManager.getMoveHistory()));
     }
 
     switchDrag() {
