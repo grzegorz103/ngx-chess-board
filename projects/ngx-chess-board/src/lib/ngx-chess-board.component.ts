@@ -117,6 +117,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.board.reset();
         });
+        this.saveClone();
         this.calculatePieceSize();
     }
 
@@ -258,6 +259,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                 return;
             }
         }
+        toMovePiece.point = newPoint;
 
         const moveFormated = MoveUtils.format(
             toMovePiece.point,
@@ -274,6 +276,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             Color.WHITE,
             this.board.pieces
         );
+
         const check =
             this.board.blackKingChecked || this.board.whiteKingChecked;
         const checkmate =
@@ -684,13 +687,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             this.board.isPointInPossibleMoves(pointClicked) ||
             this.board.isPointInPossibleCaptures(pointClicked)
         ) {
-            this.saveClone();
             this.board.lastMoveSrc = new Point(
                 this.board.activePiece.point.row,
                 this.board.activePiece.point.col
             );
             this.board.lastMoveDest = pointClicked;
             this.movePiece(this.board.activePiece, pointClicked);
+            this.saveClone();
         }
 
         this.disableSelection();
@@ -778,7 +781,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                         new Point(destIndexes.yAxis, destIndexes.xAxis)
                     )
                 ) {
-                    this.saveClone();
                     this.movePiece(
                         srcPiece,
                         new Point(destIndexes.yAxis, destIndexes.xAxis),
@@ -794,6 +796,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                         destIndexes.xAxis
                     );
 
+                    this.saveClone();
                     this.disableSelection();
                 } else {
                     this.disableSelection();

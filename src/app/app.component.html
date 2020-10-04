@@ -27,6 +27,12 @@
             Move
         </button>
     </div>
+    <hr>
+    <app-fen class="mt-3"
+        [fen]="fen"
+        (fenChange)="setFen($event)"
+        #fenManager
+    ></app-fen>
 </div>
 <div class="middle-part">
     <ngx-chess-board
@@ -44,9 +50,4 @@
         (switchToMoveIndex)="switchBoard($event)"
         #movesManager
     ></app-moves>
-    <app-fen
-        [fen]="fen"
-        (fenChange)="setFen($event)"
-        #fenManager
-    ></app-fen>
 </div>
