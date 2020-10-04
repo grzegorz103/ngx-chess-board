@@ -1,3 +1,4 @@
+<!--
 <label for="lightTile">Light tile color:</label>
 <div class="input-group">
     <div class="input-group-prepend">
@@ -64,11 +65,38 @@
     Piece dragging is {{ dragDisabled ? 'OFF' : 'ON'}}
     <label class="switch mt-3">
         <input
+            (click)="dragDisabled =!dragDisabled"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Drawing with right mouse button is {{ drawDisabled ? 'OFF' : 'ON' }}
+    <label class="switch mt-3">
+        <input
             (click)="drawDisabled =!drawDisabled"
             type="checkbox"
             checked
         >
         <span class="slider round"></span>
     </label>
-    Drawing with right mouse button is {{ drawDisabled ? 'OFF' : 'ON'}}
+    Light tiles are {{ lightDisabled ? 'OFF' : 'ON' }}
+    <label class="switch mt-3">
+        <input
+            (click)="lightDisabled =!lightDisabled"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Dark tiles are {{ darkDisabled ? 'OFF' : 'ON' }}
+    <label class="switch mt-3">
+        <input
+            (click)="darkDisabled =!darkDisabled"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
 </div>
+-->

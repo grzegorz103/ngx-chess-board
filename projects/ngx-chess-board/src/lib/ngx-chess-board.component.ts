@@ -58,6 +58,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     @Input() showCoords = true;
     @Input() dragDisabled = false;
     @Input() drawDisabled = false;
+    @Input() lightDisabled = false;
+    @Input() darkDisabled = false;
     @Output() moveChange = new EventEmitter<MoveChange>();
     @Output() checkmate = new EventEmitter<void>();
     @Output() stalemate = new EventEmitter<void>();
@@ -149,14 +151,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             this.disabling = false;
             return;
         }
+        const pieceClicked = this.getPieceByPoint(
+            pointClicked.row,
+            pointClicked.col
+        );
+
+        if(this.isPieceDisabled(pieceClicked)){
+            return;
+        }
+
         if (this.selected) {
             this.handleClickEvent(pointClicked);
             //   this.possibleMoves = activePiece.getPossibleMoves();
         } else {
-            const pieceClicked = this.getPieceByPoint(
-                pointClicked.row,
-                pointClicked.col
-            );
             if (pieceClicked) {
                 if (
                     (this.board.currentWhitePlayer &&
@@ -515,13 +522,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             return;
         }
 
+        const pieceClicked = this.getPieceByPoint(
+            pointClicked.row,
+            pointClicked.col
+        );
+
+        if(this.isPieceDisabled(pieceClicked)){
+            return;
+        }
+
         if (this.selected) {
             this.handleClickEvent(pointClicked);
         } else {
-            const pieceClicked = this.getPieceByPoint(
-                pointClicked.row,
-                pointClicked.col
-            );
+
             if (pieceClicked) {
                 if (
                     (this.board.currentWhitePlayer &&
@@ -774,6 +787,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                     return;
                 }
 
+                if(this.isPieceDisabled(srcPiece)){
+                    return;
+                }
+
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
                 if(this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis))
@@ -806,4 +823,12 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         return JSON.parse(`{ "background-image": "url('${this.pieceIconManager.getPieceIcon(piece)}')"}`)
     }
 
+    private isPieceDisabled(pieceClicked: Piece) {
+        return pieceClicked &&
+            (
+                (this.lightDisabled && pieceClicked.color === Color.WHITE)
+                ||
+                (this.darkDisabled && pieceClicked.color === Color.BLACK)
+            );
+    }
 }
