@@ -1,6 +1,6 @@
 <div style="width:400px; margin-left: auto; margin-right: auto">
     <h2 style="text-align: center">ngx-chess-board example</h2>
-    <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (onMove)="moveCallback()"
+    <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (moveChange)="moveCallback($event)"
                      [dragDisabled]="dragDisabled"
                      [drawDisabled]="drawDisabled"
                      [darkTileColor]="darkTileColor"
@@ -105,4 +105,25 @@
         </button>
     </div>
 
+    <hr>
+
+    <label for="manualMove">Manual move:</label>
+    <div class="input-group">
+        <div class="input-group-prepend"></div>
+        <input
+            type="text"
+            class="form-control"
+            placeholder="blue"
+            [(ngModel)]="manualMove"
+            id="manualMove"
+            aria-describedby="basic-addon3"
+        >
+        <button
+            type="button"
+            class="btn btn-primary"
+            style="margin-left:auto; margin-right: 10px"
+            (click)="moveManual()"
+        >Move
+        </button>
+    </div>
 </div>

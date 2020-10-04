@@ -46,6 +46,7 @@ export interface MoveChange extends HistoryMove {
     check: boolean;
     stalemate: boolean;
     checkmate: boolean;
+    fen: string;
 }
 
 @Component({
@@ -215,7 +216,6 @@ export class NgxChessBoardComponent
         const stalemate =
             this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
 
-        this.saveBoardToLastMove();
         this.disabling = false;
         this.board.calculateFEN();
 
@@ -223,21 +223,14 @@ export class NgxChessBoardComponent
         if (lastMove && promotionIndex) {
             lastMove.move += promotionIndex;
         }
+
         this.moveChange.emit({
             ...lastMove,
             check,
             checkmate,
             stalemate,
+            fen: this.board.fen
         });
-    }
-
-    private saveBoardToLastMove() {
-        const clone = this.board.clone();
-
-        if (this.board.reverted) {
-            clone.reverse();
-        }
-        this.moveHistoryProvider.getLastMove().board = clone;
     }
 
     disableSelection() {
@@ -331,13 +324,13 @@ export class NgxChessBoardComponent
                         toMovePiece.point.row,
                         0
                     );
-                    leftRook.point.col = 3;
+                    leftRook.point.col = this.board.reverted ? 2 : 3;
                 } else {
                     const rightRook = this.board.getPieceByField(
                         toMovePiece.point.row,
                         7
                     );
-                    rightRook.point.col = 5;
+                    rightRook.point.col = this.board.reverted ? 4 : 5;
                 }
             }
         }
