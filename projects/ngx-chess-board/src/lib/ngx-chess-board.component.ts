@@ -5,8 +5,10 @@ import {
     EventEmitter,
     HostListener,
     Input,
+    OnChanges,
     OnInit,
     Output,
+    SimpleChanges,
     ViewChild,
 } from '@angular/core';
 import { BoardLoader } from './board-state-provider/board-loader';
@@ -51,7 +53,8 @@ export interface MoveChange extends HistoryMove {
     templateUrl: './ngx-chess-board.component.html',
     styleUrls: ['./ngx-chess-board.component.scss'],
 })
-export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
+export class NgxChessBoardComponent
+    implements OnInit, OnChanges, NgxChessBoardView {
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
     @Input() showCoords = true;
@@ -115,6 +118,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         event.preventDefault();
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (
+            (changes.lightDisabled &&
+                this.lightDisabled &&
+                this.board.currentWhitePlayer) ||
+            (changes.darkDisabled &&
+                this.darkDisabled &&
+                !this.board.currentWhitePlayer)
+        ) {
+            this.board.possibleCaptures = [];
+            this.board.possibleMoves = [];
+        }
+    }
     ngOnInit() {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.board.reset();
@@ -155,7 +171,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             pointClicked.col
         );
 
-        if(this.isPieceDisabled(pieceClicked)){
+        if (this.isPieceDisabled(pieceClicked)) {
             return;
         }
 
@@ -376,7 +392,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         });
     }
 
-    resolvePromotionChoice(piece: Piece, index: number){
+    resolvePromotionChoice(piece: Piece, index: number) {
         const isWhite = piece.color === Color.WHITE;
         switch (index) {
             case 1:
@@ -526,14 +542,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             pointClicked.col
         );
 
-        if(this.isPieceDisabled(pieceClicked)){
+        if (this.isPieceDisabled(pieceClicked)) {
             return;
         }
 
         if (this.selected) {
             this.handleClickEvent(pointClicked);
         } else {
-
             if (pieceClicked) {
                 if (
                     (this.board.currentWhitePlayer &&
@@ -786,7 +801,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                     return;
                 }
 
-                if(this.isPieceDisabled(srcPiece)){
+                if (this.isPieceDisabled(srcPiece)) {
                     return;
                 }
 
@@ -833,11 +848,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     private isPieceDisabled(pieceClicked: Piece) {
-        return pieceClicked &&
-            (
-                (this.lightDisabled && pieceClicked.color === Color.WHITE)
-                ||
-                (this.darkDisabled && pieceClicked.color === Color.BLACK)
-            );
+        return (
+            pieceClicked &&
+            ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
+                (this.darkDisabled && pieceClicked.color === Color.BLACK))
+        );
     }
 }
