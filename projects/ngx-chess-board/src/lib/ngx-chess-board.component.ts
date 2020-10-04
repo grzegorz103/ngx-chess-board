@@ -259,7 +259,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                 return;
             }
         }
-        toMovePiece.point = newPoint;
 
         const moveFormated = MoveUtils.format(
             toMovePiece.point,
@@ -661,15 +660,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             clone.reverse();
         }
         this.boardStateProvider.addMove(new BoardState(clone));
-    }
-
-    private saveMoveClone() {
-        const clone = this.board.clone();
-
-        if (this.board.reverted) {
-            clone.reverse();
-        }
-        this.moveStateProvider.addMove(new BoardState(clone));
     }
 
     private calculatePieceSize() {
