@@ -18,7 +18,9 @@ export class HistoryMoveProvider {
 
     pop(): HistoryMove {
         const lastHistoryMove = this.getLastMove();
-        this.historyMoves = this.historyMoves.filter((state) => state !== lastHistoryMove);
+        this.historyMoves = this.historyMoves.filter(
+            (state) => state !== lastHistoryMove
+        );
         return lastHistoryMove;
     }
 

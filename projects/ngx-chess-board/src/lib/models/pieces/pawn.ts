@@ -1,3 +1,4 @@
+import { PieceConstant } from '../../utils/unicode-constants';
 import { Board } from '../board';
 import { Color } from './color';
 import { Piece } from './piece';
@@ -6,8 +7,13 @@ import { Point } from './point';
 export class Pawn extends Piece {
     isMovedAlready = false;
 
-    constructor(point: Point, color: Color, image: string, board: Board) {
-        super(point, color, image, 1, board);
+    constructor(
+        point: Point,
+        color: Color,
+        constant: PieceConstant,
+        board: Board
+    ) {
+        super(point, color, constant, 1, board);
     }
 
     getPossibleMoves(): Point[] {
@@ -21,15 +27,26 @@ export class Pawn extends Piece {
             if (this.board.isFieldEmpty(row - 1, col)) {
                 possiblePoints.push(new Point(row - 1, col));
 
-                if (!this.isMovedAlready && this.board.isFieldEmpty(row - 2, col)) {
+                if (
+                    !this.isMovedAlready &&
+                    this.board.isFieldEmpty(row - 2, col)
+                ) {
                     possiblePoints.push(new Point(row - 2, col));
                 }
             }
         } else {
-            if (/*!board.isFieldTakenByEnemy(row + 1, col, Color.WHITE) &&*/ this.board.isFieldEmpty(row + 1, col)) {
+            if (
+                /*!board.isFieldTakenByEnemy(row + 1, col, Color.WHITE) &&*/ this.board.isFieldEmpty(
+                    row + 1,
+                    col
+                )
+            ) {
                 possiblePoints.push(new Point(row + 1, col));
 
-                if (!this.isMovedAlready && this.board.isFieldEmpty(row + 2, col)) {
+                if (
+                    !this.isMovedAlready &&
+                    this.board.isFieldEmpty(row + 2, col)
+                ) {
                     possiblePoints.push(new Point(row + 2, col));
                 }
             }
@@ -47,23 +64,39 @@ export class Pawn extends Piece {
             (this.board.reverted && this.color === Color.BLACK)
         ) {
             if (
-                this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+                this.board.isFieldTakenByEnemy(
+                    row - 1,
+                    col - 1,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
             ) {
                 possiblePoints.push(new Point(row - 1, col - 1));
             }
             if (
-                this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+                this.board.isFieldTakenByEnemy(
+                    row - 1,
+                    col + 1,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
             ) {
                 possiblePoints.push(new Point(row - 1, col + 1));
             }
         } else {
             if (
-                this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+                this.board.isFieldTakenByEnemy(
+                    row + 1,
+                    col - 1,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
             ) {
                 possiblePoints.push(new Point(row + 1, col - 1));
             }
             if (
-                this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+                this.board.isFieldTakenByEnemy(
+                    row + 1,
+                    col + 1,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
             ) {
                 possiblePoints.push(new Point(row + 1, col + 1));
             }
@@ -71,7 +104,8 @@ export class Pawn extends Piece {
 
         if (
             this.board.enPassantPoint &&
-            this.board.enPassantPiece.color === (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.enPassantPiece.color ===
+                (this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
         ) {
             if (
                 row === this.board.enPassantPiece.point.row &&
