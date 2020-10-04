@@ -9,7 +9,6 @@ import {
     Output,
     ViewChild,
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { BoardLoader } from './board-state-provider/board-loader';
 import { BoardState } from './board-state-provider/board-state';
 import { BoardStateProvider } from './board-state-provider/board-state-provider';
@@ -260,6 +259,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             }
         }
 
+        const moveFormated = MoveUtils.format(
+            toMovePiece.point,
+            newPoint,
+            this.board.reverted
+        );
+        toMovePiece.point = newPoint;
+
         this.board.blackKingChecked = this.board.isKingInCheck(
             Color.BLACK,
             this.board.pieces
@@ -279,8 +285,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.board.calculateFEN();
 
         const move = new HistoryMove(
-            MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
-            toMovePiece.constructor.name,
+            moveFormated,
+            toMovePiece.constant.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece,
             check,
@@ -314,7 +320,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             this.checkIfPawnEnpassanted(toMovePiece, newPoint);
         }
 
-        toMovePiece.point = newPoint;
         this.increaseFullMoveCount();
         this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
 

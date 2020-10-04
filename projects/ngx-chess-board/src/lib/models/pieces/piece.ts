@@ -1,4 +1,5 @@
 import { AbstractPiece } from '../../piece-decorator/abstract-piece';
+import { PieceConstant } from '../../utils/unicode-constants';
 import { Board } from '../board';
 import { Color } from './color';
 import { Point } from './point';
@@ -6,14 +7,20 @@ import { Point } from './point';
 export abstract class Piece implements AbstractPiece {
     point: Point;
     color: Color;
-    image: string;
+    constant: PieceConstant;
     checkPoints: Point[] = [];
     relValue: number;
     board: Board;
 
-    constructor(point: Point, color: Color, image: string, relValue: number, board: Board) {
+    constructor(
+        point: Point,
+        color: Color,
+        constant: PieceConstant,
+        relValue: number,
+        board: Board
+    ) {
         this.color = color;
-        this.image = image;
+        this.constant = constant;
         this.point = point;
         this.relValue = relValue;
         this.board = board;

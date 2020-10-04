@@ -1,17 +1,21 @@
 // tslint:disable:max-line-length
-
-export enum UnicodeConstants {
-    WHITE_KING = '&#x2654;',
-    WHITE_QUEEN = '&#x2655;',
-    WHITE_KNIGHT = '&#x2658;',
-    WHITE_ROOK = '&#x2656;',
-    WHITE_PAWN = '&#x2659;',
-    WHITE_BISHOP = '&#x2657;',
-  
-    BLACK_KING = '&#x265A;',
-    BLACK_QUEEN = '&#x265B;',
-    BLACK_KNIGHT = '&#x265E;',
-    BLACK_ROOK = '&#x265C;',
-    BLACK_PAWN = '&#x265F;',
-    BLACK_BISHOP = '&#x265D;'
+export interface PieceConstant {
+    name: string;
+    icon: string;
 }
+
+export const UnicodeConstants = {
+    WHITE_KING: { name: 'King', icon: '&#x2654;' },
+    WHITE_QUEEN: { name: 'Queen', icon: '&#x2655;' },
+    WHITE_KNIGHT: { name: 'Knight', icon: '&#x2658' },
+    WHITE_ROOK: { name: 'Rook', icon: '&#x2656' },
+    WHITE_PAWN: { name: 'Pawn', icon: '&#x2659' },
+    WHITE_BISHOP: { name: 'Bishop', icon: '&#x2657' },
+
+    BLACK_KING: { name: 'King', icon: '&#x265A' },
+    BLACK_QUEEN: { name: 'Queen', icon: '&#x265B' },
+    BLACK_KNIGHT: { name: 'Knight', icon: '&#x265E' },
+    BLACK_ROOK: { name: 'Rook', icon: '&#x265C' },
+    BLACK_PAWN: { name: 'Pawn', icon: '&#x265F' },
+    BLACK_BISHOP: { name: 'Bishop', icon: '&#x265D' },
+};

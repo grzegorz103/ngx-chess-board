@@ -1,3 +1,4 @@
+import { PieceConstant } from '../../utils/unicode-constants';
 import { Board } from '../board';
 import { Color } from './color';
 import { Piece } from './piece';
@@ -11,8 +12,13 @@ export class King extends Piece {
     isMovedAlready;
     isCastling = false;
 
-    constructor(point: Point, color: Color, image: string, board: Board) {
-        super(point, color, image, 0, board);
+    constructor(
+        point: Point,
+        color: Color,
+        constant: PieceConstant,
+        board: Board
+    ) {
+        super(point, color, constant, 0, board);
     }
 
     getPossibleMoves(): Point[] {
@@ -23,7 +29,11 @@ export class King extends Piece {
         // lewo
         if (
             this.board.isFieldEmpty(row, col - 1) &&
-            !this.board.isFieldUnderAttack(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row, col - 1));
         }
@@ -31,7 +41,11 @@ export class King extends Piece {
         // prawo
         if (
             this.board.isFieldEmpty(row, col + 1) &&
-            !this.board.isFieldUnderAttack(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row, col + 1));
         }
@@ -39,7 +53,11 @@ export class King extends Piece {
         // dol
         if (
             this.board.isFieldEmpty(row + 1, col) &&
-            !this.board.isFieldUnderAttack(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row + 1,
+                col,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row + 1, col));
         }
@@ -47,7 +65,11 @@ export class King extends Piece {
         // gora
         if (
             this.board.isFieldEmpty(row - 1, col) &&
-            !this.board.isFieldUnderAttack(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row - 1,
+                col,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row - 1, col));
         }
@@ -55,14 +77,22 @@ export class King extends Piece {
         // lewo gora
         if (
             this.board.isFieldEmpty(row - 1, col - 1) &&
-            !this.board.isFieldUnderAttack(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row - 1,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row - 1, col - 1));
         }
         // prawo gora
         if (
             this.board.isFieldEmpty(row - 1, col + 1) &&
-            !this.board.isFieldUnderAttack(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row - 1,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row - 1, col + 1));
         }
@@ -70,14 +100,22 @@ export class King extends Piece {
         // lewo dol
         if (
             this.board.isFieldEmpty(row + 1, col - 1) &&
-            !this.board.isFieldUnderAttack(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row + 1,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row + 1, col - 1));
         }
         // prawo dol
         if (
             this.board.isFieldEmpty(row + 1, col + 1) &&
-            !this.board.isFieldUnderAttack(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            !this.board.isFieldUnderAttack(
+                row + 1,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row + 1, col + 1));
         }
@@ -87,7 +125,11 @@ export class King extends Piece {
             for (let i = col - 1; i > 0; --i) {
                 if (
                     !this.board.isFieldEmpty(row, i) ||
-                    this.board.isFieldUnderAttack(row, i, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+                    this.board.isFieldUnderAttack(
+                        row,
+                        i,
+                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                    )
                 ) {
                     longCastlePossible = false;
                     break;
@@ -107,7 +149,11 @@ export class King extends Piece {
             for (let i = col + 1; i < 7; ++i) {
                 if (
                     !this.board.isFieldEmpty(row, i) ||
-                    this.board.isFieldUnderAttack(row, i, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+                    this.board.isFieldUnderAttack(
+                        row,
+                        i,
+                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                    )
                 ) {
                     shortCastlePossible = false;
                     break;
@@ -135,62 +181,126 @@ export class King extends Piece {
 
         // lewo
         if (
-            this.board.isFieldTakenByEnemy(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row, col - 1));
         }
 
         // prawo
         if (
-            this.board.isFieldTakenByEnemy(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row, col + 1));
         }
 
         // dol
         if (
-            this.board.isFieldTakenByEnemy(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row + 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row + 1,
+                col,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row + 1,
+                col,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row + 1, col));
         }
 
         // gora
         if (
-            this.board.isFieldTakenByEnemy(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row - 1, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row - 1,
+                col,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row - 1,
+                col,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row - 1, col));
         }
 
         // lewo gora
         if (
-            this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row - 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row - 1,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row - 1,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row - 1, col - 1));
         }
         // prawo gora
         if (
-            this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row - 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row - 1,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row - 1,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row - 1, col + 1));
         }
 
         // lewo dol
         if (
-            this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row + 1, col - 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row + 1,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row + 1,
+                col - 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row + 1, col - 1));
         }
         // prawo dol
         if (
-            this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE) &&
-            !this.board.isFieldUnderAttack(row + 1, col + 1, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)
+            this.board.isFieldTakenByEnemy(
+                row + 1,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            ) &&
+            !this.board.isFieldUnderAttack(
+                row + 1,
+                col + 1,
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+            )
         ) {
             possiblePoints.push(new Point(row + 1, col + 1));
         }
