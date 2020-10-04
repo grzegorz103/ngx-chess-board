@@ -229,7 +229,7 @@ export class NgxChessBoardComponent
             check,
             checkmate,
             stalemate,
-            fen: this.board.fen
+            fen: this.board.fen,
         });
     }
 
@@ -794,10 +794,6 @@ export class NgxChessBoardComponent
                     return;
                 }
 
-                if (this.isPieceDisabled(srcPiece)) {
-                    return;
-                }
-
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
                 if (
@@ -841,6 +837,17 @@ export class NgxChessBoardComponent
     }
 
     private isPieceDisabled(pieceClicked: Piece) {
+        if (pieceClicked && pieceClicked.point) {
+            const foundCapture = this.board.possibleCaptures.find(
+                (capture) =>
+                    capture.col === pieceClicked.point.col &&
+                    capture.row === pieceClicked.point.row
+            );
+
+            if (foundCapture) {
+                return false;
+            }
+        }
         return (
             pieceClicked &&
             ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
