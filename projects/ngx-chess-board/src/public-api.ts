@@ -4,6 +4,7 @@
 
 export * from './lib/ngx-chess-board.module';
 export * from './lib/history-move-provider/history-move';
+export * from './lib/utils/inputs/piece-icon-input';
 export * from './lib/ngx-chess-board.component';
 export * from './lib/piece-promotion-modal/piece-promotion-modal.component';
 

@@ -1,6 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
-import { MoveChange, NgxChessBoardComponent } from 'ngx-chess-board';
-import { PieceIconInput } from 'ngx-chess-board/src/lib/utils/inputs/piece-icon-input';
+import {
+    MoveChange,
+    NgxChessBoardComponent,
+    PieceIconInput,
+} from 'ngx-chess-board';
 import { FenComponent } from './components/fen/fen.component';
 import { MovesComponent } from './components/moves/moves.component';
 
@@ -29,7 +32,7 @@ export class AppComponent {
         whiteKnightUrl: '',
         whitePawnUrl: '',
         whiteQueenUrl: '',
-        whiteRookUrl: ''
+        whiteRookUrl: '',
     };
 
     public reset(): void {
@@ -58,10 +61,10 @@ export class AppComponent {
     public switchBoard(stateIndex: number): void {
         if (this.currentStateIndex !== stateIndex) {
             this.currentStateIndex = stateIndex;
-            this.boardManager.updateBoard(
-                this.boardManager.moveHistoryProvider.historyMoves[stateIndex]
-                    .board
-            );
+            // this.boardManager.updateBoard(
+            //     this.boardManager.moveHistoryProvider.historyMoves[stateIndex]
+            //         .board
+            // );
         }
     }
 
