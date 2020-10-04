@@ -10,11 +10,11 @@ import { MovesComponent } from './components/moves/moves.component';
     styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-    @ViewChild('boardManager', { static: false })
+    @ViewChild('board', { static: false })
     boardManager: NgxChessBoardComponent;
     @ViewChild('movesManager', { static: false }) movesManager: MovesComponent;
     @ViewChild('fenManager', { static: false }) fenManager: FenComponent;
-    public fen: string;
+    public fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     private currentStateIndex: number;
     manualMove = 'd2d4';
     icons: PieceIconInput = {
@@ -32,6 +32,14 @@ export class AppComponent {
         whiteRookUrl: ''
     };
 
+    public darkTileColor = 'rgb(97, 84, 61)';
+    public lightTileColor = '#BAA378';
+    public size = 400;
+    public dragDisabled = false;
+    public drawDisabled = false;
+    public lightDisabled = false;
+    public darkDisabled = false;
+
     public reset(): void {
         this.movesManager.clear();
         this.boardManager.reset();
@@ -43,8 +51,6 @@ export class AppComponent {
     }
 
     public undo(): void {
-        console.log('UNDO');
-        this.movesManager.undo();
         this.boardManager.undo();
         this.fen = this.boardManager.getFEN();
     }
@@ -73,10 +79,34 @@ export class AppComponent {
 
     public moveCallback(move: MoveChange): void {
         this.fen = this.boardManager.getFEN();
-        this.movesManager.addMove(move);
     }
 
     public moveManual(): void {
         this.boardManager.move(this.manualMove);
+    }
+
+    getFEN() {
+        let fen = this.boardManager.getFEN();
+        alert(fen);
+    }
+
+    showMoveHistory() {
+        alert(this.boardManager.getMoveHistory())
+    }
+
+    switchDrag() {
+        this.dragDisabled = !this.dragDisabled;
+    }
+
+    switchDraw() {
+        this.drawDisabled = !this.drawDisabled;
+    }
+
+    switchDarkDisabled() {
+        this.darkDisabled = !this.darkDisabled;
+    }
+
+    switchLightDisabled() {
+        this.lightDisabled = !this.lightDisabled;
     }
 }
