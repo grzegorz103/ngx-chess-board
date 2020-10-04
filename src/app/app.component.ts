@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { MoveChange, NgxChessBoardComponent } from 'ngx-chess-board';
-import { PieceIconInput } from 'ngx-chess-board/src/lib/utils/inputs/piece-icon-input';
+import { PieceIconInput } from 'ngx-chess-board';
 import { FenComponent } from './components/fen/fen.component';
 import { MovesComponent } from './components/moves/moves.component';
 

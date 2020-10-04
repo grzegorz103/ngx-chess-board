@@ -39,7 +39,6 @@ import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { MoveUtils } from './utils/move-utils';
 import { UnicodeConstants } from './utils/unicode-constants';
-import { DomSanitizer, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 
 export interface MoveChange extends HistoryMove {
     check: boolean;
@@ -79,7 +78,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     drawPoint: DrawPoint;
     pieceIconManager: PieceIconInputManager;
 
-    constructor(private ngxChessBoardService: NgxChessBoardService,private _sanitizer: DomSanitizer) {
+    constructor(private ngxChessBoardService: NgxChessBoardService) {
         this.board = new Board();
         this.boardLoader = new BoardLoader(this.board);
         this.boardLoader.addPieces();
@@ -107,7 +106,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     @Input('pieceIcons')
-    public set pieceIcons(pieceIcons: PieceIconInput){
+    public set pieceIcons(pieceIcons: PieceIconInput) {
         this.pieceIconManager.pieceIconInput = pieceIcons;
     }
 
@@ -204,8 +203,8 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.disabling = false;
         this.board.calculateFEN();
 
-        let lastMove = this.moveHistoryProvider.getLastMove();
-        if(lastMove && promotionIndex){
+        const lastMove = this.moveHistoryProvider.getLastMove();
+        if (lastMove && promotionIndex) {
             lastMove.move += promotionIndex;
         }
         this.moveChange.emit({
@@ -302,7 +301,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
         const move = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
-            toMovePiece.constructor.name,
+            toMovePiece.constant.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece
         );
@@ -336,7 +335,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         this.increaseFullMoveCount();
         this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
 
-        if(!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+        if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
             this.afterMoveActions();
         }
     }
@@ -793,13 +792,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
-                if(this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis))
-                    || this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                if (
+                    this.board.isPointInPossibleMoves(
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    ) ||
+                    this.board.isPointInPossibleCaptures(
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    )
+                ) {
                     this.saveClone();
                     this.movePiece(
                         srcPiece,
                         new Point(destIndexes.yAxis, destIndexes.xAxis),
-                        coords.length === 5 ? +coords.substring(4,5) : 0
+                        coords.length === 5 ? +coords.substring(4, 5) : 0
                     );
 
                     this.board.lastMoveSrc = new Point(
@@ -820,7 +825,11 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     getCustomPieceIcons(piece: Piece) {
-        return JSON.parse(`{ "background-image": "url('${this.pieceIconManager.getPieceIcon(piece)}')"}`)
+        return JSON.parse(
+            `{ "background-image": "url('${this.pieceIconManager.getPieceIcon(
+                piece
+            )}')"}`
+        );
     }
 
     private isPieceDisabled(pieceClicked: Piece) {
