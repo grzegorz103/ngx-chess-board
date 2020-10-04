@@ -61,12 +61,12 @@ export class MovesComponent {
         let sourceLetter = source.charAt(0);
         let move: string;
         const piece = historyMove.piece;
-        const isPawn = piece === 'pawn';
-        const isRook = piece === 'rook';
-        const isBishop = piece === 'bishop';
-        const isKing = piece === 'king';
-        const isQueen = piece === 'queen';
-        const isKnight = piece === 'knight';
+        const isPawn = piece === 'Pawn';
+        const isRook = piece === 'Eook';
+        const isBishop = piece === 'Bishop';
+        const isKing = piece === 'King';
+        const isQueen = piece === 'Queen';
+        const isKnight = piece === 'Knight';
         if (isPawn) {
             sourceLetter = historyMove.x ? sourceLetter : '';
         }

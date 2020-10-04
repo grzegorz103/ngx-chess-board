@@ -5,7 +5,6 @@ export class HistoryMove {
     piece: string;
     color: string;
     x: boolean;
-    board: Board;
 
     constructor(move: string, piece: string, color: string, captured: boolean) {
         this.move = move;

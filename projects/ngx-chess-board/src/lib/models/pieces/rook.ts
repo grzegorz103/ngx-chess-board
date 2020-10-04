@@ -1,3 +1,4 @@
+import { PieceConstant } from '../../utils/unicode-constants';
 import { Board } from '../board';
 import { Color } from './color';
 import { King } from './king';
@@ -7,8 +8,13 @@ import { Point } from './point';
 export class Rook extends Piece {
     isMovedAlready = false;
 
-    constructor(point: Point, color: Color, image: string, board: Board) {
-        super(point, color, image, 5, board);
+    constructor(
+        point: Point,
+        color: Color,
+        constant: PieceConstant,
+        board: Board
+    ) {
+        super(point, color, constant, 5, board);
     }
 
     getPossibleMoves(): Point[] {
@@ -64,7 +70,13 @@ export class Rook extends Piece {
 
         for (let i = row + 1; i < 8; ++i) {
             // dol
-            if (this.board.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (
+                this.board.isFieldTakenByEnemy(
+                    i,
+                    col,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
+            ) {
                 possiblePoints.push(new Point(i, col));
                 break;
             } else {
@@ -76,7 +88,13 @@ export class Rook extends Piece {
 
         for (let i = row - 1; i >= 0; --i) {
             // gora
-            if (this.board.isFieldTakenByEnemy(i, col, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (
+                this.board.isFieldTakenByEnemy(
+                    i,
+                    col,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
+            ) {
                 possiblePoints.push(new Point(i, col));
                 break;
             } else {
@@ -88,7 +106,13 @@ export class Rook extends Piece {
 
         for (let j = col - 1; j >= 0; --j) {
             // lewo
-            if (this.board.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (
+                this.board.isFieldTakenByEnemy(
+                    row,
+                    j,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
+            ) {
                 possiblePoints.push(new Point(row, j));
                 break;
             } else {
@@ -100,7 +124,13 @@ export class Rook extends Piece {
 
         for (let j = col + 1; j < 8; ++j) {
             // prawo
-            if (this.board.isFieldTakenByEnemy(row, j, this.color === Color.WHITE ? Color.BLACK : Color.WHITE)) {
+            if (
+                this.board.isFieldTakenByEnemy(
+                    row,
+                    j,
+                    this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                )
+            ) {
                 possiblePoints.push(new Point(row, j));
                 break;
             } else {

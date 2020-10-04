@@ -70,7 +70,8 @@ export class MoveUtils {
             yAxis = +coords.charAt(1) - 1;
         } else {
             xAxis = coords.charCodeAt(0) - 97;
-            yAxis = Math.abs(+coords.charAt(1) - 7) + 1;
+            yAxis = Math.abs(+coords.charAt(1) - 8);
+            console.log(+coords.charAt(1));
         }
 
         return new MoveTranslation(xAxis, yAxis, reverted);

@@ -1,12 +1,112 @@
-<div class="left-part">
-    <app-actions
-        (latest)="setLatestBoard()"
-        (restart)="reset()"
-        (reverse)="reverse()"
-        (undo)="undo()"
-        #actions
-    ></app-actions>
-    <app-settings #settings></app-settings>
+<div style="width:400px; margin-left: auto; margin-right: auto">
+    <h2 style="text-align: center">ngx-chess-board example</h2>
+    <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (moveChange)="moveCallback($event)"
+                     [dragDisabled]="dragDisabled"
+                     [drawDisabled]="drawDisabled"
+                     [darkTileColor]="darkTileColor"
+                     [lightDisabled]="lightDisabled"
+                     [darkDisabled]="darkDisabled"
+    ></ngx-chess-board>
+    <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
+    <hr>
+    <label for="lightTile">Light tile color:</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon3" [style.background-color]="lightTileColor"></span>
+        </div>
+        <input type="text" class="form-control" placeholder="blue" [(ngModel)]="lightTileColor" id="lightTile"
+               aria-describedby="basic-addon3">
+    </div>
+    <br>
+    <label for="darkTile">Dark tile color:</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="darkTileSpan" [style.background-color]="darkTileColor"></span>
+        </div>
+        <input type="text" class="form-control" placeholder="blue" [(ngModel)]="darkTileColor" id="darkTile"
+               aria-describedby="basic-addon3">
+    </div>
+
+    <br>
+    <label for="size">Size:</label>
+    <div class="input-group">
+        <input type="number" class="form-control" placeholder="Between 100 and 4000" [(ngModel)]="size" id="size"
+               aria-describedby="basic-addon3">
+        <div class="input-group-append">
+            <span class="input-group-text">px</span>
+        </div>
+    </div>
+    <br>
+
+    <div style="display:flex;">
+        <button type="button" class="btn btn-primary"
+                style="margin-left:auto; margin-right: 10px" (click)="reset()">Reset
+        </button>
+
+        <button type="button" class="btn btn-warning"
+                style="margin-right: 10px" (click)="reverse()">Reverse
+        </button>
+
+        <button type="button" class="btn btn-info"
+                style="margin-right: 10px" (click)="undo()">Undo
+        </button>
+
+        <button type="button" class="btn btn-success"
+                style="margin-right:auto" (click)="showMoveHistory()">Display moves
+        </button>
+    </div>
+
+    <label class="switch mt-3">
+        <input type="checkbox" checked (click)="switchDrag()">
+        <span class="slider round"></span>
+    </label>
+    Piece dragging is {{ dragDisabled ? 'OFF' : 'ON'}}
+    <br>
+    <label class="switch mt-3">
+        <input type="checkbox" checked (click)="switchDraw()">
+        <span class="slider round"></span>
+    </label>
+    Drawing with right mouse button is {{ drawDisabled ? 'OFF' : 'ON'}}
+    <br>
+    <label class="switch mt-3">
+        <input
+            (click)="switchLightDisabled()"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Light tiles are {{ lightDisabled ? 'OFF' : 'ON' }}
+    <br>
+    <label class="switch mt-3">
+        <input
+            (click)="switchDarkDisabled()"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Dark tiles are {{ darkDisabled ? 'OFF' : 'ON' }}
+    <hr style="border-color: gray">
+
+    <div class="form-group input-group-sm">
+        <label for="fen">FEN</label>
+        <input type="text" class="form-control  form-control-lg" id="fen" aria-describedby="fen" [(ngModel)]="fen"
+               placeholder="FEN">
+    </div>
+
+    <div style="display:flex;">
+        <button type="button" class="btn btn-success"
+                style="margin-left:auto; margin-right: 10px" (click)="setFen()">Set FEN
+        </button>
+
+        <button type="button" class="btn btn-info"
+                style="margin-right:auto" (click)="getFEN()">Show FEN
+        </button>
+    </div>
+
+    <hr>
+
     <label for="manualMove">Manual move:</label>
     <div class="input-group">
         <div class="input-group-prepend"></div>
@@ -23,30 +123,7 @@
             class="btn btn-primary"
             style="margin-left:auto; margin-right: 10px"
             (click)="moveManual()"
-        >
-            Move
+        >Move
         </button>
     </div>
-</div>
-<div class="middle-part">
-    <ngx-chess-board
-        [darkTileColor]="settings.darkTileColor"
-        [dragDisabled]="settings.dragDisabled"
-        [drawDisabled]="settings.drawDisabled"
-        [lightTileColor]="settings.lightTileColor"
-        [size]="settings.size"
-        (moveChange)="moveCallback($event)"
-        #boardManager
-    ></ngx-chess-board>
-</div>
-<div class="right-part">
-    <app-moves
-        (switchToMoveIndex)="switchBoard($event)"
-        #movesManager
-    ></app-moves>
-    <app-fen
-        [fen]="fen"
-        (fenChange)="setFen($event)"
-        #fenManager
-    ></app-fen>
 </div>

@@ -5,8 +5,10 @@ import {
     EventEmitter,
     HostListener,
     Input,
+    OnChanges,
     OnInit,
     Output,
+    SimpleChanges,
     ViewChild,
 } from '@angular/core';
 import { BoardLoader } from './board-state-provider/board-loader';
@@ -39,12 +41,12 @@ import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { MoveUtils } from './utils/move-utils';
 import { UnicodeConstants } from './utils/unicode-constants';
-import { DomSanitizer, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 
 export interface MoveChange extends HistoryMove {
     check: boolean;
     stalemate: boolean;
     checkmate: boolean;
+    fen: string;
 }
 
 @Component({
@@ -52,12 +54,15 @@ export interface MoveChange extends HistoryMove {
     templateUrl: './ngx-chess-board.component.html',
     styleUrls: ['./ngx-chess-board.component.scss'],
 })
-export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
+export class NgxChessBoardComponent
+    implements OnInit, OnChanges, NgxChessBoardView {
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
     @Input() showCoords = true;
     @Input() dragDisabled = false;
     @Input() drawDisabled = false;
+    @Input() lightDisabled = false;
+    @Input() darkDisabled = false;
     @Output() moveChange = new EventEmitter<MoveChange>();
     @Output() checkmate = new EventEmitter<void>();
     @Output() stalemate = new EventEmitter<void>();
@@ -77,7 +82,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     drawPoint: DrawPoint;
     pieceIconManager: PieceIconInputManager;
 
-    constructor(private ngxChessBoardService: NgxChessBoardService,private _sanitizer: DomSanitizer) {
+    constructor(private ngxChessBoardService: NgxChessBoardService) {
         this.board = new Board();
         this.boardLoader = new BoardLoader(this.board);
         this.boardLoader.addPieces();
@@ -105,7 +110,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     @Input('pieceIcons')
-    public set pieceIcons(pieceIcons: PieceIconInput){
+    public set pieceIcons(pieceIcons: PieceIconInput) {
         this.pieceIconManager.pieceIconInput = pieceIcons;
     }
 
@@ -114,6 +119,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         event.preventDefault();
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (
+            (changes.lightDisabled &&
+                this.lightDisabled &&
+                this.board.currentWhitePlayer) ||
+            (changes.darkDisabled &&
+                this.darkDisabled &&
+                !this.board.currentWhitePlayer)
+        ) {
+            this.board.possibleCaptures = [];
+            this.board.possibleMoves = [];
+        }
+    }
     ngOnInit() {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.board.reset();
@@ -149,14 +167,19 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             this.disabling = false;
             return;
         }
+        const pieceClicked = this.getPieceByPoint(
+            pointClicked.row,
+            pointClicked.col
+        );
+
+        if (this.isPieceDisabled(pieceClicked)) {
+            return;
+        }
+
         if (this.selected) {
             this.handleClickEvent(pointClicked);
             //   this.possibleMoves = activePiece.getPossibleMoves();
         } else {
-            const pieceClicked = this.getPieceByPoint(
-                pointClicked.row,
-                pointClicked.col
-            );
             if (pieceClicked) {
                 if (
                     (this.board.currentWhitePlayer &&
@@ -172,7 +195,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
     }
 
-    afterMoveActions() {
+    afterMoveActions(promotionIndex?: number) {
         this.checkIfPawnFirstMove(this.board.activePiece);
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
@@ -193,24 +216,21 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         const stalemate =
             this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
 
-        this.saveBoardToLastMove();
         this.disabling = false;
         this.board.calculateFEN();
+
+        const lastMove = this.moveHistoryProvider.getLastMove();
+        if (lastMove && promotionIndex) {
+            lastMove.move += promotionIndex;
+        }
+
         this.moveChange.emit({
-            ...this.moveHistoryProvider.getLastMove(),
+            ...lastMove,
             check,
             checkmate,
             stalemate,
+            fen: this.board.fen
         });
-    }
-
-    private saveBoardToLastMove() {
-        const clone = this.board.clone();
-
-        if (this.board.reverted) {
-            clone.reverse();
-        }
-        this.moveHistoryProvider.getLastMove().board = clone;
     }
 
     disableSelection() {
@@ -271,7 +291,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         );
     }
 
-    movePiece(toMovePiece: Piece, newPoint: Point) {
+    movePiece(toMovePiece: Piece, newPoint: Point, promotionIndex?: number) {
         const destPiece = this.board.pieces.find(
             (piece) =>
                 piece.point.col === newPoint.col &&
@@ -290,7 +310,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
 
         const move = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
-            toMovePiece.image.split('-')[1],
+            toMovePiece.constant.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece
         );
@@ -304,13 +324,13 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                         toMovePiece.point.row,
                         0
                     );
-                    leftRook.point.col = 3;
+                    leftRook.point.col = this.board.reverted ? 2 : 3;
                 } else {
                     const rightRook = this.board.getPieceByField(
                         toMovePiece.point.row,
                         7
                     );
-                    rightRook.point.col = 5;
+                    rightRook.point.col = this.board.reverted ? 4 : 5;
                 }
             }
         }
@@ -323,7 +343,10 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         toMovePiece.point = newPoint;
         this.increaseFullMoveCount();
         this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
-        return this.checkForPawnPromote(toMovePiece);
+
+        if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+            this.afterMoveActions();
+        }
     }
 
     checkIfPawnFirstMove(piece: Piece) {
@@ -332,7 +355,7 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
         }
     }
 
-    checkForPawnPromote(toPromotePiece: Piece) {
+    checkForPawnPromote(toPromotePiece: Piece, promotionIndex?: number) {
         if (!(toPromotePiece instanceof Pawn)) {
             return;
         }
@@ -341,65 +364,79 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             this.board.pieces = this.board.pieces.filter(
                 (piece) => piece !== toPromotePiece
             );
-            this.openPromoteDialog(toPromotePiece);
+
+            // When we make move manually, we pass promotion index already, so we don't need
+            // to acquire it from promote dialog
+            if (!promotionIndex) {
+                this.openPromoteDialog(toPromotePiece);
+            } else {
+                this.resolvePromotionChoice(toPromotePiece, promotionIndex);
+                this.afterMoveActions(promotionIndex);
+            }
+
+            return true;
         }
     }
 
     openPromoteDialog(piece: Piece) {
         this.modal.open(piece.color, (index) => {
-            const isWhite = piece.color === Color.WHITE;
-            switch (index) {
-                case 1:
-                    this.board.pieces.push(
-                        new Queen(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_QUEEN
-                                : UnicodeConstants.BLACK_QUEEN,
-                            this.board
-                        )
-                    );
-                    break;
-                case 2:
-                    this.board.pieces.push(
-                        new Rook(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_ROOK
-                                : UnicodeConstants.BLACK_ROOK,
-                            this.board
-                        )
-                    );
-                    break;
-                case 3:
-                    this.board.pieces.push(
-                        new Bishop(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_BISHOP
-                                : UnicodeConstants.BLACK_BISHOP,
-                            this.board
-                        )
-                    );
-                    break;
-                case 4:
-                    this.board.pieces.push(
-                        new Knight(
-                            piece.point,
-                            piece.color,
-                            isWhite
-                                ? UnicodeConstants.WHITE_KNIGHT
-                                : UnicodeConstants.BLACK_KNIGHT,
-                            this.board
-                        )
-                    );
-                    break;
-            }
-            this.afterMoveActions();
+            this.resolvePromotionChoice(piece, index);
+            this.afterMoveActions(index);
         });
+    }
+
+    resolvePromotionChoice(piece: Piece, index: number) {
+        const isWhite = piece.color === Color.WHITE;
+        switch (index) {
+            case 1:
+                this.board.pieces.push(
+                    new Queen(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_QUEEN
+                            : UnicodeConstants.BLACK_QUEEN,
+                        this.board
+                    )
+                );
+                break;
+            case 2:
+                this.board.pieces.push(
+                    new Rook(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_ROOK
+                            : UnicodeConstants.BLACK_ROOK,
+                        this.board
+                    )
+                );
+                break;
+            case 3:
+                this.board.pieces.push(
+                    new Bishop(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_BISHOP
+                            : UnicodeConstants.BLACK_BISHOP,
+                        this.board
+                    )
+                );
+                break;
+            case 4:
+                this.board.pieces.push(
+                    new Knight(
+                        piece.point,
+                        piece.color,
+                        isWhite
+                            ? UnicodeConstants.WHITE_KNIGHT
+                            : UnicodeConstants.BLACK_KNIGHT,
+                        this.board
+                    )
+                );
+                break;
+        }
     }
 
     reset(): void {
@@ -493,13 +530,18 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             return;
         }
 
+        const pieceClicked = this.getPieceByPoint(
+            pointClicked.row,
+            pointClicked.col
+        );
+
+        if (this.isPieceDisabled(pieceClicked)) {
+            return;
+        }
+
         if (this.selected) {
             this.handleClickEvent(pointClicked);
         } else {
-            const pieceClicked = this.getPieceByPoint(
-                pointClicked.row,
-                pointClicked.col
-            );
             if (pieceClicked) {
                 if (
                     (this.board.currentWhitePlayer &&
@@ -675,7 +717,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
             );
             this.board.lastMoveDest = pointClicked;
             this.movePiece(this.board.activePiece, pointClicked);
-            this.afterMoveActions();
         }
 
         this.disableSelection();
@@ -753,14 +794,25 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                     return;
                 }
 
+                if (this.isPieceDisabled(srcPiece)) {
+                    return;
+                }
+
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
-                if(this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis))
-                    || this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                if (
+                    this.board.isPointInPossibleMoves(
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    ) ||
+                    this.board.isPointInPossibleCaptures(
+                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                    )
+                ) {
                     this.saveClone();
                     this.movePiece(
                         srcPiece,
-                        new Point(destIndexes.yAxis, destIndexes.xAxis)
+                        new Point(destIndexes.yAxis, destIndexes.xAxis),
+                        coords.length === 5 ? +coords.substring(4, 5) : 0
                     );
 
                     this.board.lastMoveSrc = new Point(
@@ -772,7 +824,6 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
                         destIndexes.xAxis
                     );
 
-                    this.afterMoveActions();
                     this.disableSelection();
                 } else {
                     this.disableSelection();
@@ -782,7 +833,18 @@ export class NgxChessBoardComponent implements OnInit, NgxChessBoardView {
     }
 
     getCustomPieceIcons(piece: Piece) {
-        return JSON.parse(`{ "background-image": "url('${this.pieceIconManager.getPieceIcon(piece)}')"}`)
+        return JSON.parse(
+            `{ "background-image": "url('${this.pieceIconManager.getPieceIcon(
+                piece
+            )}')"}`
+        );
     }
 
+    private isPieceDisabled(pieceClicked: Piece) {
+        return (
+            pieceClicked &&
+            ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
+                (this.darkDisabled && pieceClicked.color === Color.BLACK))
+        );
+    }
 }
