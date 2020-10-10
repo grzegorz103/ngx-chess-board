@@ -794,10 +794,6 @@ export class NgxChessBoardComponent
                     return;
                 }
 
-                if (this.isPieceDisabled(srcPiece)) {
-                    return;
-                }
-
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
                 if (
