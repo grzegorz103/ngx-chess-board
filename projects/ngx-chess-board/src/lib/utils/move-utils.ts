@@ -71,7 +71,6 @@ export class MoveUtils {
         } else {
             xAxis = coords.charCodeAt(0) - 97;
             yAxis = Math.abs(+coords.charAt(1) - 8);
-            console.log(+coords.charAt(1));
         }
 
         return new MoveTranslation(xAxis, yAxis, reverted);
