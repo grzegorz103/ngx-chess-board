@@ -7,7 +7,7 @@ import { Color } from '../models/pieces/color';
     styleUrls: ['./piece-promotion-modal.component.scss'],
 })
 export class PiecePromotionModalComponent {
-    @ViewChild('modal', { static: false }) modal: ElementRef;
+    @ViewChild('modal') modal: ElementRef;
 
     selectedIndex = 0;
     color: Color;
