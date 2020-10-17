@@ -1,9 +1,11 @@
 {
   "name": "ngx-chess-board",
-  "version": "1.9.3",
+  "version": "2.0.0",
   "peerDependencies": {
-    "@angular/common": "^8.2.14",
-    "@angular/core": "^8.2.14"
+    "@angular/common": "^10.1.6",
+    "@angular/core": "^10.1.6",
+    "@angular/cdk": "^10.2.5"
+
   },
   "description": "Chess game component",
   "repository": {

@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from 'lodash';
 import { Bishop } from './pieces/bishop';
 import { Color } from './pieces/color';
 import { King } from './pieces/king';
