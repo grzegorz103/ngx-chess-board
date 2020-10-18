@@ -12,7 +12,7 @@ import { MovesComponent } from './components/moves/moves.component';
 export class AppComponent {
     @ViewChild('board')
     boardManager: NgxChessBoardComponent;
-    @ViewChild('movesManager') movesManager: MovesComponent;
+
     @ViewChild('fenManager') fenManager: FenComponent;
     public fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     private currentStateIndex: number;
@@ -41,7 +41,7 @@ export class AppComponent {
     public darkDisabled = false;
 
     public reset(): void {
-        this.movesManager.clear();
+        alert('Resetting board');
         this.boardManager.reset();
         this.fen = this.boardManager.getFEN();
     }
@@ -94,4 +94,5 @@ export class AppComponent {
     switchLightDisabled() {
         this.lightDisabled = !this.lightDisabled;
     }
+
 }

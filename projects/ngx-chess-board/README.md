@@ -12,8 +12,8 @@ npm i ngx-chess-board
 See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/index.html)
 
 ## Screenshots
-![alt scr](https://i.imgur.com/647jzkp.png)
-![alt scr](https://i.imgur.com/qdX6zpj.png)
+![alt scr](https://i.imgur.com/SumXcsN.png)
+![alt scr](https://i.imgur.com/8im9bVz.png)
 
 ## Use example
 
@@ -88,6 +88,9 @@ Input | Type | Description
 `[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
 `[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
 `[drawDisabled]` | boolean|  Specifies whether drawing with right mouse button is disabled. Default value is <b>false</b>
+`[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
+`[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>
+`[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
 <hr>
 
 #### Outputs
@@ -107,3 +110,4 @@ undo() | void | Undo the last move
 getMoveHistory() | JSON | Returns array in JSON format which contains information about every move
 setFEN(fen: string) | void | Allows to import specified board position by FEN
 getFEN() | string | Returns current board FEN position
+move(coords: string) | void | Makes move by specified coords. The coords parameter contains source and destination position e.g. 'd2d4'.
