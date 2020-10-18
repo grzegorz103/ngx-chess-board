@@ -68,9 +68,9 @@ export class NgxChessBoardComponent
     @Output() stalemate = new EventEmitter<void>();
     pieceSize: number;
     selected = false;
-    @ViewChild('boardRef', { static: false })
+    @ViewChild('boardRef')
     boardRef: ElementRef;
-    @ViewChild('modal', { static: false }) modal: PiecePromotionModalComponent;
+    @ViewChild('modal') modal: PiecePromotionModalComponent;
     board: Board;
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;

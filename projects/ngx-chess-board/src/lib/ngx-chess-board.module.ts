@@ -11,7 +11,7 @@ import { NgxChessBoardService } from './service/ngx-chess-board.service';
     exports: [NgxChessBoardComponent],
 })
 export class NgxChessBoardModule {
-    static forRoot(): ModuleWithProviders {
+    static forRoot(): ModuleWithProviders<NgxChessBoardModule> {
         return {
             ngModule: NgxChessBoardModule,
             providers: [NgxChessBoardService],
