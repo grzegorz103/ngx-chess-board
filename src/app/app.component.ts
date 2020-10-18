@@ -10,10 +10,10 @@ import { MovesComponent } from './components/moves/moves.component';
     styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-    @ViewChild('board', { static: false })
+    @ViewChild('board')
     boardManager: NgxChessBoardComponent;
-    @ViewChild('movesManager', { static: false }) movesManager: MovesComponent;
-    @ViewChild('fenManager', { static: false }) fenManager: FenComponent;
+    @ViewChild('movesManager') movesManager: MovesComponent;
+    @ViewChild('fenManager') fenManager: FenComponent;
     public fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     private currentStateIndex: number;
     manualMove = 'd2d4';
