@@ -51,7 +51,7 @@
                         [style.background-image]="!pieceIconManager.isDefaultIcons() ? 'url(' + getCustomPieceIcons(getPieceByPoint(i, j)) + ')': null"
                         [style.font-size]="pieceSize + 'px'"
                         (cdkDragEnded)="dragEnded($event)"
-                        (cdkDragMoved)="dragMoved($event)"
+                        (cdkDragMoved)="dragMoved()"
                         (cdkDragStarted)="dragStart($event)"
                         cdkDrag
                     >
