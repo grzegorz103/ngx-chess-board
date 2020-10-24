@@ -51,16 +51,17 @@
                         [style.background-image]="!pieceIconManager.isDefaultIcons() ? 'url(' + getCustomPieceIcons(getPieceByPoint(i, j)) + ')': null"
                         [style.font-size]="pieceSize + 'px'"
                         (cdkDragEnded)="dragEnded($event)"
+                        (cdkDragMoved)="dragMoved($event)"
                         (cdkDragStarted)="dragStart($event)"
                         cdkDrag
                     >
                         <ng-container *ngIf="!pieceIconManager.isDefaultIcons()">
                             <img
+                                class="custom-preview"
                                 [src]="getCustomPieceIcons(getPieceByPoint(i, j))"
-                                [style.height.px]="50"
-                                [style.width.px]="50"
+                                [style.height.px]="heightAndWidth / 8"
+                                [style.width.px]="heightAndWidth / 8"
                                 alt="image"
-                                clasS="custom"
                                 *cdkDragPreview
                             >
                         </ng-container>

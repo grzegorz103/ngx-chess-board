@@ -497,6 +497,17 @@ export class NgxChessBoardComponent
         style.zIndex = '1000';
         style.touchAction = 'none';
         style.pointerEvents = 'none';
+
+        this.adjustMarginOfPreview();
+    }
+
+    adjustMarginOfPreview() {
+        const cdkPreviewClone = document.getElementsByClassName(
+            'custom-preview'
+        )[0] as HTMLElement;
+
+        cdkPreviewClone.style.marginTop = -this.heightAndWidth / 16 + 'px';
+        cdkPreviewClone.style.marginLeft = -this.heightAndWidth / 16 + 'px';
     }
 
     onMouseDown(event: MouseEvent) {
@@ -841,5 +852,9 @@ export class NgxChessBoardComponent
             ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
                 (this.darkDisabled && pieceClicked.color === Color.BLACK))
         );
+    }
+
+    public dragMoved(): void {
+        this.adjustMarginOfPreview();
     }
 }
