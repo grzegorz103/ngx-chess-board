@@ -96,15 +96,7 @@ export class NgxChessBoardComponent
 
     @Input('size')
     public set size(size: number) {
-        if (
-            size &&
-            size >= Constants.MIN_BOARD_SIZE &&
-            size <= Constants.MAX_BOARD_SIZE
-        ) {
-            this.heightAndWidth = size;
-        } else {
-            this.heightAndWidth = Constants.DEFAULT_SIZE;
-        }
+        this.heightAndWidth = size;
         this.drawProvider.clear();
         this.calculatePieceSize();
     }
@@ -829,11 +821,7 @@ export class NgxChessBoardComponent
     }
 
     getCustomPieceIcons(piece: Piece) {
-        return JSON.parse(
-            `{ "background-image": "url('${this.pieceIconManager.getPieceIcon(
-                piece
-            )}')"}`
-        );
+        return this.pieceIconManager.getPieceIcon(piece);
     }
 
     private isPieceDisabled(pieceClicked: Piece) {

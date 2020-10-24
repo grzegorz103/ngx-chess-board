@@ -112,3 +112,11 @@ svg {
         drop-shadow(-1px -1px 0px #111);
 }
 
+.custom.cdk-drag-preview {
+    margin-top: -25px !important;
+    margin-left: -25px !important;
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.05;
+}
