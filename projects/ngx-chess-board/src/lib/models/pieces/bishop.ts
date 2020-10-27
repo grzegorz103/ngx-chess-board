@@ -154,8 +154,8 @@ export class Bishop extends Piece {
             } else {
                 if (!(this.board.getPieceByField(i, j) instanceof King)) {
                     possiblePoints.push(new Point(i, j));
-                    break;
                 }
+                break;
             }
         }
 
@@ -166,8 +166,8 @@ export class Bishop extends Piece {
             } else {
                 if (!(this.board.getPieceByField(i, j) instanceof King)) {
                     possiblePoints.push(new Point(i, j));
-                    break;
                 }
+                break;
             }
         }
 
@@ -178,8 +178,8 @@ export class Bishop extends Piece {
             } else {
                 if (!(this.board.getPieceByField(i, j) instanceof King)) {
                     possiblePoints.push(new Point(i, j));
-                    break;
                 }
+                break;
             }
         }
 
@@ -190,8 +190,8 @@ export class Bishop extends Piece {
             } else {
                 if (!(this.board.getPieceByField(i, j) instanceof King)) {
                     possiblePoints.push(new Point(i, j));
-                    break;
                 }
+                break;
             }
         }
 
