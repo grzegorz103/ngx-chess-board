@@ -273,6 +273,7 @@ export class Queen extends Piece {
                 if (!(this.board.getPieceByField(i, col) instanceof King)) {
                     possiblePoints.push(new Point(i, col));
                 }
+                break;
             }
         }
 
@@ -283,7 +284,6 @@ export class Queen extends Piece {
             } else {
                 if (!(this.board.getPieceByField(row, j) instanceof King)) {
                     possiblePoints.push(new Point(row, j));
-                    break;
                 }
                 break;
             }
