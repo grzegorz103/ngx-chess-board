@@ -136,7 +136,7 @@ export class King extends Piece {
                 }
             }
 
-            if (longCastlePossible && this.board.getPieceByField(row, 0)) {
+            if (longCastlePossible && !this.board.isKingInCheck(this.color, this.board.pieces) && this.board.getPieceByField(row, 0)) {
                 const leftRook = this.board.getPieceByField(row, 0);
                 if (leftRook instanceof Rook) {
                     if (!leftRook.isMovedAlready) {
@@ -160,7 +160,7 @@ export class King extends Piece {
                 }
             }
 
-            if (shortCastlePossible && this.board.getPieceByField(row, 7)) {
+            if (shortCastlePossible && !this.board.isKingInCheck(this.color, this.board.pieces) && this.board.getPieceByField(row, 7)) {
                 const rightRook = this.board.getPieceByField(row, 7);
                 if (rightRook instanceof Rook) {
                     if (!rightRook.isMovedAlready) {
