@@ -30,10 +30,12 @@
     text-align: center;
     //margin-top: -10px;
     color: black !important;
+    box-sizing: border-box;
 }
 
 .piece::after {
     content: '\200b';
+    box-sizing: border-box;
 }
 
 #drag {
@@ -43,7 +45,7 @@
 }
 
 .possible-point {
-    background: radial-gradient(rgba(20, 85, 30, 0.5) 19%, rgba(0, 0, 0, 0) 20%);
+    background: radial-gradient(#13262F 15%, transparent 20%);
 }
 
 .possible-point:hover,
@@ -52,8 +54,10 @@
 }
 
 .possible-capture {
-    background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 85, 0, 0.3) 80%);
-    box-sizing: border-box;
+    background: radial-gradient(transparent 0%, transparent 80%,#13262F 80%);
+    opacity: 0.5;
+    box-sizing: border-box;  margin: 0;
+    padding: 0;
 }
 
 .king-check {
