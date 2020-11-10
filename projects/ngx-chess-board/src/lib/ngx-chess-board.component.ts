@@ -484,6 +484,7 @@ export class NgxChessBoardComponent
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
         } catch (exception) {
+            console.log(exception);
             this.boardLoader.addPieces();
         }
     }
