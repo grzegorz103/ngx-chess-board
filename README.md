@@ -12,8 +12,8 @@ npm i ngx-chess-board
 See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/index.html)
 
 ## Screenshots
-![alt scr](https://i.imgur.com/SumXcsN.png)
-![alt scr](https://i.imgur.com/8im9bVz.png)
+![alt scr](https://i.ibb.co/NsRx0Pj/image.png)
+![alt scr](https://i.ibb.co/b6ryJmP/image.png)
 
 ## Use example
 
