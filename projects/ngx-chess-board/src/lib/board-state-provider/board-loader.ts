@@ -267,7 +267,7 @@ export class BoardLoader {
         const rook = this.board.pieces.find(
             (piece) => piece.color === color && piece instanceof Rook && piece.point.col === col
         ) as Rook;
-        console.log(color + " " + col);
+
         if(rook) {
             rook.isMovedAlready = true;
         }
