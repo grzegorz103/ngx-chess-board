@@ -48,6 +48,7 @@ export class BoardLoader {
     }
 
     loadFEN(fen: string) {
+        console.log(fen);
         if (fen) {
             this.board.reverted = false;
             this.board.pieces = [];
@@ -266,6 +267,9 @@ export class BoardLoader {
         const rook = this.board.pieces.find(
             (piece) => piece.color === color && piece instanceof Rook && piece.point.col === col
         ) as Rook;
-        rook.isMovedAlready = true;
+
+        if(rook) {
+            rook.isMovedAlready = true;
+        }
     }
 }
