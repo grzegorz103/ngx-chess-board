@@ -42,17 +42,29 @@
                 <div
                     *ngIf="getPieceByPoint(i, j) as piece"
                     style="height:100%; width:100%"
+                    cdkDropList
                 >
                     <div
+                        class="piece"
                         [cdkDragDisabled]="dragDisabled"
-                        [innerHTML]="pieceIconManager.isDefaultIcons() ? getPieceByPoint(i,j).constant.icon : ''"
-                        [ngClass]="'piece'"
+                        [innerHTML]="pieceIconManager.isDefaultIcons() ? getPieceByPoint(i, j).constant.icon : ''"
+                        [style.background-image]="!pieceIconManager.isDefaultIcons() ? 'url(' + getCustomPieceIcons(getPieceByPoint(i, j)) + ')': null"
                         [style.font-size]="pieceSize + 'px'"
-                        [ngStyle]="pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(getPieceByPoint(i,j))"
                         (cdkDragEnded)="dragEnded($event)"
+                        (cdkDragMoved)="dragMoved()"
                         (cdkDragStarted)="dragStart($event)"
                         cdkDrag
                     >
+                        <ng-container *ngIf="!pieceIconManager.isDefaultIcons()">
+                            <img
+                                class="custom-preview"
+                                [src]="getCustomPieceIcons(getPieceByPoint(i, j))"
+                                [style.height.px]="heightAndWidth / 8"
+                                [style.width.px]="heightAndWidth / 8"
+                                alt="image"
+                                *cdkDragPreview
+                            >
+                        </ng-container>
                     </div>
                 </div>
             </div>

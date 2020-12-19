@@ -96,15 +96,7 @@ export class NgxChessBoardComponent
 
     @Input('size')
     public set size(size: number) {
-        if (
-            size &&
-            size >= Constants.MIN_BOARD_SIZE &&
-            size <= Constants.MAX_BOARD_SIZE
-        ) {
-            this.heightAndWidth = size;
-        } else {
-            this.heightAndWidth = Constants.DEFAULT_SIZE;
-        }
+        this.heightAndWidth = size;
         this.drawProvider.clear();
         this.calculatePieceSize();
     }
@@ -505,6 +497,17 @@ export class NgxChessBoardComponent
         style.zIndex = '1000';
         style.touchAction = 'none';
         style.pointerEvents = 'none';
+
+        this.adjustMarginOfPreview();
+    }
+
+    adjustMarginOfPreview() {
+        const cdkPreviewClone = document.getElementsByClassName(
+            'custom-preview'
+        )[0] as HTMLElement;
+
+        cdkPreviewClone.style.marginTop = -this.heightAndWidth / 16 + 'px';
+        cdkPreviewClone.style.marginLeft = -this.heightAndWidth / 16 + 'px';
     }
 
     onMouseDown(event: MouseEvent) {
@@ -829,11 +832,7 @@ export class NgxChessBoardComponent
     }
 
     getCustomPieceIcons(piece: Piece) {
-        return JSON.parse(
-            `{ "background-image": "url('${this.pieceIconManager.getPieceIcon(
-                piece
-            )}')"}`
-        );
+        return this.pieceIconManager.getPieceIcon(piece);
     }
 
     private isPieceDisabled(pieceClicked: Piece) {
@@ -853,5 +852,9 @@ export class NgxChessBoardComponent
             ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
                 (this.darkDisabled && pieceClicked.color === Color.BLACK))
         );
+    }
+
+    public dragMoved(): void {
+        this.adjustMarginOfPreview();
     }
 }
