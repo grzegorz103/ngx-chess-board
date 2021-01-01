@@ -79,7 +79,7 @@
 }
 
 .current-selection {
-    background-color: rgba(255, 255, 255, 0.5) !important;
+    background-color: #72620B !important;
 }
 
 .yCoord {
@@ -116,3 +116,4 @@ svg {
         drop-shadow(-1px -1px 0px #111);
 }
 
+:host { display:inline-block!important; }
