@@ -136,7 +136,10 @@ export class King extends Piece {
                 }
             }
 
-            if (longCastlePossible && !this.board.isKingInCheck(this.color, this.board.pieces) && this.board.getPieceByField(row, 0)) {
+            if (longCastlePossible && !this.board.isKingInCheck(
+                this.color,
+                this.board.pieces
+            ) && this.board.getPieceByField(row, 0)) {
                 const leftRook = this.board.getPieceByField(row, 0);
                 if (leftRook instanceof Rook) {
                     if (!leftRook.isMovedAlready) {
@@ -160,7 +163,10 @@ export class King extends Piece {
                 }
             }
 
-            if (shortCastlePossible && !this.board.isKingInCheck(this.color, this.board.pieces) && this.board.getPieceByField(row, 7)) {
+            if (shortCastlePossible && !this.board.isKingInCheck(
+                this.color,
+                this.board.pieces
+            ) && this.board.getPieceByField(row, 7)) {
                 const rightRook = this.board.getPieceByField(row, 7);
                 if (rightRook instanceof Rook) {
                     if (!rightRook.isMovedAlready) {
@@ -315,42 +321,29 @@ export class King extends Piece {
         const col = this.point.col;
 
         // lewo
-        if (this.board.isFieldTakenByEnemy(row, col - 1, this.color)) {
-            possiblePoints.push(new Point(row, col - 1));
-        }
+        possiblePoints.push(new Point(row, col - 1));
 
         // prawo
-        if (this.board.isFieldTakenByEnemy(row, col + 1, this.color)) {
-            possiblePoints.push(new Point(row, col + 1));
-        }
+        possiblePoints.push(new Point(row, col + 1));
 
         // dol
-        if (this.board.isFieldTakenByEnemy(row + 1, col, this.color)) {
-            possiblePoints.push(new Point(row + 1, col));
-        }
+        possiblePoints.push(new Point(row + 1, col));
 
         // gora
-        if (this.board.isFieldTakenByEnemy(row - 1, col, this.color)) {
-            possiblePoints.push(new Point(row - 1, col));
-        }
+        possiblePoints.push(new Point(row - 1, col));
 
         // lewo gora
-        if (this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color)) {
-            possiblePoints.push(new Point(row - 1, col - 1));
-        }
+        possiblePoints.push(new Point(row - 1, col - 1));
+
         // prawo gora
-        if (this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color)) {
-            possiblePoints.push(new Point(row - 1, col + 1));
-        }
+        possiblePoints.push(new Point(row - 1, col + 1));
 
         // lewo dol
-        if (this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color)) {
-            possiblePoints.push(new Point(row + 1, col - 1));
-        }
+        possiblePoints.push(new Point(row + 1, col - 1));
+
         // prawo dol
-        if (this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color)) {
-            possiblePoints.push(new Point(row + 1, col + 1));
-        }
+        possiblePoints.push(new Point(row + 1, col + 1));
+
 
         return possiblePoints;
     }
