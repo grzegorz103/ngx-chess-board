@@ -1,22 +1,12 @@
-<div
-    class="container"
-    #modal
->
+<div #myModal class="container">
     <div class="wrapper">
-        <div
-            class="piece"
-            [class.black-bishop]="piece === 'bishop' && color === Color.BLACK"
-            [class.black-knight]="piece === 'knight' && color === Color.BLACK"
-            [class.black-queen]="piece === 'queen' && color === Color.BLACK"
-            [class.black-rook]="piece === 'rook' && color === Color.BLACK"
-            [class.selected]="selectedIndex === index + 1"
-            [class.white-bishop]="piece === 'bishop' && color === Color.WHITE"
-            [class.white-knight]="piece === 'knight' && color === Color.WHITE"
-            [class.white-queen]="piece === 'queen' && color === Color.WHITE"
-            [class.white-rook]="piece === 'rook' && color === Color.WHITE"
-            (click)="changeSelection(index + 1)"
-            *ngFor="let piece of ['queen', 'rook', 'bishop', 'knight']; let index = index"
-        >
+        <div class="content">
+            <div class="piece-wrapper">
+                <div class="piece" (click)="changeSelection(1)">&#x265B;</div>
+                <div class="piece" (click)="changeSelection(2)">&#x265C;</div>
+                <div class="piece" (click)="changeSelection(3)">&#x265D;</div>
+                <div class="piece" (click)="changeSelection(4)">&#x265E;</div>
+            </div>
         </div>
     </div>
 </div>
