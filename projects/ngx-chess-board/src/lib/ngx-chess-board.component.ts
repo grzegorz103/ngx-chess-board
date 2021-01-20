@@ -379,7 +379,7 @@ export class NgxChessBoardComponent
     }
 
     openPromoteDialog(piece: Piece) {
-        this.modal.open(piece.color, (index) => {
+        this.modal.open((index) => {
             this.resolvePromotionChoice(piece, index);
             this.afterMoveActions(index);
         });
