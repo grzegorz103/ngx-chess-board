@@ -483,6 +483,7 @@ export class NgxChessBoardComponent
             this.boardLoader.loadFEN(fen);
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
+            this.coords.reset();
         } catch (exception) {
             this.boardLoader.addPieces();
         }
