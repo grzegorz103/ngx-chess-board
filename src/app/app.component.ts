@@ -45,6 +45,7 @@ export class AppComponent {
         alert('Resetting board');
         this.boardManager.reset();
         this.fen = this.boardManager.getFEN();
+        this.freeMode = false;
     }
 
     public reverse(): void {

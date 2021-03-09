@@ -91,13 +91,14 @@
     <br>
     <label class="switch mt-3">
         <input
-            (click)="switchFreeMode()"
             type="checkbox"
-            checked
+            [checked]="this.freeMode"
+            (change)="switchFreeMode()"
+
         >
         <span class="slider round"></span>
     </label>
-    Free mode is {{ freeMode? 'ON' : 'OFF }}
+    Free mode is {{ freeMode? 'ON' : 'OFF' }}
     <hr style="border-color: gray">
 
     <div class="form-group input-group-sm">

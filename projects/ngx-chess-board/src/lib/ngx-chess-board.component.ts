@@ -479,6 +479,7 @@ export class NgxChessBoardComponent
         this.board.reset();
         this.coords.reset();
         this.drawProvider.clear();
+        this.freeMode = false;
     }
 
     reverse(): void {
