@@ -138,6 +138,7 @@ export class NgxChessBoardComponent
             this.board.possibleMoves = [];
         }
     }
+
     ngOnInit() {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.board.reset();
@@ -183,13 +184,8 @@ export class NgxChessBoardComponent
         }
 
         if (this.selected) {
-            this.handleClickEvent(pointClicked);
+            this.handleClickEvent(pointClicked, false);
             //   this.possibleMoves = activePiece.getPossibleMoves();
-        } else {
-            if (pieceClicked) {
-                this.onFreeMode(pieceClicked);
-                this.onPieceClicked(pieceClicked, pointClicked);
-            }
         }
     }
 
@@ -211,6 +207,7 @@ export class NgxChessBoardComponent
     isFreeMode() {
         return this.freeMode;
     }
+
     /**
      * Processes logic to allow freeMode based logic processing
      */
@@ -311,15 +308,15 @@ export class NgxChessBoardComponent
             Math.floor(
                 (event.y -
                     this.boardRef.nativeElement.getBoundingClientRect().top) /
-                    (this.boardRef.nativeElement.getBoundingClientRect()
+                (this.boardRef.nativeElement.getBoundingClientRect()
                         .height /
-                        8)
+                    8)
             ),
             Math.floor(
                 (event.x -
                     this.boardRef.nativeElement.getBoundingClientRect().left) /
-                    (this.boardRef.nativeElement.getBoundingClientRect().width /
-                        8)
+                (this.boardRef.nativeElement.getBoundingClientRect().width /
+                    8)
             )
         );
     }
@@ -494,6 +491,7 @@ export class NgxChessBoardComponent
         this.board.possibleCaptures = [];
         this.board.possibleMoves = [];
     }
+
     undo(): void {
         if (!this.boardStateProvider.isEmpty()) {
             const lastBoard = this.boardStateProvider.pop().board;
@@ -570,12 +568,18 @@ export class NgxChessBoardComponent
             pointClicked.col
         );
 
+        if (this.freeMode) {
+            if (pieceClicked) {
+                this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+            }
+        }
+
         if (this.isPieceDisabled(pieceClicked)) {
             return;
         }
 
         if (this.selected) {
-            this.handleClickEvent(pointClicked);
+            this.handleClickEvent(pointClicked, true);
         } else {
             if (pieceClicked) {
                 this.onFreeMode(pieceClicked);
@@ -594,11 +598,11 @@ export class NgxChessBoardComponent
         const squareSize = this.heightAndWidth / 8;
         const xx = Math.floor(
             (x - this.boardRef.nativeElement.getBoundingClientRect().left) /
-                squareSize
+            squareSize
         );
         const yy = Math.floor(
             (y - this.boardRef.nativeElement.getBoundingClientRect().top) /
-                squareSize
+            squareSize
         );
 
         let color = 'green';
@@ -732,13 +736,13 @@ export class NgxChessBoardComponent
         }
     }
 
-    private handleClickEvent(pointClicked: Point) {
-        this.board.freeMode = this.isFreeMode() ;
+    private handleClickEvent(pointClicked: Point, isMouseDown: boolean) {
+        let moving = false;
 
-        if (
+        if ((
             this.board.isPointInPossibleMoves(pointClicked) ||
             this.board.isPointInPossibleCaptures(pointClicked)
-        ) {
+        ) || this.freeMode) {
             this.saveClone();
             this.board.lastMoveSrc = new Point(
                 this.board.activePiece.point.row,
@@ -746,14 +750,21 @@ export class NgxChessBoardComponent
             );
             this.board.lastMoveDest = pointClicked;
             this.movePiece(this.board.activePiece, pointClicked);
+
+            if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
+                moving = true;
+            }
         }
 
+        if (isMouseDown || moving) {
+            this.disableSelection();
+        }
         this.disableSelection();
         const pieceClicked = this.getPieceByPoint(
             pointClicked.row,
             pointClicked.col
         );
-        if (pieceClicked) {
+        if (pieceClicked && !moving) {
             this.onFreeMode(pieceClicked);
             this.onPieceClicked(pieceClicked, pointClicked);
         }
