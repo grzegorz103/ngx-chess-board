@@ -91,6 +91,7 @@ Input | Type | Description
 `[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
 `[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>
 `[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
+`[freeMode]` | boolean | Sets the board in free mode. In this mode pieces can be moved freely, even to tiles that aren't in possible moves or possible captures.
 <hr>
 
 #### Outputs

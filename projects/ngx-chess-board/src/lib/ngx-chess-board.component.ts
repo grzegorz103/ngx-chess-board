@@ -354,13 +354,17 @@ export class NgxChessBoardComponent
                         toMovePiece.point.row,
                         0
                     );
-                    leftRook.point.col = this.board.reverted ? 2 : 3;
+                    if (!this.freeMode) {
+                        leftRook.point.col = this.board.reverted ? 2 : 3;
+                    }
                 } else {
                     const rightRook = this.board.getPieceByField(
                         toMovePiece.point.row,
                         7
                     );
-                    rightRook.point.col = this.board.reverted ? 4 : 5;
+                    if (!this.freeMode) {
+                        rightRook.point.col = this.board.reverted ? 4 : 5;
+                    }
                 }
             }
         }
