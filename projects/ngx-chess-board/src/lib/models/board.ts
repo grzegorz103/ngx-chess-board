@@ -24,6 +24,7 @@ export class Board {
     possibleMoves: Point[] = [];
     whiteKingChecked: boolean;
 
+    freeMode = false;
     currentWhitePlayer = true;
     reverted = false;
     fullMoveCount = 1;
@@ -59,11 +60,11 @@ export class Board {
     }
 
     isPointInPossibleMoves(point: Point): boolean {
-        return this.possibleMoves.some((move) => move.row === point.row && move.col === point.col);
+        return this.isFreeMode() || this.possibleMoves.some((move) => move.row === point.row && move.col === point.col);
     }
 
     isPointInPossibleCaptures(point: Point): boolean {
-        return this.possibleCaptures.some((capture) => capture.row === point.row && capture.col === point.col);
+        return this.isFreeMode() || this.possibleCaptures.some((capture) => capture.row === point.row && capture.col === point.col);
     }
 
     reset() {
@@ -79,6 +80,7 @@ export class Board {
         this.enPassantPoint = null;
         this.enPassantPiece = null;
         this.fullMoveCount = 1;
+        this.freeMode = false;
         this.calculateFEN();
     }
 
@@ -188,6 +190,9 @@ export class Board {
         } else {
             return '-';
         }
+    }
+    isFreeMode() {
+        return this.freeMode;
     }
 
     calculateFEN() {
