@@ -47,6 +47,7 @@ export interface MoveChange extends HistoryMove {
     stalemate: boolean;
     checkmate: boolean;
     fen: string;
+    freeMode: boolean;
 }
 
 @Component({
@@ -63,9 +64,14 @@ export class NgxChessBoardComponent
     @Input() drawDisabled = false;
     @Input() lightDisabled = false;
     @Input() darkDisabled = false;
+    /**
+     * Enabling free mode removes turn-based restriction and allows to move any piece freely!
+     */
+    @Input() freeMode = false;
     @Output() moveChange = new EventEmitter<MoveChange>();
     @Output() checkmate = new EventEmitter<void>();
     @Output() stalemate = new EventEmitter<void>();
+
     pieceSize: number;
     selected = false;
     @ViewChild('boardRef')
@@ -132,6 +138,7 @@ export class NgxChessBoardComponent
             this.board.possibleMoves = [];
         }
     }
+
     ngOnInit() {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.board.reset();
@@ -177,23 +184,45 @@ export class NgxChessBoardComponent
         }
 
         if (this.selected) {
-            this.handleClickEvent(pointClicked);
+            this.handleClickEvent(pointClicked, false);
             //   this.possibleMoves = activePiece.getPossibleMoves();
-        } else {
-            if (pieceClicked) {
-                if (
-                    (this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)
-                ) {
-                    return;
-                }
-
-                this.prepareActivePiece(pieceClicked, pointClicked);
-            }
         }
     }
+
+    onPieceClicked(pieceClicked, pointClicked) {
+        if (
+            (this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+            (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)
+        ) {
+            return;
+        }
+
+        this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+
+
+    /**
+     * Validates whether freemode is turned on!
+     */
+    isFreeMode() {
+        return this.freeMode;
+    }
+
+    /**
+     * Processes logic to allow freeMode based logic processing
+     */
+    onFreeMode(pieceClicked) {
+        if (
+            !this.isFreeMode() ||
+            pieceClicked === undefined ||
+            pieceClicked === null
+        ) {
+            return;
+        }
+        // sets player as white in-case white pieces are selected, and vice-versa when black is selected
+        this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
+    }
+
 
     afterMoveActions(promotionIndex?: number) {
         this.checkIfPawnFirstMove(this.board.activePiece);
@@ -230,6 +259,7 @@ export class NgxChessBoardComponent
             checkmate,
             stalemate,
             fen: this.board.fen,
+            freeMode: this.freeMode
         });
     }
 
@@ -278,15 +308,15 @@ export class NgxChessBoardComponent
             Math.floor(
                 (event.y -
                     this.boardRef.nativeElement.getBoundingClientRect().top) /
-                    (this.boardRef.nativeElement.getBoundingClientRect()
+                (this.boardRef.nativeElement.getBoundingClientRect()
                         .height /
-                        8)
+                    8)
             ),
             Math.floor(
                 (event.x -
                     this.boardRef.nativeElement.getBoundingClientRect().left) /
-                    (this.boardRef.nativeElement.getBoundingClientRect().width /
-                        8)
+                (this.boardRef.nativeElement.getBoundingClientRect().width /
+                    8)
             )
         );
     }
@@ -446,6 +476,7 @@ export class NgxChessBoardComponent
         this.board.reset();
         this.coords.reset();
         this.drawProvider.clear();
+        this.freeMode = false;
     }
 
     reverse(): void {
@@ -460,6 +491,7 @@ export class NgxChessBoardComponent
         this.board.possibleCaptures = [];
         this.board.possibleMoves = [];
     }
+
     undo(): void {
         if (!this.boardStateProvider.isEmpty()) {
             const lastBoard = this.boardStateProvider.pop().board;
@@ -536,24 +568,22 @@ export class NgxChessBoardComponent
             pointClicked.col
         );
 
+        if (this.freeMode) {
+            if (pieceClicked) {
+                this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+            }
+        }
+
         if (this.isPieceDisabled(pieceClicked)) {
             return;
         }
 
         if (this.selected) {
-            this.handleClickEvent(pointClicked);
+            this.handleClickEvent(pointClicked, true);
         } else {
             if (pieceClicked) {
-                if (
-                    (this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)
-                ) {
-                    return;
-                }
-
-                this.prepareActivePiece(pieceClicked, pointClicked);
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
             }
         }
     }
@@ -568,11 +598,11 @@ export class NgxChessBoardComponent
         const squareSize = this.heightAndWidth / 8;
         const xx = Math.floor(
             (x - this.boardRef.nativeElement.getBoundingClientRect().left) /
-                squareSize
+            squareSize
         );
         const yy = Math.floor(
             (y - this.boardRef.nativeElement.getBoundingClientRect().top) /
-                squareSize
+            squareSize
         );
 
         let color = 'green';
@@ -706,11 +736,13 @@ export class NgxChessBoardComponent
         }
     }
 
-    private handleClickEvent(pointClicked: Point) {
-        if (
+    private handleClickEvent(pointClicked: Point, isMouseDown: boolean) {
+        let moving = false;
+
+        if ((
             this.board.isPointInPossibleMoves(pointClicked) ||
             this.board.isPointInPossibleCaptures(pointClicked)
-        ) {
+        ) || this.freeMode) {
             this.saveClone();
             this.board.lastMoveSrc = new Point(
                 this.board.activePiece.point.row,
@@ -718,24 +750,23 @@ export class NgxChessBoardComponent
             );
             this.board.lastMoveDest = pointClicked;
             this.movePiece(this.board.activePiece, pointClicked);
+
+            if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
+                moving = true;
+            }
         }
 
+        if (isMouseDown || moving) {
+            this.disableSelection();
+        }
         this.disableSelection();
         const pieceClicked = this.getPieceByPoint(
             pointClicked.row,
             pointClicked.col
         );
-        if (pieceClicked) {
-            if (
-                (this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.BLACK) ||
-                (!this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.WHITE)
-            ) {
-                return;
-            }
-
-            this.prepareActivePiece(pieceClicked, pointClicked);
+        if (pieceClicked && !moving) {
+            this.onFreeMode(pieceClicked);
+            this.onPieceClicked(pieceClicked, pointClicked);
         }
     }
 
