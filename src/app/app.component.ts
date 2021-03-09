@@ -39,6 +39,7 @@ export class AppComponent {
     public drawDisabled = false;
     public lightDisabled = false;
     public darkDisabled = false;
+    public freeMode = false;
 
     public reset(): void {
         alert('Resetting board');
@@ -95,4 +96,7 @@ export class AppComponent {
         this.lightDisabled = !this.lightDisabled;
     }
 
+    switchFreeMode(){
+        this.freeMode = !this.freeMode;
+    }
 }

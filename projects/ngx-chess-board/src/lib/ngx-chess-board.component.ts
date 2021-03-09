@@ -47,6 +47,7 @@ export interface MoveChange extends HistoryMove {
     stalemate: boolean;
     checkmate: boolean;
     fen: string;
+    freeMode: false;
 }
 
 @Component({
@@ -63,9 +64,14 @@ export class NgxChessBoardComponent
     @Input() drawDisabled = false;
     @Input() lightDisabled = false;
     @Input() darkDisabled = false;
+    /**
+     * Enabling free mode removes turn-based restriction and allows to move any piece freely!
+     */
+    @Input() freeMode = false;
     @Output() moveChange = new EventEmitter<MoveChange>();
     @Output() checkmate = new EventEmitter<void>();
     @Output() stalemate = new EventEmitter<void>();
+
     pieceSize: number;
     selected = false;
     @ViewChild('boardRef')
@@ -181,19 +187,45 @@ export class NgxChessBoardComponent
             //   this.possibleMoves = activePiece.getPossibleMoves();
         } else {
             if (pieceClicked) {
-                if (
-                    (this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)
-                ) {
-                    return;
-                }
-
-                this.prepareActivePiece(pieceClicked, pointClicked);
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
             }
         }
     }
+
+    onPieceClicked(pieceClicked, pointClicked) {
+        if (
+            (this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+            (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)
+        ) {
+            return;
+        }
+
+        this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+
+
+    /**
+     * Validates whether freemode is turned on!
+     */
+    isFreeMode() {
+        return this.freeMode;
+    }
+    /**
+     * Processes logic to allow freeMode based logic processing
+     */
+    onFreeMode(pieceClicked) {
+        if (
+            !this.isFreeMode() ||
+            pieceClicked === undefined ||
+            pieceClicked === null
+        ) {
+            return;
+        }
+        // sets player as white in-case white pieces are selected, and vice-versa when black is selected
+        this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
+    }
+
 
     afterMoveActions(promotionIndex?: number) {
         this.checkIfPawnFirstMove(this.board.activePiece);
@@ -230,6 +262,7 @@ export class NgxChessBoardComponent
             checkmate,
             stalemate,
             fen: this.board.fen,
+            freeMode: this.isFreeMode()
         });
     }
 
@@ -544,16 +577,8 @@ export class NgxChessBoardComponent
             this.handleClickEvent(pointClicked);
         } else {
             if (pieceClicked) {
-                if (
-                    (this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)
-                ) {
-                    return;
-                }
-
-                this.prepareActivePiece(pieceClicked, pointClicked);
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
             }
         }
     }
@@ -707,6 +732,8 @@ export class NgxChessBoardComponent
     }
 
     private handleClickEvent(pointClicked: Point) {
+        this.board.freeMode = this.isFreeMode() ;
+
         if (
             this.board.isPointInPossibleMoves(pointClicked) ||
             this.board.isPointInPossibleCaptures(pointClicked)
@@ -726,16 +753,8 @@ export class NgxChessBoardComponent
             pointClicked.col
         );
         if (pieceClicked) {
-            if (
-                (this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.BLACK) ||
-                (!this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.WHITE)
-            ) {
-                return;
-            }
-
-            this.prepareActivePiece(pieceClicked, pointClicked);
+            this.onFreeMode(pieceClicked);
+            this.onPieceClicked(pieceClicked, pointClicked);
         }
     }
 

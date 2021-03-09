@@ -6,6 +6,7 @@
                      [darkTileColor]="darkTileColor"
                      [lightDisabled]="lightDisabled"
                      [darkDisabled]="darkDisabled"
+                     [freeMode]="freeMode"
     ></ngx-chess-board>
     <!--<ngx-chess-board></ngx-chess-board> You can also use it like this  -->
     <hr>
@@ -87,6 +88,16 @@
         <span class="slider round"></span>
     </label>
     Dark tiles are {{ darkDisabled ? 'OFF' : 'ON' }}
+    <br>
+    <label class="switch mt-3">
+        <input
+            (click)="switchFreeMode()"
+            type="checkbox"
+            checked
+        >
+        <span class="slider round"></span>
+    </label>
+    Free mode is {{ freeMode? 'ON' : 'OFF }}
     <hr style="border-color: gray">
 
     <div class="form-group input-group-sm">
