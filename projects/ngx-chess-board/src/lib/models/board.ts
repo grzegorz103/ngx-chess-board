@@ -60,11 +60,11 @@ export class Board {
     }
 
     isPointInPossibleMoves(point: Point): boolean {
-        return this.freeMode() || this.possibleMoves.some((move) => move.row === point.row && move.col === point.col);
+        return this.isFreeMode() || this.possibleMoves.some((move) => move.row === point.row && move.col === point.col);
     }
 
     isPointInPossibleCaptures(point: Point): boolean {
-        return this.freeMode() || this.possibleCaptures.some((capture) => capture.row === point.row && capture.col === point.col);
+        return this.isFreeMode() || this.possibleCaptures.some((capture) => capture.row === point.row && capture.col === point.col);
     }
 
     reset() {

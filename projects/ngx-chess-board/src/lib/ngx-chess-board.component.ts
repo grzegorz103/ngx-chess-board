@@ -47,7 +47,7 @@ export interface MoveChange extends HistoryMove {
     stalemate: boolean;
     checkmate: boolean;
     fen: string;
-    freeMode: false;
+    freeMode: boolean;
 }
 
 @Component({
@@ -262,7 +262,7 @@ export class NgxChessBoardComponent
             checkmate,
             stalemate,
             fen: this.board.fen,
-            freeMode: this.isFreeMode()
+            freeMode: this.freeMode
         });
     }
 
