@@ -12,8 +12,8 @@ npm i ngx-chess-board
 See [demo version](https://grzegorz103.github.io/ngx-chess-board/chess-board/index.html)
 
 ## Screenshots
-![alt scr](https://i.imgur.com/SumXcsN.png)
-![alt scr](https://i.imgur.com/8im9bVz.png)
+![alt scr](https://i.ibb.co/NsRx0Pj/image.png)
+![alt scr](https://i.ibb.co/b6ryJmP/image.png)
 
 ## Use example
 
@@ -91,6 +91,7 @@ Input | Type | Description
 `[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
 `[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>
 `[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
+`[freeMode]` | boolean | Sets the board in free mode. In this mode pieces can be moved freely, even to tiles that aren't in possible moves or possible captures.
 <hr>
 
 #### Outputs

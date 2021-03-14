@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/cdk/drag-drop'), require('@angular/common'), require('@angular/core'), require('rxjs'), require('lodash')) :
     typeof define === 'function' && define.amd ? define('ngx-chess-board', ['exports', '@angular/cdk/drag-drop', '@angular/common', '@angular/core', 'rxjs', 'lodash'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global['ngx-chess-board'] = {}, global.ng.cdk.dragDrop, global.ng.common, global.ng.core, global.rxjs, global.lodash));
-}(this, (function (exports, dragDrop, common, i0, rxjs, lodash) { 'use strict';
+}(this, (function (exports, i4, i2, i0, rxjs, lodash) { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -638,37 +638,21 @@
             var row = this.point.row;
             var col = this.point.col;
             // lewo
-            if (this.board.isFieldTakenByEnemy(row, col - 1, this.color)) {
-                possiblePoints.push(new Point(row, col - 1));
-            }
+            possiblePoints.push(new Point(row, col - 1));
             // prawo
-            if (this.board.isFieldTakenByEnemy(row, col + 1, this.color)) {
-                possiblePoints.push(new Point(row, col + 1));
-            }
+            possiblePoints.push(new Point(row, col + 1));
             // dol
-            if (this.board.isFieldTakenByEnemy(row + 1, col, this.color)) {
-                possiblePoints.push(new Point(row + 1, col));
-            }
+            possiblePoints.push(new Point(row + 1, col));
             // gora
-            if (this.board.isFieldTakenByEnemy(row - 1, col, this.color)) {
-                possiblePoints.push(new Point(row - 1, col));
-            }
+            possiblePoints.push(new Point(row - 1, col));
             // lewo gora
-            if (this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color)) {
-                possiblePoints.push(new Point(row - 1, col - 1));
-            }
+            possiblePoints.push(new Point(row - 1, col - 1));
             // prawo gora
-            if (this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color)) {
-                possiblePoints.push(new Point(row - 1, col + 1));
-            }
+            possiblePoints.push(new Point(row - 1, col + 1));
             // lewo dol
-            if (this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color)) {
-                possiblePoints.push(new Point(row + 1, col - 1));
-            }
+            possiblePoints.push(new Point(row + 1, col - 1));
             // prawo dol
-            if (this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color)) {
-                possiblePoints.push(new Point(row + 1, col + 1));
-            }
+            possiblePoints.push(new Point(row + 1, col + 1));
             return possiblePoints;
         };
         return King;
@@ -1476,7 +1460,6 @@
         };
         BoardLoader.prototype.setRookAlreadyMoved = function (color, col) {
             var rook = this.board.pieces.find(function (piece) { return piece.color === color && piece instanceof Rook && piece.point.col === col; });
-            console.log(color + " " + col);
             if (rook) {
                 rook.isMovedAlready = true;
             }
@@ -1534,11 +1517,9 @@
     var CoordsProvider = /** @class */ (function () {
         function CoordsProvider() {
             this.defaultXCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-            this.reversedXCoords = ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
             this.defaultYCoords = [8, 7, 6, 5, 4, 3, 2, 1];
-            this.reversedYCoords = [1, 2, 3, 4, 5, 6, 7, 8];
-            this.currentXCoords = this.defaultXCoords;
-            this.currentYCoords = this.defaultYCoords;
+            this.currentXCoords = __spread(this.defaultXCoords);
+            this.currentYCoords = __spread(this.defaultYCoords);
         }
         Object.defineProperty(CoordsProvider.prototype, "xCoords", {
             get: function () {
@@ -1555,15 +1536,15 @@
             configurable: true
         });
         CoordsProvider.prototype.reverse = function () {
-            this.currentXCoords = this.reversedXCoords;
-            this.currentYCoords = this.reversedYCoords;
+            this.currentXCoords = this.currentXCoords.reverse();
+            this.currentYCoords = this.currentYCoords.reverse();
         };
         CoordsProvider.prototype.reset = function () {
             this.init();
         };
         CoordsProvider.prototype.init = function () {
-            this.currentXCoords = this.defaultXCoords;
-            this.currentYCoords = this.defaultYCoords;
+            this.currentXCoords = __spread(this.defaultXCoords);
+            this.currentYCoords = __spread(this.defaultYCoords);
         };
         return CoordsProvider;
     }());
@@ -2050,23 +2031,6 @@
         return AvailableMoveDecorator;
     }(PieceAbstractDecorator));
 
-    var NgxChessBoardService = /** @class */ (function () {
-        function NgxChessBoardService() {
-            this.componentMethodCallSource = new rxjs.Subject();
-            this.componentMethodCalled$ = this.componentMethodCallSource.asObservable();
-        }
-        NgxChessBoardService.prototype.reset = function () {
-            this.componentMethodCallSource.next();
-        };
-        return NgxChessBoardService;
-    }());
-    NgxChessBoardService.ɵprov = i0.ɵɵdefineInjectable({ factory: function NgxChessBoardService_Factory() { return new NgxChessBoardService(); }, token: NgxChessBoardService, providedIn: "root" });
-    NgxChessBoardService.decorators = [
-        { type: i0.Injectable, args: [{
-                    providedIn: 'root',
-                },] }
-    ];
-
     var Constants = /** @class */ (function () {
         function Constants() {
         }
@@ -2141,6 +2105,216 @@
         return PieceIconInputManager;
     }());
 
+    var NgxChessBoardService = /** @class */ (function () {
+        function NgxChessBoardService() {
+            this.componentMethodCallSource = new rxjs.Subject();
+            this.componentMethodCalled$ = this.componentMethodCallSource.asObservable();
+        }
+        NgxChessBoardService.prototype.reset = function () {
+            this.componentMethodCallSource.next();
+        };
+        return NgxChessBoardService;
+    }());
+    NgxChessBoardService.ɵfac = function NgxChessBoardService_Factory(t) { return new (t || NgxChessBoardService)(); };
+    NgxChessBoardService.ɵprov = i0.ɵɵdefineInjectable({ token: NgxChessBoardService, factory: NgxChessBoardService.ɵfac, providedIn: 'root' });
+    /*@__PURE__*/ (function () {
+        i0.ɵsetClassMetadata(NgxChessBoardService, [{
+                type: i0.Injectable,
+                args: [{
+                        providedIn: 'root',
+                    }]
+            }], null, null);
+    })();
+
+    var _c0 = ["myModal"];
+    var PiecePromotionModalComponent = /** @class */ (function () {
+        function PiecePromotionModalComponent() {
+            this.opened = false;
+        }
+        PiecePromotionModalComponent.prototype.open = function (closeCallback) {
+            this.opened = true;
+            this.onCloseCallback = closeCallback;
+            this.modal.nativeElement.style.display = 'block';
+        };
+        PiecePromotionModalComponent.prototype.changeSelection = function (index) {
+            this.modal.nativeElement.style.display = 'none';
+            this.opened = false;
+            this.onCloseCallback(index);
+        };
+        return PiecePromotionModalComponent;
+    }());
+    PiecePromotionModalComponent.ɵfac = function PiecePromotionModalComponent_Factory(t) { return new (t || PiecePromotionModalComponent)(); };
+    PiecePromotionModalComponent.ɵcmp = i0.ɵɵdefineComponent({ type: PiecePromotionModalComponent, selectors: [["app-piece-promotion-modal"]], viewQuery: function PiecePromotionModalComponent_Query(rf, ctx) {
+            if (rf & 1) {
+                i0.ɵɵviewQuery(_c0, true);
+            }
+            if (rf & 2) {
+                var _t;
+                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.modal = _t.first);
+            }
+        }, decls: 13, vars: 0, consts: [[1, "container"], ["myModal", ""], [1, "wrapper"], [1, "content"], [1, "piece-wrapper"], [1, "piece", 3, "click"]], template: function PiecePromotionModalComponent_Template(rf, ctx) {
+            if (rf & 1) {
+                i0.ɵɵelementStart(0, "div", 0, 1);
+                i0.ɵɵelementStart(2, "div", 2);
+                i0.ɵɵelementStart(3, "div", 3);
+                i0.ɵɵelementStart(4, "div", 4);
+                i0.ɵɵelementStart(5, "div", 5);
+                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_5_listener() { return ctx.changeSelection(1); });
+                i0.ɵɵtext(6, "\u265B");
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementStart(7, "div", 5);
+                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_7_listener() { return ctx.changeSelection(2); });
+                i0.ɵɵtext(8, "\u265C");
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementStart(9, "div", 5);
+                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_9_listener() { return ctx.changeSelection(3); });
+                i0.ɵɵtext(10, "\u265D");
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementStart(11, "div", 5);
+                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_11_listener() { return ctx.changeSelection(4); });
+                i0.ɵɵtext(12, "\u265E");
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementEnd();
+                i0.ɵɵelementEnd();
+            }
+        }, styles: [".container[_ngcontent-%COMP%]{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{height:100%;width:100%}.content[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{position:relative}.content[_ngcontent-%COMP%]{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece[_ngcontent-%COMP%]{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece[_ngcontent-%COMP%]:hover{background-color:#ccc;border-radius:5px}.piece-wrapper[_ngcontent-%COMP%]{height:80%;width:100%}#close-button[_ngcontent-%COMP%]{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected[_ngcontent-%COMP%]{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"] });
+    /*@__PURE__*/ (function () {
+        i0.ɵsetClassMetadata(PiecePromotionModalComponent, [{
+                type: i0.Component,
+                args: [{
+                        selector: 'app-piece-promotion-modal',
+                        templateUrl: './piece-promotion-modal.component.html',
+                        styleUrls: ['./piece-promotion-modal.component.scss']
+                    }]
+            }], null, { modal: [{
+                    type: i0.ViewChild,
+                    args: ['myModal', { static: false }]
+                }] });
+    })();
+
+    var _c0$1 = ["boardRef"];
+    var _c1 = ["modal"];
+    function NgxChessBoardComponent_div_3_div_1_span_1_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵelementStart(0, "span", 15);
+            i0.ɵɵtext(1);
+            i0.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+            var i_r7 = i0.ɵɵnextContext(2).index;
+            var ctx_r11 = i0.ɵɵnextContext();
+            i0.ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
+            i0.ɵɵadvance(1);
+            i0.ɵɵtextInterpolate1(" ", ctx_r11.coords.yCoords[i_r7], " ");
+        }
+    }
+    function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵelementStart(0, "span", 16);
+            i0.ɵɵtext(1);
+            i0.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+            var j_r10 = i0.ɵɵnextContext().index;
+            var ctx_r12 = i0.ɵɵnextContext(2);
+            i0.ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
+            i0.ɵɵadvance(1);
+            i0.ɵɵtextInterpolate1(" ", ctx_r12.coords.xCoords[j_r10], " ");
+        }
+    }
+    function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) {
+        if (rf & 1) {
+            var _r18_1 = i0.ɵɵgetCurrentView();
+            i0.ɵɵelementStart(0, "div", 17);
+            i0.ɵɵelementStart(1, "div", 18);
+            i0.ɵɵlistener("cdkDragEnded", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragEnded_1_listener($event) { i0.ɵɵrestoreView(_r18_1); var ctx_r17 = i0.ɵɵnextContext(3); return ctx_r17.dragEnded($event); })("cdkDragStarted", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragStarted_1_listener($event) { i0.ɵɵrestoreView(_r18_1); var ctx_r19 = i0.ɵɵnextContext(3); return ctx_r19.dragStart($event); });
+            i0.ɵɵelementEnd();
+            i0.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+            var j_r10 = i0.ɵɵnextContext().index;
+            var i_r7 = i0.ɵɵnextContext().index;
+            var ctx_r13 = i0.ɵɵnextContext();
+            i0.ɵɵadvance(1);
+            i0.ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
+            i0.ɵɵproperty("cdkDragDisabled", ctx_r13.dragDisabled)("innerHTML", ctx_r13.pieceIconManager.isDefaultIcons() ? ctx_r13.getPieceByPoint(i_r7, j_r10).constant.icon : "", i0.ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.getPieceByPoint(i_r7, j_r10)));
+        }
+    }
+    function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵelementStart(0, "div", 11);
+            i0.ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_span_1_Template, 2, 5, "span", 12);
+            i0.ɵɵtemplate(2, NgxChessBoardComponent_div_3_div_1_span_2_Template, 2, 5, "span", 13);
+            i0.ɵɵtemplate(3, NgxChessBoardComponent_div_3_div_1_div_3_Template, 2, 6, "div", 14);
+            i0.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+            var j_r10 = ctx.index;
+            var i_r7 = i0.ɵɵnextContext().index;
+            var ctx_r8 = i0.ɵɵnextContext();
+            i0.ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
+            i0.ɵɵclassProp("current-selection", ctx_r8.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.isKingChecked(ctx_r8.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.board.isXYInSourceMove(i_r7, j_r10));
+            i0.ɵɵadvance(1);
+            i0.ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
+            i0.ɵɵadvance(1);
+            i0.ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
+            i0.ɵɵadvance(1);
+            i0.ɵɵproperty("ngIf", ctx_r8.getPieceByPoint(i_r7, j_r10));
+        }
+    }
+    function NgxChessBoardComponent_div_3_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵelementStart(0, "div", 9);
+            i0.ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_Template, 4, 19, "div", 10);
+            i0.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+            var row_r6 = ctx.$implicit;
+            i0.ɵɵadvance(1);
+            i0.ɵɵproperty("ngForOf", row_r6);
+        }
+    }
+    function NgxChessBoardComponent__svg_defs_5_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵnamespaceSVG();
+            i0.ɵɵelementStart(0, "defs");
+            i0.ɵɵelementStart(1, "marker", 19);
+            i0.ɵɵelement(2, "path", 20);
+            i0.ɵɵelementEnd();
+            i0.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+            var color_r23 = ctx.$implicit;
+            i0.ɵɵadvance(1);
+            i0.ɵɵproperty("id", color_r23 + "Arrow");
+            i0.ɵɵadvance(1);
+            i0.ɵɵstyleProp("fill", color_r23);
+        }
+    }
+    function NgxChessBoardComponent__svg_line_6_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵnamespaceSVG();
+            i0.ɵɵelement(0, "line", 21);
+        }
+        if (rf & 2) {
+            var arrow_r24 = ctx.$implicit;
+            i0.ɵɵattribute("marker-end", "url(#" + arrow_r24.end.color + "Arrow)")("stroke", arrow_r24.end.color)("x1", arrow_r24.start.x)("x2", arrow_r24.end.x)("y1", arrow_r24.start.y)("y2", arrow_r24.end.y);
+        }
+    }
+    function NgxChessBoardComponent__svg_circle_8_Template(rf, ctx) {
+        if (rf & 1) {
+            i0.ɵɵnamespaceSVG();
+            i0.ɵɵelement(0, "circle", 22);
+        }
+        if (rf & 2) {
+            var circle_r25 = ctx.$implicit;
+            var ctx_r4 = i0.ɵɵnextContext();
+            i0.ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
+        }
+    }
+    var _c2 = function () { return ["red", "green", "blue", "orange"]; };
     var NgxChessBoardComponent = /** @class */ (function () {
         function NgxChessBoardComponent(ngxChessBoardService) {
             this.ngxChessBoardService = ngxChessBoardService;
@@ -2151,6 +2325,10 @@
             this.drawDisabled = false;
             this.lightDisabled = false;
             this.darkDisabled = false;
+            /**
+             * Enabling free mode removes turn-based restriction and allows to move any piece freely!
+             */
+            this.freeMode = false;
             this.moveChange = new i0.EventEmitter();
             this.checkmate = new i0.EventEmitter();
             this.stalemate = new i0.EventEmitter();
@@ -2232,20 +2410,34 @@
                 return;
             }
             if (this.selected) {
-                this.handleClickEvent(pointClicked);
+                this.handleClickEvent(pointClicked, false);
                 //   this.possibleMoves = activePiece.getPossibleMoves();
             }
-            else {
-                if (pieceClicked) {
-                    if ((this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.BLACK) ||
-                        (!this.board.currentWhitePlayer &&
-                            pieceClicked.color === Color.WHITE)) {
-                        return;
-                    }
-                    this.prepareActivePiece(pieceClicked, pointClicked);
-                }
+        };
+        NgxChessBoardComponent.prototype.onPieceClicked = function (pieceClicked, pointClicked) {
+            if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+                (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+                return;
             }
+            this.prepareActivePiece(pieceClicked, pointClicked);
+        };
+        /**
+         * Validates whether freemode is turned on!
+         */
+        NgxChessBoardComponent.prototype.isFreeMode = function () {
+            return this.freeMode;
+        };
+        /**
+         * Processes logic to allow freeMode based logic processing
+         */
+        NgxChessBoardComponent.prototype.onFreeMode = function (pieceClicked) {
+            if (!this.isFreeMode() ||
+                pieceClicked === undefined ||
+                pieceClicked === null) {
+                return;
+            }
+            // sets player as white in-case white pieces are selected, and vice-versa when black is selected
+            this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
         };
         NgxChessBoardComponent.prototype.afterMoveActions = function (promotionIndex) {
             this.checkIfPawnFirstMove(this.board.activePiece);
@@ -2265,7 +2457,7 @@
             }
             this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check: check,
                 checkmate: checkmate,
-                stalemate: stalemate, fen: this.board.fen }));
+                stalemate: stalemate, fen: this.board.fen, freeMode: this.freeMode }));
         };
         NgxChessBoardComponent.prototype.disableSelection = function () {
             this.selected = false;
@@ -2319,11 +2511,15 @@
                 if (squaresMoved > 1) {
                     if (newPoint.col < 3) {
                         var leftRook = this.board.getPieceByField(toMovePiece.point.row, 0);
-                        leftRook.point.col = this.board.reverted ? 2 : 3;
+                        if (!this.freeMode) {
+                            leftRook.point.col = this.board.reverted ? 2 : 3;
+                        }
                     }
                     else {
                         var rightRook = this.board.getPieceByField(toMovePiece.point.row, 7);
-                        rightRook.point.col = this.board.reverted ? 4 : 5;
+                        if (!this.freeMode) {
+                            rightRook.point.col = this.board.reverted ? 4 : 5;
+                        }
                     }
                 }
             }
@@ -2363,7 +2559,7 @@
         };
         NgxChessBoardComponent.prototype.openPromoteDialog = function (piece) {
             var _this = this;
-            this.modal.open(piece.color, function (index) {
+            this.modal.open(function (index) {
                 _this.resolvePromotionChoice(piece, index);
                 _this.afterMoveActions(index);
             });
@@ -2400,6 +2596,7 @@
             this.board.reset();
             this.coords.reset();
             this.drawProvider.clear();
+            this.freeMode = false;
         };
         NgxChessBoardComponent.prototype.reverse = function () {
             this.selected = false;
@@ -2433,9 +2630,9 @@
                 this.boardLoader.loadFEN(fen);
                 this.board.possibleCaptures = [];
                 this.board.possibleMoves = [];
+                this.coords.reset();
             }
             catch (exception) {
-                console.log(exception);
                 this.boardLoader.addPieces();
             }
         };
@@ -2468,21 +2665,21 @@
                 return;
             }
             var pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
+            if (this.freeMode) {
+                if (pieceClicked) {
+                    this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+                }
+            }
             if (this.isPieceDisabled(pieceClicked)) {
                 return;
             }
             if (this.selected) {
-                this.handleClickEvent(pointClicked);
+                this.handleClickEvent(pointClicked, true);
             }
             else {
                 if (pieceClicked) {
-                    if ((this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.BLACK) ||
-                        (!this.board.currentWhitePlayer &&
-                            pieceClicked.color === Color.WHITE)) {
-                        return;
-                    }
-                    this.prepareActivePiece(pieceClicked, pointClicked);
+                    this.onFreeMode(pieceClicked);
+                    this.onPieceClicked(pieceClicked, pointClicked);
                 }
             }
         };
@@ -2580,24 +2777,26 @@
                 ++this.board.fullMoveCount;
             }
         };
-        NgxChessBoardComponent.prototype.handleClickEvent = function (pointClicked) {
-            if (this.board.isPointInPossibleMoves(pointClicked) ||
-                this.board.isPointInPossibleCaptures(pointClicked)) {
+        NgxChessBoardComponent.prototype.handleClickEvent = function (pointClicked, isMouseDown) {
+            var moving = false;
+            if ((this.board.isPointInPossibleMoves(pointClicked) ||
+                this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
                 this.saveClone();
                 this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
                 this.board.lastMoveDest = pointClicked;
                 this.movePiece(this.board.activePiece, pointClicked);
+                if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
+                    moving = true;
+                }
+            }
+            if (isMouseDown || moving) {
+                this.disableSelection();
             }
             this.disableSelection();
             var pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-            if (pieceClicked) {
-                if ((this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)) {
-                    return;
-                }
-                this.prepareActivePiece(pieceClicked, pointClicked);
+            if (pieceClicked && !moving) {
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
             }
         };
         NgxChessBoardComponent.prototype.addDrawPoint = function (x, y, crtl, alt, shift) {
@@ -2668,63 +2867,102 @@
         };
         return NgxChessBoardComponent;
     }());
-    NgxChessBoardComponent.decorators = [
-        { type: i0.Component, args: [{
-                    selector: 'ngx-chess-board',
-                    template: "<div\r\n    id=\"board\"\r\n    [style.height.px]=\"heightAndWidth\"\r\n    [style.width.px]=\"heightAndWidth\"\r\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\r\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\r\n    #boardRef\r\n>\r\n    <div id=\"drag\">\r\n        <div\r\n            class=\"board-row\"\r\n            *ngFor=\"let row of board.board; let i = index\"\r\n        >\r\n            <div\r\n                class=\"board-col\"\r\n                [class.current-selection]=\"board.isXYInActiveMove(i,j)\"\r\n                [class.dest-move]=\"board.isXYInDestMove(i,j)\"\r\n                [class.king-check]=\" isKingChecked(getPieceByPoint(i,j))\"\r\n                [class.point-circle]=\"board.isXYInPointSelection(i, j)\"\r\n                [class.possible-capture]=\"board.isXYInPossibleCaptures(i, j)\"\r\n                [class.possible-point]=\"board.isXYInPossibleMoves(i, j)\"\r\n                [class.source-move]=\"board.isXYInSourceMove(i, j)\"\r\n                [style.background-color]=\"((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor\"\r\n                *ngFor=\"let col of row; let j = index\"\r\n            >\r\n                <span\r\n                    class=\"yCoord\"\r\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && j === 7\"\r\n                >\r\n                    {{coords.yCoords[i]}}\r\n                </span>\r\n                <span\r\n                    class=\"xCoord\"\r\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && i === 7\"\r\n                >\r\n                    {{coords.xCoords[j]}}\r\n                </span>\r\n                <div\r\n                    *ngIf=\"getPieceByPoint(i, j) as piece\"\r\n                    style=\"height:100%; width:100%\"\r\n                >\r\n                    <div\r\n                        [cdkDragDisabled]=\"dragDisabled\"\r\n                        [innerHTML]=\"pieceIconManager.isDefaultIcons() ? getPieceByPoint(i,j).constant.icon : ''\"\r\n                        [ngClass]=\"'piece'\"\r\n                        [style.font-size]=\"pieceSize + 'px'\"\r\n                        [ngStyle]=\"pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(getPieceByPoint(i,j))\"\r\n                        (cdkDragEnded)=\"dragEnded($event)\"\r\n                        (cdkDragStarted)=\"dragStart($event)\"\r\n                        cdkDrag\r\n                    >\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <svg\r\n        [attr.height]=\"heightAndWidth\"\r\n        [attr.width]=\"heightAndWidth\"\r\n        style=\"position:absolute; top:0; pointer-events: none\"\r\n    >\r\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\r\n            <marker\r\n                [id]=\"color + 'Arrow'\"\r\n                markerHeight=\"13\"\r\n                markerWidth=\"13\"\r\n                orient=\"auto\"\r\n                refX=\"9\"\r\n                refY=\"6\"\r\n            >\r\n                <path\r\n                    [style.fill]=\"color\"\r\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\r\n                ></path>\r\n            </marker>\r\n        </defs>\r\n        <line\r\n            class=\"arrow\"\r\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\r\n            [attr.stroke]=\"arrow.end.color\"\r\n            [attr.x1]=\"arrow.start.x\"\r\n            [attr.x2]=\"arrow.end.x\"\r\n            [attr.y1]=\"arrow.start.y\"\r\n            [attr.y2]=\"arrow.end.y\"\r\n            *ngFor=\"let arrow of drawProvider.arrows$ | async\"\r\n        ></line>\r\n        <circle\r\n            [attr.cx]=\"circle.drawPoint.x\"\r\n            [attr.cy]=\"circle.drawPoint.y\"\r\n            [attr.r]=\"heightAndWidth / 18\"\r\n            [attr.stroke]=\"circle.drawPoint.color\"\r\n            *ngFor=\"let circle of drawProvider.circles$ | async\"\r\n            fill-opacity=\"0.0\"\r\n            stroke-width=\"2\"\r\n        ></circle>\r\n    </svg>\r\n    <app-piece-promotion-modal #modal></app-piece-promotion-modal>\r\n</div>\r\n",
-                    styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move{background-color:rgba(146,111,26,.79)!important}.dest-move{background-color:#b28e1a!important}.current-selection{background-color:hsla(0,0%,100%,.5)!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}"]
-                },] }
-    ];
-    NgxChessBoardComponent.ctorParameters = function () { return [
-        { type: NgxChessBoardService }
-    ]; };
-    NgxChessBoardComponent.propDecorators = {
-        darkTileColor: [{ type: i0.Input }],
-        lightTileColor: [{ type: i0.Input }],
-        showCoords: [{ type: i0.Input }],
-        dragDisabled: [{ type: i0.Input }],
-        drawDisabled: [{ type: i0.Input }],
-        lightDisabled: [{ type: i0.Input }],
-        darkDisabled: [{ type: i0.Input }],
-        moveChange: [{ type: i0.Output }],
-        checkmate: [{ type: i0.Output }],
-        stalemate: [{ type: i0.Output }],
-        boardRef: [{ type: i0.ViewChild, args: ['boardRef',] }],
-        modal: [{ type: i0.ViewChild, args: ['modal',] }],
-        size: [{ type: i0.Input, args: ['size',] }],
-        pieceIcons: [{ type: i0.Input, args: ['pieceIcons',] }],
-        onRightClick: [{ type: i0.HostListener, args: ['contextmenu', ['$event'],] }]
-    };
-
-    var PiecePromotionModalComponent = /** @class */ (function () {
-        function PiecePromotionModalComponent() {
-            this.selectedIndex = 0;
-            this.Color = Color;
-            this.opened = false;
-        }
-        PiecePromotionModalComponent.prototype.open = function (color, closeCallback) {
-            this.opened = true;
-            this.color = color;
-            this.onCloseCallback = closeCallback;
-            this.modal.nativeElement.style.display = 'block';
-        };
-        PiecePromotionModalComponent.prototype.changeSelection = function (index) {
-            this.modal.nativeElement.style.display = 'none';
-            this.opened = false;
-            this.onCloseCallback(index);
-        };
-        return PiecePromotionModalComponent;
-    }());
-    PiecePromotionModalComponent.decorators = [
-        { type: i0.Component, args: [{
-                    selector: 'app-piece-promotion-modal',
-                    template: "<div\r\n    class=\"container\"\r\n    #modal\r\n>\r\n    <div class=\"wrapper\">\r\n        <div\r\n            class=\"piece\"\r\n            [class.black-bishop]=\"piece === 'bishop' && color === Color.BLACK\"\r\n            [class.black-knight]=\"piece === 'knight' && color === Color.BLACK\"\r\n            [class.black-queen]=\"piece === 'queen' && color === Color.BLACK\"\r\n            [class.black-rook]=\"piece === 'rook' && color === Color.BLACK\"\r\n            [class.selected]=\"selectedIndex === index + 1\"\r\n            [class.white-bishop]=\"piece === 'bishop' && color === Color.WHITE\"\r\n            [class.white-knight]=\"piece === 'knight' && color === Color.WHITE\"\r\n            [class.white-queen]=\"piece === 'queen' && color === Color.WHITE\"\r\n            [class.white-rook]=\"piece === 'rook' && color === Color.WHITE\"\r\n            (click)=\"changeSelection(index + 1)\"\r\n            *ngFor=\"let piece of ['queen', 'rook', 'bishop', 'knight']; let index = index\"\r\n        >\r\n        </div>\r\n    </div>\r\n</div>\r\n",
-                    styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;height:100%;overflow:auto;position:absolute;top:0;width:100%;z-index:1}.wrapper{background-color:#fff;display:flex}.content{height:100%}.piece{background-repeat:no-repeat;background-size:100%;border:2px solid grey;border-radius:4px;box-sizing:border-box;cursor:pointer;height:100px;margin:10px;width:25%}.piece:hover{background-color:rgba(0,0,0,.2)}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919}"]
-                },] }
-    ];
-    PiecePromotionModalComponent.propDecorators = {
-        modal: [{ type: i0.ViewChild, args: ['modal',] }]
-    };
+    NgxChessBoardComponent.ɵfac = function NgxChessBoardComponent_Factory(t) { return new (t || NgxChessBoardComponent)(i0.ɵɵdirectiveInject(NgxChessBoardService)); };
+    NgxChessBoardComponent.ɵcmp = i0.ɵɵdefineComponent({ type: NgxChessBoardComponent, selectors: [["ngx-chess-board"]], viewQuery: function NgxChessBoardComponent_Query(rf, ctx) {
+            if (rf & 1) {
+                i0.ɵɵviewQuery(_c0$1, true);
+                i0.ɵɵviewQuery(_c1, true);
+            }
+            if (rf & 2) {
+                var _t;
+                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.boardRef = _t.first);
+                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.modal = _t.first);
+            }
+        }, hostBindings: function NgxChessBoardComponent_HostBindings(rf, ctx) {
+            if (rf & 1) {
+                i0.ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
+            }
+        }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled", freeMode: "freeMode", size: "size", pieceIcons: "pieceIcons" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [i0.ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) {
+            if (rf & 1) {
+                var _r26_1 = i0.ɵɵgetCurrentView();
+                i0.ɵɵelementStart(0, "div", 0, 1);
+                i0.ɵɵlistener("pointerdown", function NgxChessBoardComponent_Template_div_pointerdown_0_listener($event) { i0.ɵɵrestoreView(_r26_1); var _r5 = i0.ɵɵreference(11); return !_r5.opened && ctx.onMouseDown($event); })("pointerup", function NgxChessBoardComponent_Template_div_pointerup_0_listener($event) { i0.ɵɵrestoreView(_r26_1); var _r5 = i0.ɵɵreference(11); return !_r5.opened && ctx.onMouseUp($event); });
+                i0.ɵɵelementStart(2, "div", 2);
+                i0.ɵɵtemplate(3, NgxChessBoardComponent_div_3_Template, 2, 1, "div", 3);
+                i0.ɵɵelementEnd();
+                i0.ɵɵnamespaceSVG();
+                i0.ɵɵelementStart(4, "svg", 4);
+                i0.ɵɵtemplate(5, NgxChessBoardComponent__svg_defs_5_Template, 3, 3, "defs", 5);
+                i0.ɵɵtemplate(6, NgxChessBoardComponent__svg_line_6_Template, 1, 6, "line", 6);
+                i0.ɵɵpipe(7, "async");
+                i0.ɵɵtemplate(8, NgxChessBoardComponent__svg_circle_8_Template, 1, 4, "circle", 7);
+                i0.ɵɵpipe(9, "async");
+                i0.ɵɵelementEnd();
+                i0.ɵɵnamespaceHTML();
+                i0.ɵɵelement(10, "app-piece-promotion-modal", null, 8);
+                i0.ɵɵelementEnd();
+            }
+            if (rf & 2) {
+                i0.ɵɵstyleProp("height", ctx.heightAndWidth, "px")("width", ctx.heightAndWidth, "px");
+                i0.ɵɵadvance(3);
+                i0.ɵɵproperty("ngForOf", ctx.board.board);
+                i0.ɵɵadvance(1);
+                i0.ɵɵattribute("height", ctx.heightAndWidth)("width", ctx.heightAndWidth);
+                i0.ɵɵadvance(1);
+                i0.ɵɵproperty("ngForOf", i0.ɵɵpureFunction0(14, _c2));
+                i0.ɵɵadvance(1);
+                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(7, 10, ctx.drawProvider.arrows$));
+                i0.ɵɵadvance(2);
+                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(9, 12, ctx.drawProvider.circles$));
+            }
+        }, directives: [i2.NgForOf, PiecePromotionModalComponent, i2.NgIf, i4.CdkDrag, i2.NgClass, i2.NgStyle], pipes: [i2.AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
+    /*@__PURE__*/ (function () {
+        i0.ɵsetClassMetadata(NgxChessBoardComponent, [{
+                type: i0.Component,
+                args: [{
+                        selector: 'ngx-chess-board',
+                        templateUrl: './ngx-chess-board.component.html',
+                        styleUrls: ['./ngx-chess-board.component.scss'],
+                    }]
+            }], function () { return [{ type: NgxChessBoardService }]; }, { darkTileColor: [{
+                    type: i0.Input
+                }], lightTileColor: [{
+                    type: i0.Input
+                }], showCoords: [{
+                    type: i0.Input
+                }], dragDisabled: [{
+                    type: i0.Input
+                }], drawDisabled: [{
+                    type: i0.Input
+                }], lightDisabled: [{
+                    type: i0.Input
+                }], darkDisabled: [{
+                    type: i0.Input
+                }], freeMode: [{
+                    type: i0.Input
+                }], moveChange: [{
+                    type: i0.Output
+                }], checkmate: [{
+                    type: i0.Output
+                }], stalemate: [{
+                    type: i0.Output
+                }], boardRef: [{
+                    type: i0.ViewChild,
+                    args: ['boardRef']
+                }], modal: [{
+                    type: i0.ViewChild,
+                    args: ['modal']
+                }], size: [{
+                    type: i0.Input,
+                    args: ['size']
+                }], pieceIcons: [{
+                    type: i0.Input,
+                    args: ['pieceIcons']
+                }], onRightClick: [{
+                    type: i0.HostListener,
+                    args: ['contextmenu', ['$event']]
+                }] });
+    })();
 
     var NgxChessBoardModule = /** @class */ (function () {
         function NgxChessBoardModule() {
@@ -2737,13 +2975,19 @@
         };
         return NgxChessBoardModule;
     }());
-    NgxChessBoardModule.decorators = [
-        { type: i0.NgModule, args: [{
-                    declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
-                    imports: [common.CommonModule, dragDrop.DragDropModule],
-                    exports: [NgxChessBoardComponent],
-                },] }
-    ];
+    NgxChessBoardModule.ɵmod = i0.ɵɵdefineNgModule({ type: NgxChessBoardModule });
+    NgxChessBoardModule.ɵinj = i0.ɵɵdefineInjector({ factory: function NgxChessBoardModule_Factory(t) { return new (t || NgxChessBoardModule)(); }, imports: [[i2.CommonModule, i4.DragDropModule]] });
+    (function () { (typeof ngJitMode === "undefined" || ngJitMode) && i0.ɵɵsetNgModuleScope(NgxChessBoardModule, { declarations: [NgxChessBoardComponent, PiecePromotionModalComponent], imports: [i2.CommonModule, i4.DragDropModule], exports: [NgxChessBoardComponent] }); })();
+    /*@__PURE__*/ (function () {
+        i0.ɵsetClassMetadata(NgxChessBoardModule, [{
+                type: i0.NgModule,
+                args: [{
+                        declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
+                        imports: [i2.CommonModule, i4.DragDropModule],
+                        exports: [NgxChessBoardComponent],
+                    }]
+            }], null, null);
+    })();
 
     /*
      * Public API Surface of ngx-chess-board

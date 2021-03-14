@@ -16,11 +16,13 @@ import { PiecePromotionModalComponent } from './piece-promotion-modal/piece-prom
 import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
+import * as i0 from "@angular/core";
 export interface MoveChange extends HistoryMove {
     check: boolean;
     stalemate: boolean;
     checkmate: boolean;
     fen: string;
+    freeMode: boolean;
 }
 export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChessBoardView {
     private ngxChessBoardService;
@@ -31,6 +33,10 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     drawDisabled: boolean;
     lightDisabled: boolean;
     darkDisabled: boolean;
+    /**
+     * Enabling free mode removes turn-based restriction and allows to move any piece freely!
+     */
+    freeMode: boolean;
     moveChange: EventEmitter<MoveChange>;
     checkmate: EventEmitter<void>;
     stalemate: EventEmitter<void>;
@@ -56,6 +62,15 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     ngOnChanges(changes: SimpleChanges): void;
     ngOnInit(): void;
     onMouseUp(event: MouseEvent): void;
+    onPieceClicked(pieceClicked: any, pointClicked: any): void;
+    /**
+     * Validates whether freemode is turned on!
+     */
+    isFreeMode(): boolean;
+    /**
+     * Processes logic to allow freeMode based logic processing
+     */
+    onFreeMode(pieceClicked: any): void;
     afterMoveActions(promotionIndex?: number): void;
     disableSelection(): void;
     prepareActivePiece(pieceClicked: Piece, pointClicked: Point): void;
@@ -93,4 +108,6 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     move(coords: string): void;
     getCustomPieceIcons(piece: Piece): any;
     private isPieceDisabled;
+    static ɵfac: i0.ɵɵFactoryDef<NgxChessBoardComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDefWithMeta<NgxChessBoardComponent, "ngx-chess-board", never, { "darkTileColor": "darkTileColor"; "lightTileColor": "lightTileColor"; "showCoords": "showCoords"; "dragDisabled": "dragDisabled"; "drawDisabled": "drawDisabled"; "lightDisabled": "lightDisabled"; "darkDisabled": "darkDisabled"; "freeMode": "freeMode"; "size": "size"; "pieceIcons": "pieceIcons"; }, { "moveChange": "moveChange"; "checkmate": "checkmate"; "stalemate": "stalemate"; }, never, never>;
 }

@@ -1,6 +1,6 @@
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { CommonModule } from '@angular/common';
-import { ɵɵdefineInjectable, Injectable, EventEmitter, Component, Input, Output, ViewChild, HostListener, NgModule } from '@angular/core';
+import { CdkDrag, DragDropModule } from '@angular/cdk/drag-drop';
+import { NgForOf, NgIf, NgClass, NgStyle, AsyncPipe, CommonModule } from '@angular/common';
+import { ɵɵdefineInjectable, ɵsetClassMetadata, Injectable, ɵɵdefineComponent, ɵɵviewQuery, ɵɵqueryRefresh, ɵɵloadQuery, ɵɵelementStart, ɵɵlistener, ɵɵtext, ɵɵelementEnd, Component, ViewChild, ɵɵnextContext, ɵɵstyleProp, ɵɵadvance, ɵɵtextInterpolate1, ɵɵgetCurrentView, ɵɵrestoreView, ɵɵproperty, ɵɵsanitizeHtml, ɵɵtemplate, ɵɵclassProp, ɵɵnamespaceSVG, ɵɵelement, ɵɵattribute, EventEmitter, ɵɵdirectiveInject, ɵɵNgOnChangesFeature, ɵɵreference, ɵɵpipe, ɵɵnamespaceHTML, ɵɵpureFunction0, ɵɵpipeBind1, Input, Output, HostListener, ɵɵdefineNgModule, ɵɵdefineInjector, ɵɵsetNgModuleScope, NgModule } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { cloneDeep } from 'lodash';
 
@@ -330,37 +330,21 @@ class King extends Piece {
         const row = this.point.row;
         const col = this.point.col;
         // lewo
-        if (this.board.isFieldTakenByEnemy(row, col - 1, this.color)) {
-            possiblePoints.push(new Point(row, col - 1));
-        }
+        possiblePoints.push(new Point(row, col - 1));
         // prawo
-        if (this.board.isFieldTakenByEnemy(row, col + 1, this.color)) {
-            possiblePoints.push(new Point(row, col + 1));
-        }
+        possiblePoints.push(new Point(row, col + 1));
         // dol
-        if (this.board.isFieldTakenByEnemy(row + 1, col, this.color)) {
-            possiblePoints.push(new Point(row + 1, col));
-        }
+        possiblePoints.push(new Point(row + 1, col));
         // gora
-        if (this.board.isFieldTakenByEnemy(row - 1, col, this.color)) {
-            possiblePoints.push(new Point(row - 1, col));
-        }
+        possiblePoints.push(new Point(row - 1, col));
         // lewo gora
-        if (this.board.isFieldTakenByEnemy(row - 1, col - 1, this.color)) {
-            possiblePoints.push(new Point(row - 1, col - 1));
-        }
+        possiblePoints.push(new Point(row - 1, col - 1));
         // prawo gora
-        if (this.board.isFieldTakenByEnemy(row - 1, col + 1, this.color)) {
-            possiblePoints.push(new Point(row - 1, col + 1));
-        }
+        possiblePoints.push(new Point(row - 1, col + 1));
         // lewo dol
-        if (this.board.isFieldTakenByEnemy(row + 1, col - 1, this.color)) {
-            possiblePoints.push(new Point(row + 1, col - 1));
-        }
+        possiblePoints.push(new Point(row + 1, col - 1));
         // prawo dol
-        if (this.board.isFieldTakenByEnemy(row + 1, col + 1, this.color)) {
-            possiblePoints.push(new Point(row + 1, col + 1));
-        }
+        possiblePoints.push(new Point(row + 1, col + 1));
         return possiblePoints;
     }
 }
@@ -1157,7 +1141,6 @@ class BoardLoader {
     }
     setRookAlreadyMoved(color, col) {
         const rook = this.board.pieces.find((piece) => piece.color === color && piece instanceof Rook && piece.point.col === col);
-        console.log(color + " " + col);
         if (rook) {
             rook.isMovedAlready = true;
         }
@@ -1208,11 +1191,9 @@ class BoardStateProvider {
 class CoordsProvider {
     constructor() {
         this.defaultXCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        this.reversedXCoords = ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
         this.defaultYCoords = [8, 7, 6, 5, 4, 3, 2, 1];
-        this.reversedYCoords = [1, 2, 3, 4, 5, 6, 7, 8];
-        this.currentXCoords = this.defaultXCoords;
-        this.currentYCoords = this.defaultYCoords;
+        this.currentXCoords = [...this.defaultXCoords];
+        this.currentYCoords = [...this.defaultYCoords];
     }
     get xCoords() {
         return this.currentXCoords;
@@ -1221,15 +1202,15 @@ class CoordsProvider {
         return this.currentYCoords;
     }
     reverse() {
-        this.currentXCoords = this.reversedXCoords;
-        this.currentYCoords = this.reversedYCoords;
+        this.currentXCoords = this.currentXCoords.reverse();
+        this.currentYCoords = this.currentYCoords.reverse();
     }
     reset() {
         this.init();
     }
     init() {
-        this.currentXCoords = this.defaultXCoords;
-        this.currentYCoords = this.defaultYCoords;
+        this.currentXCoords = [...this.defaultXCoords];
+        this.currentYCoords = [...this.defaultYCoords];
     }
 }
 
@@ -1662,22 +1643,6 @@ class AvailableMoveDecorator extends PieceAbstractDecorator {
     }
 }
 
-class NgxChessBoardService {
-    constructor() {
-        this.componentMethodCallSource = new Subject();
-        this.componentMethodCalled$ = this.componentMethodCallSource.asObservable();
-    }
-    reset() {
-        this.componentMethodCallSource.next();
-    }
-}
-NgxChessBoardService.ɵprov = ɵɵdefineInjectable({ factory: function NgxChessBoardService_Factory() { return new NgxChessBoardService(); }, token: NgxChessBoardService, providedIn: "root" });
-NgxChessBoardService.decorators = [
-    { type: Injectable, args: [{
-                providedIn: 'root',
-            },] }
-];
-
 class Constants {
 }
 Constants.DEFAULT_DARK_TILE_COLOR = 'rgb(97, 84, 61)';
@@ -1740,6 +1705,181 @@ class PieceIconInputManager {
     }
 }
 
+class NgxChessBoardService {
+    constructor() {
+        this.componentMethodCallSource = new Subject();
+        this.componentMethodCalled$ = this.componentMethodCallSource.asObservable();
+    }
+    reset() {
+        this.componentMethodCallSource.next();
+    }
+}
+NgxChessBoardService.ɵfac = function NgxChessBoardService_Factory(t) { return new (t || NgxChessBoardService)(); };
+NgxChessBoardService.ɵprov = ɵɵdefineInjectable({ token: NgxChessBoardService, factory: NgxChessBoardService.ɵfac, providedIn: 'root' });
+/*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardService, [{
+        type: Injectable,
+        args: [{
+                providedIn: 'root',
+            }]
+    }], null, null); })();
+
+const _c0 = ["myModal"];
+class PiecePromotionModalComponent {
+    constructor() {
+        this.opened = false;
+    }
+    open(closeCallback) {
+        this.opened = true;
+        this.onCloseCallback = closeCallback;
+        this.modal.nativeElement.style.display = 'block';
+    }
+    changeSelection(index) {
+        this.modal.nativeElement.style.display = 'none';
+        this.opened = false;
+        this.onCloseCallback(index);
+    }
+}
+PiecePromotionModalComponent.ɵfac = function PiecePromotionModalComponent_Factory(t) { return new (t || PiecePromotionModalComponent)(); };
+PiecePromotionModalComponent.ɵcmp = ɵɵdefineComponent({ type: PiecePromotionModalComponent, selectors: [["app-piece-promotion-modal"]], viewQuery: function PiecePromotionModalComponent_Query(rf, ctx) { if (rf & 1) {
+        ɵɵviewQuery(_c0, true);
+    } if (rf & 2) {
+        var _t;
+        ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.modal = _t.first);
+    } }, decls: 13, vars: 0, consts: [[1, "container"], ["myModal", ""], [1, "wrapper"], [1, "content"], [1, "piece-wrapper"], [1, "piece", 3, "click"]], template: function PiecePromotionModalComponent_Template(rf, ctx) { if (rf & 1) {
+        ɵɵelementStart(0, "div", 0, 1);
+        ɵɵelementStart(2, "div", 2);
+        ɵɵelementStart(3, "div", 3);
+        ɵɵelementStart(4, "div", 4);
+        ɵɵelementStart(5, "div", 5);
+        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_5_listener() { return ctx.changeSelection(1); });
+        ɵɵtext(6, "\u265B");
+        ɵɵelementEnd();
+        ɵɵelementStart(7, "div", 5);
+        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_7_listener() { return ctx.changeSelection(2); });
+        ɵɵtext(8, "\u265C");
+        ɵɵelementEnd();
+        ɵɵelementStart(9, "div", 5);
+        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_9_listener() { return ctx.changeSelection(3); });
+        ɵɵtext(10, "\u265D");
+        ɵɵelementEnd();
+        ɵɵelementStart(11, "div", 5);
+        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_11_listener() { return ctx.changeSelection(4); });
+        ɵɵtext(12, "\u265E");
+        ɵɵelementEnd();
+        ɵɵelementEnd();
+        ɵɵelementEnd();
+        ɵɵelementEnd();
+        ɵɵelementEnd();
+    } }, styles: [".container[_ngcontent-%COMP%]{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{height:100%;width:100%}.content[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{position:relative}.content[_ngcontent-%COMP%]{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece[_ngcontent-%COMP%]{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece[_ngcontent-%COMP%]:hover{background-color:#ccc;border-radius:5px}.piece-wrapper[_ngcontent-%COMP%]{height:80%;width:100%}#close-button[_ngcontent-%COMP%]{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected[_ngcontent-%COMP%]{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"] });
+/*@__PURE__*/ (function () { ɵsetClassMetadata(PiecePromotionModalComponent, [{
+        type: Component,
+        args: [{
+                selector: 'app-piece-promotion-modal',
+                templateUrl: './piece-promotion-modal.component.html',
+                styleUrls: ['./piece-promotion-modal.component.scss']
+            }]
+    }], null, { modal: [{
+            type: ViewChild,
+            args: ['myModal', { static: false }]
+        }] }); })();
+
+const _c0$1 = ["boardRef"];
+const _c1 = ["modal"];
+function NgxChessBoardComponent_div_3_div_1_span_1_Template(rf, ctx) { if (rf & 1) {
+    ɵɵelementStart(0, "span", 15);
+    ɵɵtext(1);
+    ɵɵelementEnd();
+} if (rf & 2) {
+    const i_r7 = ɵɵnextContext(2).index;
+    const ctx_r11 = ɵɵnextContext();
+    ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
+    ɵɵadvance(1);
+    ɵɵtextInterpolate1(" ", ctx_r11.coords.yCoords[i_r7], " ");
+} }
+function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) { if (rf & 1) {
+    ɵɵelementStart(0, "span", 16);
+    ɵɵtext(1);
+    ɵɵelementEnd();
+} if (rf & 2) {
+    const j_r10 = ɵɵnextContext().index;
+    const ctx_r12 = ɵɵnextContext(2);
+    ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
+    ɵɵadvance(1);
+    ɵɵtextInterpolate1(" ", ctx_r12.coords.xCoords[j_r10], " ");
+} }
+function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) { if (rf & 1) {
+    const _r18 = ɵɵgetCurrentView();
+    ɵɵelementStart(0, "div", 17);
+    ɵɵelementStart(1, "div", 18);
+    ɵɵlistener("cdkDragEnded", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragEnded_1_listener($event) { ɵɵrestoreView(_r18); const ctx_r17 = ɵɵnextContext(3); return ctx_r17.dragEnded($event); })("cdkDragStarted", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragStarted_1_listener($event) { ɵɵrestoreView(_r18); const ctx_r19 = ɵɵnextContext(3); return ctx_r19.dragStart($event); });
+    ɵɵelementEnd();
+    ɵɵelementEnd();
+} if (rf & 2) {
+    const j_r10 = ɵɵnextContext().index;
+    const i_r7 = ɵɵnextContext().index;
+    const ctx_r13 = ɵɵnextContext();
+    ɵɵadvance(1);
+    ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
+    ɵɵproperty("cdkDragDisabled", ctx_r13.dragDisabled)("innerHTML", ctx_r13.pieceIconManager.isDefaultIcons() ? ctx_r13.getPieceByPoint(i_r7, j_r10).constant.icon : "", ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.getPieceByPoint(i_r7, j_r10)));
+} }
+function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) { if (rf & 1) {
+    ɵɵelementStart(0, "div", 11);
+    ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_span_1_Template, 2, 5, "span", 12);
+    ɵɵtemplate(2, NgxChessBoardComponent_div_3_div_1_span_2_Template, 2, 5, "span", 13);
+    ɵɵtemplate(3, NgxChessBoardComponent_div_3_div_1_div_3_Template, 2, 6, "div", 14);
+    ɵɵelementEnd();
+} if (rf & 2) {
+    const j_r10 = ctx.index;
+    const i_r7 = ɵɵnextContext().index;
+    const ctx_r8 = ɵɵnextContext();
+    ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
+    ɵɵclassProp("current-selection", ctx_r8.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.isKingChecked(ctx_r8.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.board.isXYInSourceMove(i_r7, j_r10));
+    ɵɵadvance(1);
+    ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
+    ɵɵadvance(1);
+    ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
+    ɵɵadvance(1);
+    ɵɵproperty("ngIf", ctx_r8.getPieceByPoint(i_r7, j_r10));
+} }
+function NgxChessBoardComponent_div_3_Template(rf, ctx) { if (rf & 1) {
+    ɵɵelementStart(0, "div", 9);
+    ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_Template, 4, 19, "div", 10);
+    ɵɵelementEnd();
+} if (rf & 2) {
+    const row_r6 = ctx.$implicit;
+    ɵɵadvance(1);
+    ɵɵproperty("ngForOf", row_r6);
+} }
+function NgxChessBoardComponent__svg_defs_5_Template(rf, ctx) { if (rf & 1) {
+    ɵɵnamespaceSVG();
+    ɵɵelementStart(0, "defs");
+    ɵɵelementStart(1, "marker", 19);
+    ɵɵelement(2, "path", 20);
+    ɵɵelementEnd();
+    ɵɵelementEnd();
+} if (rf & 2) {
+    const color_r23 = ctx.$implicit;
+    ɵɵadvance(1);
+    ɵɵproperty("id", color_r23 + "Arrow");
+    ɵɵadvance(1);
+    ɵɵstyleProp("fill", color_r23);
+} }
+function NgxChessBoardComponent__svg_line_6_Template(rf, ctx) { if (rf & 1) {
+    ɵɵnamespaceSVG();
+    ɵɵelement(0, "line", 21);
+} if (rf & 2) {
+    const arrow_r24 = ctx.$implicit;
+    ɵɵattribute("marker-end", "url(#" + arrow_r24.end.color + "Arrow)")("stroke", arrow_r24.end.color)("x1", arrow_r24.start.x)("x2", arrow_r24.end.x)("y1", arrow_r24.start.y)("y2", arrow_r24.end.y);
+} }
+function NgxChessBoardComponent__svg_circle_8_Template(rf, ctx) { if (rf & 1) {
+    ɵɵnamespaceSVG();
+    ɵɵelement(0, "circle", 22);
+} if (rf & 2) {
+    const circle_r25 = ctx.$implicit;
+    const ctx_r4 = ɵɵnextContext();
+    ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
+} }
+const _c2 = function () { return ["red", "green", "blue", "orange"]; };
 class NgxChessBoardComponent {
     constructor(ngxChessBoardService) {
         this.ngxChessBoardService = ngxChessBoardService;
@@ -1750,6 +1890,10 @@ class NgxChessBoardComponent {
         this.drawDisabled = false;
         this.lightDisabled = false;
         this.darkDisabled = false;
+        /**
+         * Enabling free mode removes turn-based restriction and allows to move any piece freely!
+         */
+        this.freeMode = false;
         this.moveChange = new EventEmitter();
         this.checkmate = new EventEmitter();
         this.stalemate = new EventEmitter();
@@ -1822,20 +1966,34 @@ class NgxChessBoardComponent {
             return;
         }
         if (this.selected) {
-            this.handleClickEvent(pointClicked);
+            this.handleClickEvent(pointClicked, false);
             //   this.possibleMoves = activePiece.getPossibleMoves();
         }
-        else {
-            if (pieceClicked) {
-                if ((this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)) {
-                    return;
-                }
-                this.prepareActivePiece(pieceClicked, pointClicked);
-            }
+    }
+    onPieceClicked(pieceClicked, pointClicked) {
+        if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+            (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+            return;
         }
+        this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+    /**
+     * Validates whether freemode is turned on!
+     */
+    isFreeMode() {
+        return this.freeMode;
+    }
+    /**
+     * Processes logic to allow freeMode based logic processing
+     */
+    onFreeMode(pieceClicked) {
+        if (!this.isFreeMode() ||
+            pieceClicked === undefined ||
+            pieceClicked === null) {
+            return;
+        }
+        // sets player as white in-case white pieces are selected, and vice-versa when black is selected
+        this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
     }
     afterMoveActions(promotionIndex) {
         this.checkIfPawnFirstMove(this.board.activePiece);
@@ -1855,7 +2013,7 @@ class NgxChessBoardComponent {
         }
         this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check,
             checkmate,
-            stalemate, fen: this.board.fen }));
+            stalemate, fen: this.board.fen, freeMode: this.freeMode }));
     }
     disableSelection() {
         this.selected = false;
@@ -1909,11 +2067,15 @@ class NgxChessBoardComponent {
             if (squaresMoved > 1) {
                 if (newPoint.col < 3) {
                     const leftRook = this.board.getPieceByField(toMovePiece.point.row, 0);
-                    leftRook.point.col = this.board.reverted ? 2 : 3;
+                    if (!this.freeMode) {
+                        leftRook.point.col = this.board.reverted ? 2 : 3;
+                    }
                 }
                 else {
                     const rightRook = this.board.getPieceByField(toMovePiece.point.row, 7);
-                    rightRook.point.col = this.board.reverted ? 4 : 5;
+                    if (!this.freeMode) {
+                        rightRook.point.col = this.board.reverted ? 4 : 5;
+                    }
                 }
             }
         }
@@ -1952,7 +2114,7 @@ class NgxChessBoardComponent {
         }
     }
     openPromoteDialog(piece) {
-        this.modal.open(piece.color, (index) => {
+        this.modal.open((index) => {
             this.resolvePromotionChoice(piece, index);
             this.afterMoveActions(index);
         });
@@ -1989,6 +2151,7 @@ class NgxChessBoardComponent {
         this.board.reset();
         this.coords.reset();
         this.drawProvider.clear();
+        this.freeMode = false;
     }
     reverse() {
         this.selected = false;
@@ -2022,9 +2185,9 @@ class NgxChessBoardComponent {
             this.boardLoader.loadFEN(fen);
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
+            this.coords.reset();
         }
         catch (exception) {
-            console.log(exception);
             this.boardLoader.addPieces();
         }
     }
@@ -2057,21 +2220,21 @@ class NgxChessBoardComponent {
             return;
         }
         const pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
+        if (this.freeMode) {
+            if (pieceClicked) {
+                this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+            }
+        }
         if (this.isPieceDisabled(pieceClicked)) {
             return;
         }
         if (this.selected) {
-            this.handleClickEvent(pointClicked);
+            this.handleClickEvent(pointClicked, true);
         }
         else {
             if (pieceClicked) {
-                if ((this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        pieceClicked.color === Color.WHITE)) {
-                    return;
-                }
-                this.prepareActivePiece(pieceClicked, pointClicked);
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
             }
         }
     }
@@ -2167,24 +2330,26 @@ class NgxChessBoardComponent {
             ++this.board.fullMoveCount;
         }
     }
-    handleClickEvent(pointClicked) {
-        if (this.board.isPointInPossibleMoves(pointClicked) ||
-            this.board.isPointInPossibleCaptures(pointClicked)) {
+    handleClickEvent(pointClicked, isMouseDown) {
+        let moving = false;
+        if ((this.board.isPointInPossibleMoves(pointClicked) ||
+            this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
             this.saveClone();
             this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
             this.board.lastMoveDest = pointClicked;
             this.movePiece(this.board.activePiece, pointClicked);
+            if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
+                moving = true;
+            }
+        }
+        if (isMouseDown || moving) {
+            this.disableSelection();
         }
         this.disableSelection();
         const pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-        if (pieceClicked) {
-            if ((this.board.currentWhitePlayer &&
-                pieceClicked.color === Color.BLACK) ||
-                (!this.board.currentWhitePlayer &&
-                    pieceClicked.color === Color.WHITE)) {
-                return;
-            }
-            this.prepareActivePiece(pieceClicked, pointClicked);
+        if (pieceClicked && !moving) {
+            this.onFreeMode(pieceClicked);
+            this.onPieceClicked(pieceClicked, pointClicked);
         }
     }
     addDrawPoint(x, y, crtl, alt, shift) {
@@ -2254,62 +2419,92 @@ class NgxChessBoardComponent {
                 (this.darkDisabled && pieceClicked.color === Color.BLACK)));
     }
 }
-NgxChessBoardComponent.decorators = [
-    { type: Component, args: [{
+NgxChessBoardComponent.ɵfac = function NgxChessBoardComponent_Factory(t) { return new (t || NgxChessBoardComponent)(ɵɵdirectiveInject(NgxChessBoardService)); };
+NgxChessBoardComponent.ɵcmp = ɵɵdefineComponent({ type: NgxChessBoardComponent, selectors: [["ngx-chess-board"]], viewQuery: function NgxChessBoardComponent_Query(rf, ctx) { if (rf & 1) {
+        ɵɵviewQuery(_c0$1, true);
+        ɵɵviewQuery(_c1, true);
+    } if (rf & 2) {
+        var _t;
+        ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.boardRef = _t.first);
+        ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.modal = _t.first);
+    } }, hostBindings: function NgxChessBoardComponent_HostBindings(rf, ctx) { if (rf & 1) {
+        ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
+    } }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled", freeMode: "freeMode", size: "size", pieceIcons: "pieceIcons" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) { if (rf & 1) {
+        const _r26 = ɵɵgetCurrentView();
+        ɵɵelementStart(0, "div", 0, 1);
+        ɵɵlistener("pointerdown", function NgxChessBoardComponent_Template_div_pointerdown_0_listener($event) { ɵɵrestoreView(_r26); const _r5 = ɵɵreference(11); return !_r5.opened && ctx.onMouseDown($event); })("pointerup", function NgxChessBoardComponent_Template_div_pointerup_0_listener($event) { ɵɵrestoreView(_r26); const _r5 = ɵɵreference(11); return !_r5.opened && ctx.onMouseUp($event); });
+        ɵɵelementStart(2, "div", 2);
+        ɵɵtemplate(3, NgxChessBoardComponent_div_3_Template, 2, 1, "div", 3);
+        ɵɵelementEnd();
+        ɵɵnamespaceSVG();
+        ɵɵelementStart(4, "svg", 4);
+        ɵɵtemplate(5, NgxChessBoardComponent__svg_defs_5_Template, 3, 3, "defs", 5);
+        ɵɵtemplate(6, NgxChessBoardComponent__svg_line_6_Template, 1, 6, "line", 6);
+        ɵɵpipe(7, "async");
+        ɵɵtemplate(8, NgxChessBoardComponent__svg_circle_8_Template, 1, 4, "circle", 7);
+        ɵɵpipe(9, "async");
+        ɵɵelementEnd();
+        ɵɵnamespaceHTML();
+        ɵɵelement(10, "app-piece-promotion-modal", null, 8);
+        ɵɵelementEnd();
+    } if (rf & 2) {
+        ɵɵstyleProp("height", ctx.heightAndWidth, "px")("width", ctx.heightAndWidth, "px");
+        ɵɵadvance(3);
+        ɵɵproperty("ngForOf", ctx.board.board);
+        ɵɵadvance(1);
+        ɵɵattribute("height", ctx.heightAndWidth)("width", ctx.heightAndWidth);
+        ɵɵadvance(1);
+        ɵɵproperty("ngForOf", ɵɵpureFunction0(14, _c2));
+        ɵɵadvance(1);
+        ɵɵproperty("ngForOf", ɵɵpipeBind1(7, 10, ctx.drawProvider.arrows$));
+        ɵɵadvance(2);
+        ɵɵproperty("ngForOf", ɵɵpipeBind1(9, 12, ctx.drawProvider.circles$));
+    } }, directives: [NgForOf, PiecePromotionModalComponent, NgIf, CdkDrag, NgClass, NgStyle], pipes: [AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
+/*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardComponent, [{
+        type: Component,
+        args: [{
                 selector: 'ngx-chess-board',
-                template: "<div\r\n    id=\"board\"\r\n    [style.height.px]=\"heightAndWidth\"\r\n    [style.width.px]=\"heightAndWidth\"\r\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\r\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\r\n    #boardRef\r\n>\r\n    <div id=\"drag\">\r\n        <div\r\n            class=\"board-row\"\r\n            *ngFor=\"let row of board.board; let i = index\"\r\n        >\r\n            <div\r\n                class=\"board-col\"\r\n                [class.current-selection]=\"board.isXYInActiveMove(i,j)\"\r\n                [class.dest-move]=\"board.isXYInDestMove(i,j)\"\r\n                [class.king-check]=\" isKingChecked(getPieceByPoint(i,j))\"\r\n                [class.point-circle]=\"board.isXYInPointSelection(i, j)\"\r\n                [class.possible-capture]=\"board.isXYInPossibleCaptures(i, j)\"\r\n                [class.possible-point]=\"board.isXYInPossibleMoves(i, j)\"\r\n                [class.source-move]=\"board.isXYInSourceMove(i, j)\"\r\n                [style.background-color]=\"((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor\"\r\n                *ngFor=\"let col of row; let j = index\"\r\n            >\r\n                <span\r\n                    class=\"yCoord\"\r\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && j === 7\"\r\n                >\r\n                    {{coords.yCoords[i]}}\r\n                </span>\r\n                <span\r\n                    class=\"xCoord\"\r\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && i === 7\"\r\n                >\r\n                    {{coords.xCoords[j]}}\r\n                </span>\r\n                <div\r\n                    *ngIf=\"getPieceByPoint(i, j) as piece\"\r\n                    style=\"height:100%; width:100%\"\r\n                >\r\n                    <div\r\n                        [cdkDragDisabled]=\"dragDisabled\"\r\n                        [innerHTML]=\"pieceIconManager.isDefaultIcons() ? getPieceByPoint(i,j).constant.icon : ''\"\r\n                        [ngClass]=\"'piece'\"\r\n                        [style.font-size]=\"pieceSize + 'px'\"\r\n                        [ngStyle]=\"pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(getPieceByPoint(i,j))\"\r\n                        (cdkDragEnded)=\"dragEnded($event)\"\r\n                        (cdkDragStarted)=\"dragStart($event)\"\r\n                        cdkDrag\r\n                    >\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <svg\r\n        [attr.height]=\"heightAndWidth\"\r\n        [attr.width]=\"heightAndWidth\"\r\n        style=\"position:absolute; top:0; pointer-events: none\"\r\n    >\r\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\r\n            <marker\r\n                [id]=\"color + 'Arrow'\"\r\n                markerHeight=\"13\"\r\n                markerWidth=\"13\"\r\n                orient=\"auto\"\r\n                refX=\"9\"\r\n                refY=\"6\"\r\n            >\r\n                <path\r\n                    [style.fill]=\"color\"\r\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\r\n                ></path>\r\n            </marker>\r\n        </defs>\r\n        <line\r\n            class=\"arrow\"\r\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\r\n            [attr.stroke]=\"arrow.end.color\"\r\n            [attr.x1]=\"arrow.start.x\"\r\n            [attr.x2]=\"arrow.end.x\"\r\n            [attr.y1]=\"arrow.start.y\"\r\n            [attr.y2]=\"arrow.end.y\"\r\n            *ngFor=\"let arrow of drawProvider.arrows$ | async\"\r\n        ></line>\r\n        <circle\r\n            [attr.cx]=\"circle.drawPoint.x\"\r\n            [attr.cy]=\"circle.drawPoint.y\"\r\n            [attr.r]=\"heightAndWidth / 18\"\r\n            [attr.stroke]=\"circle.drawPoint.color\"\r\n            *ngFor=\"let circle of drawProvider.circles$ | async\"\r\n            fill-opacity=\"0.0\"\r\n            stroke-width=\"2\"\r\n        ></circle>\r\n    </svg>\r\n    <app-piece-promotion-modal #modal></app-piece-promotion-modal>\r\n</div>\r\n",
-                styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move{background-color:rgba(146,111,26,.79)!important}.dest-move{background-color:#b28e1a!important}.current-selection{background-color:hsla(0,0%,100%,.5)!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}"]
-            },] }
-];
-NgxChessBoardComponent.ctorParameters = () => [
-    { type: NgxChessBoardService }
-];
-NgxChessBoardComponent.propDecorators = {
-    darkTileColor: [{ type: Input }],
-    lightTileColor: [{ type: Input }],
-    showCoords: [{ type: Input }],
-    dragDisabled: [{ type: Input }],
-    drawDisabled: [{ type: Input }],
-    lightDisabled: [{ type: Input }],
-    darkDisabled: [{ type: Input }],
-    moveChange: [{ type: Output }],
-    checkmate: [{ type: Output }],
-    stalemate: [{ type: Output }],
-    boardRef: [{ type: ViewChild, args: ['boardRef',] }],
-    modal: [{ type: ViewChild, args: ['modal',] }],
-    size: [{ type: Input, args: ['size',] }],
-    pieceIcons: [{ type: Input, args: ['pieceIcons',] }],
-    onRightClick: [{ type: HostListener, args: ['contextmenu', ['$event'],] }]
-};
-
-class PiecePromotionModalComponent {
-    constructor() {
-        this.selectedIndex = 0;
-        this.Color = Color;
-        this.opened = false;
-    }
-    open(color, closeCallback) {
-        this.opened = true;
-        this.color = color;
-        this.onCloseCallback = closeCallback;
-        this.modal.nativeElement.style.display = 'block';
-    }
-    changeSelection(index) {
-        this.modal.nativeElement.style.display = 'none';
-        this.opened = false;
-        this.onCloseCallback(index);
-    }
-}
-PiecePromotionModalComponent.decorators = [
-    { type: Component, args: [{
-                selector: 'app-piece-promotion-modal',
-                template: "<div\r\n    class=\"container\"\r\n    #modal\r\n>\r\n    <div class=\"wrapper\">\r\n        <div\r\n            class=\"piece\"\r\n            [class.black-bishop]=\"piece === 'bishop' && color === Color.BLACK\"\r\n            [class.black-knight]=\"piece === 'knight' && color === Color.BLACK\"\r\n            [class.black-queen]=\"piece === 'queen' && color === Color.BLACK\"\r\n            [class.black-rook]=\"piece === 'rook' && color === Color.BLACK\"\r\n            [class.selected]=\"selectedIndex === index + 1\"\r\n            [class.white-bishop]=\"piece === 'bishop' && color === Color.WHITE\"\r\n            [class.white-knight]=\"piece === 'knight' && color === Color.WHITE\"\r\n            [class.white-queen]=\"piece === 'queen' && color === Color.WHITE\"\r\n            [class.white-rook]=\"piece === 'rook' && color === Color.WHITE\"\r\n            (click)=\"changeSelection(index + 1)\"\r\n            *ngFor=\"let piece of ['queen', 'rook', 'bishop', 'knight']; let index = index\"\r\n        >\r\n        </div>\r\n    </div>\r\n</div>\r\n",
-                styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;height:100%;overflow:auto;position:absolute;top:0;width:100%;z-index:1}.wrapper{background-color:#fff;display:flex}.content{height:100%}.piece{background-repeat:no-repeat;background-size:100%;border:2px solid grey;border-radius:4px;box-sizing:border-box;cursor:pointer;height:100px;margin:10px;width:25%}.piece:hover{background-color:rgba(0,0,0,.2)}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919}"]
-            },] }
-];
-PiecePromotionModalComponent.propDecorators = {
-    modal: [{ type: ViewChild, args: ['modal',] }]
-};
+                templateUrl: './ngx-chess-board.component.html',
+                styleUrls: ['./ngx-chess-board.component.scss'],
+            }]
+    }], function () { return [{ type: NgxChessBoardService }]; }, { darkTileColor: [{
+            type: Input
+        }], lightTileColor: [{
+            type: Input
+        }], showCoords: [{
+            type: Input
+        }], dragDisabled: [{
+            type: Input
+        }], drawDisabled: [{
+            type: Input
+        }], lightDisabled: [{
+            type: Input
+        }], darkDisabled: [{
+            type: Input
+        }], freeMode: [{
+            type: Input
+        }], moveChange: [{
+            type: Output
+        }], checkmate: [{
+            type: Output
+        }], stalemate: [{
+            type: Output
+        }], boardRef: [{
+            type: ViewChild,
+            args: ['boardRef']
+        }], modal: [{
+            type: ViewChild,
+            args: ['modal']
+        }], size: [{
+            type: Input,
+            args: ['size']
+        }], pieceIcons: [{
+            type: Input,
+            args: ['pieceIcons']
+        }], onRightClick: [{
+            type: HostListener,
+            args: ['contextmenu', ['$event']]
+        }] }); })();
 
 class NgxChessBoardModule {
     static forRoot() {
@@ -2319,13 +2514,17 @@ class NgxChessBoardModule {
         };
     }
 }
-NgxChessBoardModule.decorators = [
-    { type: NgModule, args: [{
+NgxChessBoardModule.ɵmod = ɵɵdefineNgModule({ type: NgxChessBoardModule });
+NgxChessBoardModule.ɵinj = ɵɵdefineInjector({ factory: function NgxChessBoardModule_Factory(t) { return new (t || NgxChessBoardModule)(); }, imports: [[CommonModule, DragDropModule]] });
+(function () { (typeof ngJitMode === "undefined" || ngJitMode) && ɵɵsetNgModuleScope(NgxChessBoardModule, { declarations: [NgxChessBoardComponent, PiecePromotionModalComponent], imports: [CommonModule, DragDropModule], exports: [NgxChessBoardComponent] }); })();
+/*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardModule, [{
+        type: NgModule,
+        args: [{
                 declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
                 imports: [CommonModule, DragDropModule],
                 exports: [NgxChessBoardComponent],
-            },] }
-];
+            }]
+    }], null, null); })();
 
 /*
  * Public API Surface of ngx-chess-board

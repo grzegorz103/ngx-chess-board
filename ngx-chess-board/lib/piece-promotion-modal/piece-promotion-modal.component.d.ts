@@ -1,12 +1,11 @@
 import { ElementRef } from '@angular/core';
-import { Color } from '../models/pieces/color';
+import * as i0 from "@angular/core";
 export declare class PiecePromotionModalComponent {
     modal: ElementRef;
-    selectedIndex: number;
-    color: Color;
-    Color: typeof Color;
     opened: boolean;
     private onCloseCallback;
-    open(color: Color, closeCallback: (index: number) => void): void;
+    open(closeCallback: (index: number) => void): void;
     changeSelection(index: number): void;
+    static ɵfac: i0.ɵɵFactoryDef<PiecePromotionModalComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDefWithMeta<PiecePromotionModalComponent, "app-piece-promotion-modal", never, {}, {}, never, never>;
 }

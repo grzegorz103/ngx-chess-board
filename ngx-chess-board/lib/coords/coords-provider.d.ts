@@ -1,8 +1,6 @@
 export declare class CoordsProvider {
-    private defaultXCoords;
-    private reversedXCoords;
-    private defaultYCoords;
-    private reversedYCoords;
+    private readonly defaultXCoords;
+    private readonly defaultYCoords;
     private currentXCoords;
     private currentYCoords;
     get xCoords(): string[];
