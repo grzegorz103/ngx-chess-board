@@ -1,7 +1,7 @@
 <div
     id="board"
-    [style.height.px]="heightAndWidth"
-    [style.width.px]="heightAndWidth"
+    [style.height.px]="engineFacade.heightAndWidth"
+    [style.width.px]="engineFacade.heightAndWidth"
     (pointerdown)="!modal.opened && onMouseDown($event)"
     (pointerup)="!modal.opened && onMouseUp($event)"
     #boardRef
@@ -9,17 +9,17 @@
     <div id="drag">
         <div
             class="board-row"
-            *ngFor="let row of board.board; let i = index"
+            *ngFor="let row of engineFacade.board.board; let i = index"
         >
             <div
                 class="board-col"
-                [class.current-selection]="board.isXYInActiveMove(i,j)"
-                [class.dest-move]="board.isXYInDestMove(i,j)"
-                [class.king-check]=" isKingChecked(getPieceByPoint(i,j))"
-                [class.point-circle]="board.isXYInPointSelection(i, j)"
-                [class.possible-capture]="board.isXYInPossibleCaptures(i, j)"
-                [class.possible-point]="board.isXYInPossibleMoves(i, j)"
-                [class.source-move]="board.isXYInSourceMove(i, j)"
+                [class.current-selection]="engineFacade.board.isXYInActiveMove(i,j)"
+                [class.dest-move]="engineFacade.board.isXYInDestMove(i,j)"
+                [class.king-check]=" isKingChecked(engineFacade.board.getPieceByPoint(i,j))"
+                [class.point-circle]="engineFacade.board.isXYInPointSelection(i, j)"
+                [class.possible-capture]="engineFacade.board.isXYInPossibleCaptures(i, j)"
+                [class.possible-point]="engineFacade.board.isXYInPossibleMoves(i, j)"
+                [class.source-move]="engineFacade.board.isXYInSourceMove(i, j)"
                 [style.background-color]="((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor"
                 *ngFor="let col of row; let j = index"
             >
@@ -29,7 +29,7 @@
                     [style.font-size.px]="pieceSize / 4"
                     *ngIf="showCoords && j === 7"
                 >
-                    {{coords.yCoords[i]}}
+                    {{engineFacade.coords.yCoords[i]}}
                 </span>
                 <span
                     class="xCoord"
@@ -37,18 +37,18 @@
                     [style.font-size.px]="pieceSize / 4"
                     *ngIf="showCoords && i === 7"
                 >
-                    {{coords.xCoords[j]}}
+                    {{engineFacade.coords.xCoords[j]}}
                 </span>
                 <div
-                    *ngIf="getPieceByPoint(i, j) as piece"
+                    *ngIf="engineFacade.board.getPieceByPoint(i, j) as piece"
                     style="height:100%; width:100%"
                 >
                     <div
-                        [cdkDragDisabled]="dragDisabled"
-                        [innerHTML]="pieceIconManager.isDefaultIcons() ? getPieceByPoint(i,j).constant.icon : ''"
+                        [cdkDragDisabled]="engineFacade.dragDisabled"
+                        [innerHTML]="engineFacade.pieceIconManager.isDefaultIcons() ? engineFacade.board.getPieceByPoint(i,j).constant.icon : ''"
                         [ngClass]="'piece'"
                         [style.font-size]="pieceSize + 'px'"
-                        [ngStyle]="pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(getPieceByPoint(i,j))"
+                        [ngStyle]="engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(engineFacade.board.getPieceByPoint(i,j))"
                         (cdkDragEnded)="dragEnded($event)"
                         (cdkDragStarted)="dragStart($event)"
                         cdkDrag
@@ -59,8 +59,8 @@
         </div>
     </div>
     <svg
-        [attr.height]="heightAndWidth"
-        [attr.width]="heightAndWidth"
+        [attr.height]="engineFacade.heightAndWidth"
+        [attr.width]="engineFacade.heightAndWidth"
         style="position:absolute; top:0; pointer-events: none"
     >
         <defs *ngFor="let color of ['red', 'green', 'blue', 'orange']">
@@ -86,14 +86,14 @@
             [attr.x2]="arrow.end.x"
             [attr.y1]="arrow.start.y"
             [attr.y2]="arrow.end.y"
-            *ngFor="let arrow of drawProvider.arrows$ | async"
+            *ngFor="let arrow of engineFacade.drawProvider.arrows$ | async"
         ></line>
         <circle
             [attr.cx]="circle.drawPoint.x"
             [attr.cy]="circle.drawPoint.y"
-            [attr.r]="heightAndWidth / 18"
+            [attr.r]="engineFacade.heightAndWidth / 18"
             [attr.stroke]="circle.drawPoint.color"
-            *ngFor="let circle of drawProvider.circles$ | async"
+            *ngFor="let circle of engineFacade.drawProvider.circles$ | async"
             fill-opacity="0.0"
             stroke-width="2"
         ></circle>

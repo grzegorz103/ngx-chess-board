@@ -268,4 +268,37 @@ export class Board {
             point.col = Math.abs(point.col - 7);
         }
     }
+
+    public getPieceByPoint(row: number, col: number): Piece {
+        row = Math.floor(row);
+        col = Math.floor(col);
+        return this.pieces.find(
+            (piece) => piece.point.col === col && piece.point.row === row
+        );
+    }
+
+    public checkIfPawnTakesEnPassant(newPoint: Point) {
+        if (newPoint.isEqual(this.enPassantPoint)) {
+            this.pieces = this.pieces.filter(
+                (piece) => piece !== this.enPassantPiece
+            );
+            this.enPassantPoint = null;
+            this.enPassantPiece = null;
+        }
+    }
+
+    public checkIfPawnEnpassanted(piece: Pawn, newPoint: Point) {
+        if (Math.abs(piece.point.row - newPoint.row) > 1) {
+            this.enPassantPiece = piece;
+            this.enPassantPoint = new Point(
+                (piece.point.row + newPoint.row) / 2,
+                piece.point.col
+            );
+        } else {
+            this.enPassantPoint = null;
+            this.enPassantPiece = null;
+        }
+    }
+
+
 }
