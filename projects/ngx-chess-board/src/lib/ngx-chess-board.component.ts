@@ -10,17 +10,14 @@ import {
     Output,
     SimpleChanges, ViewChild,
 } from '@angular/core';
-import { BoardLoader } from './board-state-provider/board-loader';
+import { BoardLoader } from './engine/board-state-provider/board-loader';
 
-import { DrawProvider } from './drawing-tools/draw-provider';
+import { ClickUtils } from './engine/click/click-utils';
 import { EngineFacade } from './engine/engine-facade';
 import { MoveChange } from './engine/move-change';
 import { HistoryMove } from './history-move-provider/history-move';
 import { Board } from './models/board';
-import { Color } from './models/pieces/color';
-import { King } from './models/pieces/king';
 import { Piece } from './models/pieces/piece';
-import { Point } from './models/pieces/point';
 import { NgxChessBoardView } from './ngx-chess-board-view';
 import { PiecePromotionModalComponent } from './piece-promotion/piece-promotion-modal/piece-promotion-modal.component';
 
@@ -28,6 +25,7 @@ import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { Constants } from './utils/constants';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
+import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
 
 
 @Component({
@@ -145,22 +143,6 @@ export class NgxChessBoardComponent
         );
     }
 
-    /**
-     * Validates whether freemode is turned on!
-     */
-    isFreeMode() {
-        return this.freeMode;
-    }
-
-
-    isKingChecked(piece: Piece) {
-        if (piece instanceof King) {
-            return piece.color === Color.WHITE
-                ? this.engineFacade.board.whiteKingChecked
-                : this.engineFacade.board.blackKingChecked;
-        }
-    }
-
     reverse(): void {
         this.selected = false;
         this.engineFacade.board.reverse();
@@ -173,7 +155,6 @@ export class NgxChessBoardComponent
         this.engineFacade.board.possibleCaptures = [];
         this.engineFacade.board.possibleMoves = [];
     }
-
 
     setFEN(fen: string): void {
         try {
@@ -191,18 +172,11 @@ export class NgxChessBoardComponent
     }
 
     dragEnded(event: CdkDragEnd): void {
-        event.source.reset();
-        event.source.element.nativeElement.style.zIndex = '0';
-        event.source.element.nativeElement.style.pointerEvents = 'auto';
-        event.source.element.nativeElement.style.touchAction = 'auto';
+        this.engineFacade.dragEndStrategy.process(event);
     }
 
     dragStart(event: CdkDragStart): void {
-        const style = event.source.element.nativeElement.style;
-        style.position = 'relative';
-        style.zIndex = '1000';
-        style.touchAction = 'none';
-        style.pointerEvents = 'none';
+        this.engineFacade.dragStartStrategy.process(event);
     }
 
     onMouseDown(event: MouseEvent) {
@@ -213,20 +187,12 @@ export class NgxChessBoardComponent
     }
 
     getClickPoint(event) {
-        return new Point(
-            Math.floor(
-                (event.y -
-                    this.boardRef.nativeElement.getBoundingClientRect().top) /
-                (this.boardRef.nativeElement.getBoundingClientRect()
-                        .height /
-                    8)
-            ),
-            Math.floor(
-                (event.x -
-                    this.boardRef.nativeElement.getBoundingClientRect().left) /
-                (this.boardRef.nativeElement.getBoundingClientRect().width /
-                    8)
-            )
+        return ClickUtils.getClickPoint(
+            event,
+            this.boardRef.nativeElement.getBoundingClientRect().top,
+            this.boardRef.nativeElement.getBoundingClientRect().height,
+            this.boardRef.nativeElement.getBoundingClientRect().left,
+            this.boardRef.nativeElement.getBoundingClientRect().width
         );
     }
 
@@ -237,7 +203,7 @@ export class NgxChessBoardComponent
 
     getCustomPieceIcons(piece: Piece) {
         return JSON.parse(
-            `{ "background-image": "url('${this.pieceIconManager.getPieceIcon(
+            `{ "background-image": "url('${this.engineFacade.pieceIconManager.getPieceIcon(
                 piece
             )}')"}`
         );
@@ -258,4 +224,13 @@ export class NgxChessBoardComponent
     undo(): void {
         this.engineFacade.undo();
     }
+
+    addPiece(
+        pieceTypeInput: PieceTypeInput,
+        colorInput: ColorInput,
+        coords: string
+    ) {
+        this.engineFacade.addPiece(pieceTypeInput, colorInput, coords);
+    }
+
 }

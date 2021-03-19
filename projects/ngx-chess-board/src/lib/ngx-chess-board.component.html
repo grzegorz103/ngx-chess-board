@@ -15,7 +15,7 @@
                 class="board-col"
                 [class.current-selection]="engineFacade.board.isXYInActiveMove(i,j)"
                 [class.dest-move]="engineFacade.board.isXYInDestMove(i,j)"
-                [class.king-check]=" isKingChecked(engineFacade.board.getPieceByPoint(i,j))"
+                [class.king-check]=" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))"
                 [class.point-circle]="engineFacade.board.isXYInPointSelection(i, j)"
                 [class.possible-capture]="engineFacade.board.isXYInPossibleCaptures(i, j)"
                 [class.possible-point]="engineFacade.board.isXYInPossibleMoves(i, j)"

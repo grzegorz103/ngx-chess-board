@@ -1,13 +1,13 @@
-import { Board } from '../models/board';
-import { Bishop } from '../models/pieces/bishop';
-import { Color } from '../models/pieces/color';
-import { King } from '../models/pieces/king';
-import { Knight } from '../models/pieces/knight';
-import { Pawn } from '../models/pieces/pawn';
-import { Point } from '../models/pieces/point';
-import { Queen } from '../models/pieces/queen';
-import { Rook } from '../models/pieces/rook';
-import { UnicodeConstants } from '../utils/unicode-constants';
+import { Board } from '../../models/board';
+import { Bishop } from '../../models/pieces/bishop';
+import { Color } from '../../models/pieces/color';
+import { King } from '../../models/pieces/king';
+import { Knight } from '../../models/pieces/knight';
+import { Pawn } from '../../models/pieces/pawn';
+import { Point } from '../../models/pieces/point';
+import { Queen } from '../../models/pieces/queen';
+import { Rook } from '../../models/pieces/rook';
+import { UnicodeConstants } from '../../utils/unicode-constants';
 
 export class BoardLoader {
     private board: Board;

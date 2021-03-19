@@ -1,4 +1,4 @@
-import { Point } from '../models/pieces/point';
+import { Point } from '../../models/pieces/point';
 
 export interface AbstractPiece {
 

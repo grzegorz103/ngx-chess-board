@@ -1,15 +1,19 @@
 import { ElementRef, EventEmitter, ViewChild } from '@angular/core';
+import { PiecePromotionModalComponent } from '../piece-promotion/piece-promotion-modal/piece-promotion-modal.component';
 import { HistoryMove } from '../history-move-provider/history-move';
+import { ColorInput, PieceTypeInput } from '../utils/inputs/piece-type-input';
 
-import { BoardLoader } from '../board-state-provider/board-loader';
-import { BoardState } from '../board-state-provider/board-state';
-import { BoardStateProvider } from '../board-state-provider/board-state-provider';
-import { MoveStateProvider } from '../board-state-provider/move-state-provider';
-import { CoordsProvider } from '../coords/coords-provider';
-import { Arrow } from '../drawing-tools/arrow';
-import { Circle } from '../drawing-tools/circle';
-import { DrawPoint } from '../drawing-tools/draw-point';
-import { DrawProvider } from '../drawing-tools/draw-provider';
+import { BoardLoader } from './board-state-provider/board-loader';
+import { BoardState } from './board-state-provider/board-state';
+import { BoardStateProvider } from './board-state-provider/board-state-provider';
+import { MoveStateProvider } from './board-state-provider/move-state-provider';
+import { CoordsProvider } from './coords/coords-provider';
+import { ClickUtils } from './click/click-utils';
+import { Arrow } from './drawing-tools/arrow';
+import { Circle } from './drawing-tools/circle';
+import { ColorStrategy } from './drawing-tools/colors/color-strategy';
+import { DrawPoint } from './drawing-tools/draw-point';
+import { DrawProvider } from './drawing-tools/draw-provider';
 import { HistoryMoveProvider } from '../history-move-provider/history-move-provider';
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
@@ -18,12 +22,15 @@ import { Pawn } from '../models/pieces/pawn';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
 import { Rook } from '../models/pieces/rook';
-import { AvailableMoveDecorator } from '../piece-decorator/available-move-decorator';
+import { AvailableMoveDecorator } from './piece-decorator/available-move-decorator';
 import { PiecePromotionResolver } from '../piece-promotion/piece-promotion-resolver';
 import { Constants } from '../utils/constants';
 import { PieceIconInputManager } from '../utils/inputs/piece-icon-input-manager';
 import { MoveUtils } from '../utils/move-utils';
+import { DragEndStrategy } from './drag/end/drag-end-strategy';
+import { DragStartStrategy } from './drag/start/drag-start-strategy';
 import { MoveChange } from './move-change';
+import { PieceFactory } from './utils/piece-factory';
 
 export class EngineFacade {
 
@@ -44,8 +51,13 @@ export class EngineFacade {
     moveChange: EventEmitter<MoveChange>;
     boardLoader: BoardLoader;
     coords: CoordsProvider = new CoordsProvider();
-     pieceIconManager: PieceIconInputManager;
+    pieceIconManager: PieceIconInputManager;
 
+    dragStartStrategy: DragStartStrategy = new DragStartStrategy();
+    dragEndStrategy: DragEndStrategy = new DragEndStrategy();
+    colorStrategy: ColorStrategy = new ColorStrategy();
+
+    modal: PiecePromotionModalComponent;
 
     constructor(
         board: Board,
@@ -59,31 +71,6 @@ export class EngineFacade {
         this.pieceIconManager = new PieceIconInputManager();
         this.boardStateProvider = new BoardStateProvider();
         this.moveHistoryProvider = new HistoryMoveProvider();
-    }
-
-
-    get board(): Board {
-        return this._board;
-    }
-
-    set board(value: Board) {
-        this._board = value;
-    }
-
-    get selected(): boolean {
-        return this._selected;
-    }
-
-    set selected(value: boolean) {
-        this._selected = value;
-    }
-
-    get freeMode(): boolean {
-        return this._freeMode;
-    }
-
-    set freeMode(value: boolean) {
-        this._freeMode = value;
     }
 
     reset(): void {
@@ -254,7 +241,9 @@ export class EngineFacade {
         top?: number
     ) {
         if (event.button !== 0) {
-            this.drawPoint = this.getDrawingPoint(
+            this.drawPoint = ClickUtils.getDrawingPoint(
+                this.heightAndWidth,
+                this.colorStrategy,
                 event.x,
                 event.y,
                 event.ctrlKey,
@@ -283,6 +272,10 @@ export class EngineFacade {
 
         if (this._freeMode) {
             if (pieceClicked) {
+                if (event.ctrlKey) {
+                    this.board.pieces = this.board.pieces.filter(e => e !== pieceClicked);
+                    return;
+                }
                 this._board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
             }
         }
@@ -447,17 +440,6 @@ export class EngineFacade {
         }
     }
 
-    openPromoteDialog(piece: Piece) {
-        // this.modal.open((index) => {
-        //     PiecePromotionResolver.resolvePromotionChoice(
-        //         this.board,
-        //         piece,
-        //         index
-        //     );
-        //     this.afterMoveActions(index);
-        // });
-    }
-
     checkIfPawnFirstMove(piece: Piece) {
         if (piece instanceof Pawn) {
             piece.isMovedAlready = true;
@@ -525,44 +507,49 @@ export class EngineFacade {
         }
     }
 
+    openPromoteDialog(piece: Piece) {
+        this.modal.open((index) => {
+            PiecePromotionResolver.resolvePromotionChoice(
+                this.board,
+                piece,
+                index
+            );
+            this.afterMoveActions(index);
+        });
+    }
+
     checkForPossibleMoves(color: Color): boolean {
-        if (
-            !this.board.pieces
-                .filter((piece) => piece.color === color)
-                .some(
-                    (piece) =>
-                        piece
-                            .getPossibleMoves()
-                            .some(
-                                (move) =>
-                                    !MoveUtils.willMoveCauseCheck(
-                                        color,
-                                        piece.point.row,
-                                        piece.point.col,
-                                        move.row,
-                                        move.col,
-                                        this.board
-                                    )
-                            ) ||
-                        piece
-                            .getPossibleCaptures()
-                            .some(
-                                (capture) =>
-                                    !MoveUtils.willMoveCauseCheck(
-                                        color,
-                                        piece.point.row,
-                                        piece.point.col,
-                                        capture.row,
-                                        capture.col,
-                                        this.board
-                                    )
-                            )
-                )
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+        return !this.board.pieces
+            .filter((piece) => piece.color === color)
+            .some(
+                (piece) =>
+                    piece
+                        .getPossibleMoves()
+                        .some(
+                            (move) =>
+                                !MoveUtils.willMoveCauseCheck(
+                                    color,
+                                    piece.point.row,
+                                    piece.point.col,
+                                    move.row,
+                                    move.col,
+                                    this.board
+                                )
+                        ) ||
+                    piece
+                        .getPossibleCaptures()
+                        .some(
+                            (capture) =>
+                                !MoveUtils.willMoveCauseCheck(
+                                    color,
+                                    piece.point.row,
+                                    piece.point.col,
+                                    capture.row,
+                                    capture.col,
+                                    this.board
+                                )
+                        )
+            );
     }
 
     disableSelection() {
@@ -586,44 +573,6 @@ export class EngineFacade {
         // sets player as white in-case white pieces are selected, and vice-versa when black is selected
         this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
     }
-
-    getDrawingPoint(
-        x: number,
-        y: number,
-        crtl: boolean,
-        alt: boolean,
-        shift: boolean,
-        xAxis: number,
-        yAxis: number
-    ) {
-        const squareSize = this.heightAndWidth / 8;
-        const xx = Math.floor(
-            (x - xAxis) /
-            squareSize
-        );
-        const yy = Math.floor(
-            (y - yAxis) /
-            squareSize
-        );
-
-        let color = 'green';
-
-        if (crtl || shift) {
-            color = 'red';
-        }
-        if (alt) {
-            color = 'blue';
-        }
-        if ((shift || crtl) && alt) {
-            color = 'orange';
-        }
-        return new DrawPoint(
-            Math.floor(xx * squareSize + squareSize / 2),
-            Math.floor(yy * squareSize + squareSize / 2),
-            color
-        );
-    }
-
 
     isPieceDisabled(pieceClicked: Piece) {
         if (pieceClicked && pieceClicked.point) {
@@ -653,7 +602,18 @@ export class EngineFacade {
         left: number,
         top: number
     ) {
-        const upPoint = this.getDrawingPoint(x, y, crtl, alt, shift, left, top);
+        const upPoint = ClickUtils.getDrawingPoint(
+            this.heightAndWidth,
+            this.colorStrategy,
+            x,
+            y,
+            crtl,
+            alt,
+            shift,
+            left,
+            top
+        );
+
         if (this.drawPoint.isEqual(upPoint)) {
             const circle = new Circle();
             circle.drawPoint = upPoint;
@@ -681,4 +641,44 @@ export class EngineFacade {
         }
     }
 
+    get board(): Board {
+        return this._board;
+    }
+
+    set board(value: Board) {
+        this._board = value;
+    }
+
+    get selected(): boolean {
+        return this._selected;
+    }
+
+    set selected(value: boolean) {
+        this._selected = value;
+    }
+
+    get freeMode(): boolean {
+        return this._freeMode;
+    }
+
+    set freeMode(value: boolean) {
+        this._freeMode = value;
+    }
+
+    addPiece(
+        pieceTypeInput: PieceTypeInput,
+        colorInput: ColorInput,
+        coords: string
+    ) {
+        if (this.freeMode && coords && pieceTypeInput > 0 && colorInput > 0) {
+            let indexes = MoveUtils.translateCoordsToIndex(coords, this.board.reverted);
+            let existing = this.board.getPieceByPoint(indexes.yAxis, indexes.xAxis);
+            if(existing) {
+                this.board.pieces = this.board.pieces.filter(e => e !== existing);
+            }
+            let createdPiece = PieceFactory.create(indexes, pieceTypeInput, colorInput, this.board);
+            this.board.pieces.push(createdPiece);
+            this.afterMoveActions();
+        }
+    }
 }

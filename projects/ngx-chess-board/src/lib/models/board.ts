@@ -300,5 +300,12 @@ export class Board {
         }
     }
 
+    isKingChecked(piece: Piece) {
+        if (piece instanceof King) {
+            return piece.color === Color.WHITE
+                ? this.whiteKingChecked
+                : this.blackKingChecked;
+        }
+    }
 
 }
