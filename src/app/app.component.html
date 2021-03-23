@@ -1,4 +1,4 @@
-<div style="width:400px; margin-left: auto; margin-right: auto">
+<div style="width:400px; margin-left: auto; margin-right: auto; padding-bottom: 100px">
     <h2 style="text-align: center">ngx-chess-board example</h2>
     <ngx-chess-board #board [size]="size" [lightTileColor]="lightTileColor" (moveChange)="moveCallback($event)"
                      [dragDisabled]="dragDisabled"
@@ -98,7 +98,7 @@
         >
         <span class="slider round"></span>
     </label>
-    Free mode is {{ freeMode? 'ON' : 'OFF' }}
+    Free mode is {{ freeMode ? 'ON' : 'OFF' }}
     <hr style="border-color: gray">
 
     <div class="form-group input-group-sm">
@@ -136,6 +136,41 @@
             style="margin-left:auto; margin-right: 10px"
             (click)="moveManual()"
         >Move
+        </button>
+    </div>
+
+    <hr>
+
+    <label for="manualMove">Add piece (enable Free mode first)</label>
+    <div class="input-group">
+        <div class="input-group-prepend"></div>
+        <input
+            type="text"
+            class="form-control"
+            placeholder="blue"
+            [(ngModel)]="addPieceCoords"
+            id="addPiece"
+            aria-describedby="basic-addon3"
+        >
+        <select [(ngModel)]="selectedPiece" class="custom-select" aria-label="">
+            <option selected value="1">Queen</option>
+            <option value="2">King</option>
+            <option value="3">Rook</option>
+            <option value="4">Bishop</option>
+            <option value="5">Knight</option>
+            <option value="6">Pawn</option>
+        </select>
+        <select [(ngModel)]="selectedColor" class="custom-select" aria-label="">
+            <option selected value="1">Light</option>
+            <option value="2">Dark</option>
+        </select>
+        <button
+            type="button"
+            [disabled]="!freeMode"
+            class="btn btn-primary"
+            style="margin-left:auto; margin-right: 10px"
+            (click)="addPiece()"
+        >Add
         </button>
     </div>
 </div>

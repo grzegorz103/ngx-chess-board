@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import { Arrow } from './arrow';
-import { Circle } from './circle';
+import { Arrow } from './shapes/arrow';
+import { Circle } from './shapes/circle';
 
 export class DrawProvider {
     private arrowsSubject$ = new BehaviorSubject<Arrow[]>([]);

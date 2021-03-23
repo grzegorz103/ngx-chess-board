@@ -1,4 +1,4 @@
-import { Point } from '../models/pieces/point';
+import { Point } from '../../models/pieces/point';
 import { AbstractPiece } from './abstract-piece';
 
 export abstract class PieceAbstractDecorator implements AbstractPiece {
