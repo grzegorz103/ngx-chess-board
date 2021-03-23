@@ -1,4 +1,5 @@
 import { HistoryMove } from './history-move-provider/history-move';
+import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
 export interface NgxChessBoardView {
     reset(): void;
     reverse(): void;
@@ -7,4 +8,5 @@ export interface NgxChessBoardView {
     setFEN(fen: string): void;
     move(coords: string): void;
     getFEN(): string;
+    addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string): any;
 }

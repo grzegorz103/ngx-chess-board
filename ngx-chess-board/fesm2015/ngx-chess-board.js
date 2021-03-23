@@ -4,6 +4,54 @@ import { ɵɵdefineInjectable, ɵsetClassMetadata, Injectable, ɵɵdefineCompone
 import { BehaviorSubject, Subject } from 'rxjs';
 import { cloneDeep } from 'lodash';
 
+class Point {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
+    }
+    isEqual(that) {
+        return that && this.row === that.row && this.col === that.col;
+    }
+    hasCoordsEqual(row, col) {
+        return row && col && this.row === row && this.col === col;
+    }
+}
+
+class DrawPoint {
+    constructor(x, y, color) {
+        this.x = x + 0.5;
+        this.y = y + 0.5;
+        this.color = color;
+    }
+    isEqual(that) {
+        return that && that.x === this.x && this.y === that.y;
+    }
+}
+
+class ClickUtils {
+    static getClickPoint(event, top, height, left, width) {
+        return new Point(Math.floor((event.y - top) / (height / 8)), Math.floor((event.x - left) / (width / 8)));
+    }
+    static getDrawingPoint(tileSize, colorStrategy, x, y, ctrl, alt, shift, xAxis, yAxis) {
+        const squareSize = tileSize / 8;
+        const xx = Math.floor((x - xAxis) /
+            squareSize);
+        const yy = Math.floor((y - yAxis) /
+            squareSize);
+        let color = colorStrategy.resolve(ctrl, shift, alt);
+        return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
+    }
+}
+
+class HistoryMove {
+    constructor(move, piece, color, captured) {
+        this.move = move;
+        this.piece = piece;
+        this.color = color;
+        this.x = captured;
+    }
+}
+
 var Color;
 (function (Color) {
     Color[Color["WHITE"] = 0] = "WHITE";
@@ -18,19 +66,6 @@ class Piece {
         this.point = point;
         this.relValue = relValue;
         this.board = board;
-    }
-}
-
-class Point {
-    constructor(row, col) {
-        this.row = row;
-        this.col = col;
-    }
-    isEqual(that) {
-        return that && this.row === that.row && this.col === that.col;
-    }
-    hasCoordsEqual(row, col) {
-        return row && col && this.row === row && this.col === col;
     }
 }
 
@@ -1226,14 +1261,31 @@ class Circle {
     }
 }
 
-class DrawPoint {
-    constructor(x, y, color) {
-        this.x = x + 0.5;
-        this.y = y + 0.5;
-        this.color = color;
+class DefaultColorProcessor {
+    resolve(ctrl, shift, alt) {
+        let color = 'green';
+        if (ctrl || shift) {
+            color = 'red';
+        }
+        if (alt) {
+            color = 'blue';
+        }
+        if ((shift || ctrl) && alt) {
+            color = 'orange';
+        }
+        return color;
     }
-    isEqual(that) {
-        return that && that.x === this.x && this.y === that.y;
+}
+
+class ColorStrategy {
+    constructor() {
+        this.colorProcessor = new DefaultColorProcessor();
+    }
+    resolve(ctrl, shift, alt) {
+        return this.colorProcessor.resolve(ctrl, shift, alt);
+    }
+    setColorProcessor(colorProcessor) {
+        this.colorProcessor = colorProcessor;
     }
 }
 
@@ -1280,15 +1332,6 @@ class DrawProvider {
     }
 }
 
-class HistoryMove {
-    constructor(move, piece, color, captured) {
-        this.move = move;
-        this.piece = piece;
-        this.color = color;
-        this.x = captured;
-    }
-}
-
 class HistoryMoveProvider {
     constructor() {
         this.historyMovesSubject$ = new BehaviorSubject([]);
@@ -1318,6 +1361,679 @@ class HistoryMoveProvider {
     }
     getLastMoveIndex() {
         return this.historyMoves.length - 1;
+    }
+}
+
+class MoveTranslation {
+    constructor(xAxis, yAxis, reverted) {
+        this._xAxis = xAxis;
+        this._yAxis = yAxis;
+        this._reverted = reverted;
+    }
+    get xAxis() {
+        return this._xAxis;
+    }
+    set xAxis(value) {
+        this._xAxis = value;
+    }
+    get yAxis() {
+        return this._yAxis;
+    }
+    set yAxis(value) {
+        this._yAxis = value;
+    }
+    get reverted() {
+        return this._reverted;
+    }
+    set reverted(value) {
+        this._reverted = value;
+    }
+}
+
+class MoveUtils {
+    static willMoveCauseCheck(currentColor, row, col, destRow, destCol, board) {
+        const srcPiece = board.getPieceByField(row, col);
+        const destPiece = board.getPieceByField(destRow, destCol);
+        if (srcPiece) {
+            srcPiece.point.row = destRow;
+            srcPiece.point.col = destCol;
+        }
+        if (destPiece) {
+            board.pieces = board.pieces.filter((piece) => piece !== destPiece);
+        }
+        const isBound = board.isKingInCheck(currentColor, board.pieces);
+        if (srcPiece) {
+            srcPiece.point.col = col;
+            srcPiece.point.row = row;
+        }
+        if (destPiece) {
+            board.pieces.push(destPiece);
+        }
+        return isBound;
+    }
+    static format(sourcePoint, destPoint, reverted) {
+        if (reverted) {
+            const sourceX = 104 - sourcePoint.col;
+            const destX = 104 - destPoint.col;
+            return (String.fromCharCode(sourceX) +
+                (sourcePoint.row + 1) +
+                String.fromCharCode(destX) +
+                (destPoint.row + 1));
+        }
+        else {
+            const incrementX = 97;
+            return (String.fromCharCode(sourcePoint.col + incrementX) +
+                (Math.abs(sourcePoint.row - 7) + 1) +
+                String.fromCharCode(destPoint.col + incrementX) +
+                (Math.abs(destPoint.row - 7) + 1));
+        }
+    }
+    static translateCoordsToIndex(coords, reverted) {
+        let xAxis;
+        let yAxis;
+        if (reverted) {
+            xAxis = 104 - coords.charCodeAt(0);
+            yAxis = +coords.charAt(1) - 1;
+        }
+        else {
+            xAxis = coords.charCodeAt(0) - 97;
+            yAxis = Math.abs(+coords.charAt(1) - 8);
+        }
+        return new MoveTranslation(xAxis, yAxis, reverted);
+    }
+}
+
+class PieceAbstractDecorator {
+    constructor(piece) {
+        this.piece = piece;
+    }
+}
+
+class AvailableMoveDecorator extends PieceAbstractDecorator {
+    constructor(piece, pointClicked, color, board) {
+        super(piece);
+        this.pointClicked = pointClicked;
+        this.color = color;
+        this.board = board;
+    }
+    getPossibleCaptures() {
+        return this.piece
+            .getPossibleCaptures()
+            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
+    }
+    getPossibleMoves() {
+        return this.piece
+            .getPossibleMoves()
+            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
+    }
+}
+
+class PiecePromotionResolver {
+    static resolvePromotionChoice(board, piece, index) {
+        const isWhite = piece.color === Color.WHITE;
+        switch (index) {
+            case 1:
+                board.pieces.push(new Queen(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_QUEEN
+                    : UnicodeConstants.BLACK_QUEEN, board));
+                break;
+            case 2:
+                board.pieces.push(new Rook(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_ROOK
+                    : UnicodeConstants.BLACK_ROOK, board));
+                break;
+            case 3:
+                board.pieces.push(new Bishop(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_BISHOP
+                    : UnicodeConstants.BLACK_BISHOP, board));
+                break;
+            case 4:
+                board.pieces.push(new Knight(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_KNIGHT
+                    : UnicodeConstants.BLACK_KNIGHT, board));
+                break;
+        }
+    }
+}
+
+class Constants {
+}
+Constants.DEFAULT_DARK_TILE_COLOR = 'rgb(97, 84, 61)';
+Constants.DEFAULT_LIGHT_TILE_COLOR = '#BAA378';
+Constants.DEFAULT_SIZE = 500;
+Constants.MIN_BOARD_SIZE = 100;
+Constants.MAX_BOARD_SIZE = 4000;
+
+class PieceIconInputManager {
+    constructor() {
+        this._defaultIcons = false;
+    }
+    get pieceIconInput() {
+        return this._pieceIconInput;
+    }
+    set pieceIconInput(value) {
+        this._pieceIconInput = value;
+    }
+    get defaultIcons() {
+        return this._defaultIcons;
+    }
+    set defaultIcons(value) {
+        this._defaultIcons = value;
+    }
+    isDefaultIcons() {
+        return this.pieceIconInput === undefined || this.pieceIconInput === null;
+    }
+    getPieceIcon(piece) {
+        let isWhite = (piece.color === Color.WHITE);
+        switch (piece.constructor) {
+            case King:
+                return isWhite ? this.pieceIconInput.whiteKingUrl : this.pieceIconInput.blackKingUrl;
+            case Queen:
+                return isWhite ? this.pieceIconInput.whiteQueenUrl : this.pieceIconInput.blackQueenUrl;
+            case Rook:
+                return isWhite ? this.pieceIconInput.whiteRookUrl : this.pieceIconInput.blackRookUrl;
+            case Bishop:
+                return isWhite ? this.pieceIconInput.whiteBishopUrl : this.pieceIconInput.blackBishopUrl;
+            case Knight:
+                return isWhite ? this.pieceIconInput.whiteKnightUrl : this.pieceIconInput.blackKnightUrl;
+            case Pawn:
+                return isWhite ? this.pieceIconInput.whitePawnUrl : this.pieceIconInput.blackPawnUrl;
+        }
+    }
+    loadDefaultData() {
+        this.pieceIconInput = {
+            blackBishopUrl: '',
+            blackKingUrl: '',
+            blackKnightUrl: '',
+            blackQueenUrl: '',
+            blackRookUrl: '',
+            whiteBishopUrl: '',
+            whiteKingUrl: '',
+            whiteKnightUrl: '',
+            whitePawnUrl: '',
+            whiteQueenUrl: '',
+            whiteRookUrl: '',
+            blackPawnUrl: 'a'
+        };
+    }
+}
+
+class DefaultDragEndProcessor {
+    dragEnded(event) {
+        event.source.reset();
+        event.source.element.nativeElement.style.zIndex = '0';
+        event.source.element.nativeElement.style.pointerEvents = 'auto';
+        event.source.element.nativeElement.style.touchAction = 'auto';
+    }
+}
+
+class DragEndStrategy {
+    constructor() {
+        this.dragEndProcessor = new DefaultDragEndProcessor();
+    }
+    process(event) {
+        this.dragEndProcessor.dragEnded(event);
+    }
+    setDragEndProcessor(processor) {
+        this.dragEndProcessor = processor;
+    }
+}
+
+class DefaultDragStartProcessor {
+    dragStarted(event) {
+        const style = event.source.element.nativeElement.style;
+        style.position = 'relative';
+        style.zIndex = '1000';
+        style.touchAction = 'none';
+        style.pointerEvents = 'none';
+    }
+}
+
+class DragStartStrategy {
+    constructor() {
+        this.dragStartProcessor = new DefaultDragStartProcessor();
+    }
+    process(event) {
+        this.dragStartProcessor.dragStarted(event);
+    }
+    setDragStartProcessor(processor) {
+        this.dragStartProcessor = processor;
+    }
+}
+
+var PieceTypeInput;
+(function (PieceTypeInput) {
+    PieceTypeInput[PieceTypeInput["KING"] = 1] = "KING";
+    PieceTypeInput[PieceTypeInput["QUEEN"] = 2] = "QUEEN";
+    PieceTypeInput[PieceTypeInput["BISHOP"] = 3] = "BISHOP";
+    PieceTypeInput[PieceTypeInput["KNIGHT"] = 4] = "KNIGHT";
+    PieceTypeInput[PieceTypeInput["ROOK"] = 5] = "ROOK";
+    PieceTypeInput[PieceTypeInput["PAWN"] = 6] = "PAWN";
+})(PieceTypeInput || (PieceTypeInput = {}));
+var ColorInput;
+(function (ColorInput) {
+    ColorInput[ColorInput["LIGHT"] = 1] = "LIGHT";
+    ColorInput[ColorInput["DARK"] = 2] = "DARK";
+})(ColorInput || (ColorInput = {}));
+
+class PieceFactory {
+    static create(indexes, pieceTypeInput, colorInput, board) {
+        let piece;
+        let color = colorInput === ColorInput.LIGHT
+            ? Color.WHITE
+            : Color.BLACK;
+        switch (pieceTypeInput) {
+            case PieceTypeInput.QUEEN:
+                piece = new Queen(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, board);
+                break;
+            case PieceTypeInput.KING:
+                piece = new King(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_KING : UnicodeConstants.BLACK_KING, board);
+                break;
+            case PieceTypeInput.KNIGHT:
+                piece = new Knight(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_KNIGHT : UnicodeConstants.BLACK_KNIGHT, board);
+                break;
+            case PieceTypeInput.BISHOP:
+                piece = new Bishop(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_BISHOP : UnicodeConstants.BLACK_BISHOP, board);
+                break;
+            case PieceTypeInput.ROOK:
+                piece = new Rook(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_ROOK : UnicodeConstants.BLACK_ROOK, board);
+                break;
+            case PieceTypeInput.PAWN:
+                piece = new Pawn(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_PAWN : UnicodeConstants.BLACK_PAWN, board);
+                break;
+        }
+        return piece;
+    }
+}
+
+class EngineFacade {
+    constructor(board, moveChange) {
+        this._selected = false;
+        this._freeMode = false;
+        this.disabling = false;
+        this.heightAndWidth = Constants.DEFAULT_SIZE;
+        this.coords = new CoordsProvider();
+        this.dragStartStrategy = new DragStartStrategy();
+        this.dragEndStrategy = new DragEndStrategy();
+        this.colorStrategy = new ColorStrategy();
+        this._board = board;
+        this.moveChange = moveChange;
+        this.boardLoader = new BoardLoader(this.board);
+        this.boardLoader.addPieces();
+        this.drawProvider = new DrawProvider();
+        this.pieceIconManager = new PieceIconInputManager();
+        this.boardStateProvider = new BoardStateProvider();
+        this.moveHistoryProvider = new HistoryMoveProvider();
+    }
+    reset() {
+        this.boardStateProvider.clear();
+        this.moveHistoryProvider.clear();
+        this.boardLoader.addPieces();
+        this.board.reset();
+        this.coords.reset();
+        this.drawProvider.clear();
+        this.freeMode = false;
+    }
+    undo() {
+        if (!this.boardStateProvider.isEmpty()) {
+            const lastBoard = this.boardStateProvider.pop().board;
+            if (this.board.reverted) {
+                lastBoard.reverse();
+            }
+            this.board = lastBoard;
+            this.boardLoader.setBoard(this.board);
+            this.board.possibleCaptures = [];
+            this.board.possibleMoves = [];
+            this.moveHistoryProvider.pop();
+        }
+    }
+    getMoveHistory() {
+        return this.moveHistoryProvider.getAll();
+    }
+    saveMoveClone() {
+        const clone = this.board.clone();
+        if (this.board.reverted) {
+            clone.reverse();
+        }
+        this.moveStateProvider.addMove(new BoardState(clone));
+    }
+    move(coords) {
+        if (coords) {
+            const sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this._board.reverted);
+            const destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this._board.reverted);
+            const srcPiece = this._board.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
+            if (srcPiece) {
+                if ((this._board.currentWhitePlayer &&
+                    srcPiece.color === Color.BLACK) ||
+                    (!this._board.currentWhitePlayer &&
+                        srcPiece.color === Color.WHITE)) {
+                    return;
+                }
+                this.prepareActivePiece(srcPiece, srcPiece.point);
+                if (this._board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
+                    this._board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                    this.saveClone();
+                    this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis), coords.length === 5 ? +coords.substring(4, 5) : 0);
+                    this._board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
+                    this._board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
+                    this.disableSelection();
+                }
+                else {
+                    this.disableSelection();
+                }
+            }
+        }
+    }
+    prepareActivePiece(pieceClicked, pointClicked) {
+        this._board.activePiece = pieceClicked;
+        this._selected = true;
+        this._board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleCaptures();
+        this._board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleMoves();
+    }
+    onPieceClicked(pieceClicked, pointClicked) {
+        if ((this._board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+            (!this._board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+            return;
+        }
+        this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+    handleClickEvent(pointClicked, isMouseDown) {
+        let moving = false;
+        if ((this._board.isPointInPossibleMoves(pointClicked) ||
+            this._board.isPointInPossibleCaptures(pointClicked)) || this._freeMode) {
+            this.saveClone();
+            this._board.lastMoveSrc = new Point(this._board.activePiece.point.row, this._board.activePiece.point.col);
+            this._board.lastMoveDest = pointClicked;
+            this.movePiece(this._board.activePiece, pointClicked);
+            if (!this._board.activePiece.point.isEqual(this._board.lastMoveSrc)) {
+                moving = true;
+            }
+        }
+        if (isMouseDown || moving) {
+            this.disableSelection();
+        }
+        this.disableSelection();
+        const pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+        if (pieceClicked && !moving) {
+            this.onFreeMode(pieceClicked);
+            this.onPieceClicked(pieceClicked, pointClicked);
+        }
+    }
+    onMouseDown(event, pointClicked, left, top) {
+        if (event.button !== 0) {
+            this.drawPoint = ClickUtils.getDrawingPoint(this.heightAndWidth, this.colorStrategy, event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey, left, top);
+            return;
+        }
+        this.drawProvider.clear();
+        if (this._board.activePiece &&
+            pointClicked.isEqual(this._board.activePiece.point)) {
+            this.disabling = true;
+            return;
+        }
+        const pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+        if (this._freeMode) {
+            if (pieceClicked) {
+                if (event.ctrlKey) {
+                    this.board.pieces = this.board.pieces.filter(e => e !== pieceClicked);
+                    return;
+                }
+                this._board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+            }
+        }
+        if (this.isPieceDisabled(pieceClicked)) {
+            return;
+        }
+        if (this._selected) {
+            this.handleClickEvent(pointClicked, true);
+        }
+        else {
+            if (pieceClicked) {
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
+            }
+        }
+    }
+    onMouseUp(event, pointClicked, left, top) {
+        if (event.button !== 0 && !this.drawDisabled) {
+            this.addDrawPoint(event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey, left, top);
+            return;
+        }
+        this.drawProvider.clear();
+        if (this.dragDisabled) {
+            return;
+        }
+        if (this._board.activePiece &&
+            pointClicked.isEqual(this._board.activePiece.point) &&
+            this.disabling) {
+            this.disableSelection();
+            this.disabling = false;
+            return;
+        }
+        const pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+        if (this.isPieceDisabled(pieceClicked)) {
+            return;
+        }
+        if (this._selected) {
+            this.handleClickEvent(pointClicked, false);
+            //   this.possibleMoves = activePiece.getPossibleMoves();
+        }
+    }
+    saveClone() {
+        const clone = this._board.clone();
+        if (this._board.reverted) {
+            clone.reverse();
+        }
+        this.boardStateProvider.addMove(new BoardState(clone));
+    }
+    movePiece(toMovePiece, newPoint, promotionIndex) {
+        const destPiece = this._board.pieces.find((piece) => piece.point.col === newPoint.col &&
+            piece.point.row === newPoint.row);
+        if (destPiece && toMovePiece.color !== destPiece.color) {
+            this._board.pieces = this._board.pieces.filter((piece) => piece !== destPiece);
+        }
+        else {
+            if (destPiece && toMovePiece.color === destPiece.color) {
+                return;
+            }
+        }
+        const move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this._board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
+        this.moveHistoryProvider.addMove(move);
+        if (toMovePiece instanceof King) {
+            const squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
+            if (squaresMoved > 1) {
+                if (newPoint.col < 3) {
+                    const leftRook = this._board.getPieceByField(toMovePiece.point.row, 0);
+                    if (!this._freeMode) {
+                        leftRook.point.col = this._board.reverted ? 2 : 3;
+                    }
+                }
+                else {
+                    const rightRook = this._board.getPieceByField(toMovePiece.point.row, 7);
+                    if (!this._freeMode) {
+                        rightRook.point.col = this._board.reverted ? 4 : 5;
+                    }
+                }
+            }
+        }
+        if (toMovePiece instanceof Pawn) {
+            this.board.checkIfPawnTakesEnPassant(newPoint);
+            this.board.checkIfPawnEnpassanted(toMovePiece, newPoint);
+        }
+        toMovePiece.point = newPoint;
+        this.increaseFullMoveCount();
+        this._board.currentWhitePlayer = !this._board.currentWhitePlayer;
+        if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+            this.afterMoveActions();
+        }
+    }
+    checkForPawnPromote(toPromotePiece, promotionIndex) {
+        if (!(toPromotePiece instanceof Pawn)) {
+            return;
+        }
+        if (toPromotePiece.point.row === 0 || toPromotePiece.point.row === 7) {
+            this.board.pieces = this.board.pieces.filter((piece) => piece !== toPromotePiece);
+            // When we make move manually, we pass promotion index already, so we don't need
+            // to acquire it from promote dialog
+            if (!promotionIndex) {
+                this.openPromoteDialog(toPromotePiece);
+            }
+            else {
+                PiecePromotionResolver.resolvePromotionChoice(this.board, toPromotePiece, promotionIndex);
+                this.afterMoveActions(promotionIndex);
+            }
+            return true;
+        }
+    }
+    checkIfPawnFirstMove(piece) {
+        if (piece instanceof Pawn) {
+            piece.isMovedAlready = true;
+        }
+    }
+    checkIfRookMoved(piece) {
+        if (piece instanceof Rook) {
+            piece.isMovedAlready = true;
+        }
+    }
+    checkIfKingMoved(piece) {
+        if (piece instanceof King) {
+            piece.isMovedAlready = true;
+        }
+    }
+    afterMoveActions(promotionIndex) {
+        this.checkIfPawnFirstMove(this._board.activePiece);
+        this.checkIfRookMoved(this._board.activePiece);
+        this.checkIfKingMoved(this._board.activePiece);
+        this._board.blackKingChecked = this._board.isKingInCheck(Color.BLACK, this._board.pieces);
+        this._board.whiteKingChecked = this._board.isKingInCheck(Color.WHITE, this._board.pieces);
+        const check = this._board.blackKingChecked || this._board.whiteKingChecked;
+        const checkmate = this.checkForPossibleMoves(Color.BLACK) ||
+            this.checkForPossibleMoves(Color.WHITE);
+        const stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+        this.disabling = false;
+        this._board.calculateFEN();
+        const lastMove = this.moveHistoryProvider.getLastMove();
+        if (lastMove && promotionIndex) {
+            lastMove.move += promotionIndex;
+        }
+        this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check,
+            checkmate,
+            stalemate, fen: this._board.fen, freeMode: this._freeMode }));
+    }
+    checkForPat(color) {
+        if (color === Color.WHITE && !this.board.whiteKingChecked) {
+            return this.checkForPossibleMoves(color);
+        }
+        else {
+            if (color === Color.BLACK && !this.board.blackKingChecked) {
+                return this.checkForPossibleMoves(color);
+            }
+        }
+    }
+    openPromoteDialog(piece) {
+        this.modal.open((index) => {
+            PiecePromotionResolver.resolvePromotionChoice(this.board, piece, index);
+            this.afterMoveActions(index);
+        });
+    }
+    checkForPossibleMoves(color) {
+        return !this.board.pieces
+            .filter((piece) => piece.color === color)
+            .some((piece) => piece
+            .getPossibleMoves()
+            .some((move) => !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, move.row, move.col, this.board)) ||
+            piece
+                .getPossibleCaptures()
+                .some((capture) => !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, capture.row, capture.col, this.board)));
+    }
+    disableSelection() {
+        this._selected = false;
+        this._board.possibleCaptures = [];
+        this._board.activePiece = null;
+        this._board.possibleMoves = [];
+    }
+    /**
+     * Processes logic to allow freeMode based logic processing
+     */
+    onFreeMode(pieceClicked) {
+        if (!this.freeMode ||
+            pieceClicked === undefined ||
+            pieceClicked === null) {
+            return;
+        }
+        // sets player as white in-case white pieces are selected, and vice-versa when black is selected
+        this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
+    }
+    isPieceDisabled(pieceClicked) {
+        if (pieceClicked && pieceClicked.point) {
+            const foundCapture = this.board.possibleCaptures.find((capture) => capture.col === pieceClicked.point.col &&
+                capture.row === pieceClicked.point.row);
+            if (foundCapture) {
+                return false;
+            }
+        }
+        return (pieceClicked &&
+            ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
+                (this.darkDisabled && pieceClicked.color === Color.BLACK)));
+    }
+    addDrawPoint(x, y, crtl, alt, shift, left, top) {
+        const upPoint = ClickUtils.getDrawingPoint(this.heightAndWidth, this.colorStrategy, x, y, crtl, alt, shift, left, top);
+        if (this.drawPoint.isEqual(upPoint)) {
+            const circle = new Circle();
+            circle.drawPoint = upPoint;
+            if (!this.drawProvider.containsCircle(circle)) {
+                this.drawProvider.addCircle(circle);
+            }
+            else {
+                this.drawProvider.reomveCircle(circle);
+            }
+        }
+        else {
+            const arrow = new Arrow();
+            arrow.start = this.drawPoint;
+            arrow.end = upPoint;
+            if (!this.drawProvider.containsArrow(arrow)) {
+                this.drawProvider.addArrow(arrow);
+            }
+            else {
+                this.drawProvider.removeArrow(arrow);
+            }
+        }
+    }
+    increaseFullMoveCount() {
+        if (!this.board.currentWhitePlayer) {
+            ++this.board.fullMoveCount;
+        }
+    }
+    get board() {
+        return this._board;
+    }
+    set board(value) {
+        this._board = value;
+    }
+    get selected() {
+        return this._selected;
+    }
+    set selected(value) {
+        this._selected = value;
+    }
+    get freeMode() {
+        return this._freeMode;
+    }
+    set freeMode(value) {
+        this._freeMode = value;
+    }
+    addPiece(pieceTypeInput, colorInput, coords) {
+        if (this.freeMode && coords && pieceTypeInput > 0 && colorInput > 0) {
+            let indexes = MoveUtils.translateCoordsToIndex(coords, this.board.reverted);
+            let existing = this.board.getPieceByPoint(indexes.yAxis, indexes.xAxis);
+            if (existing) {
+                this.board.pieces = this.board.pieces.filter(e => e !== existing);
+            }
+            let createdPiece = PieceFactory.create(indexes, pieceTypeInput, colorInput, this.board);
+            this.saveClone();
+            this.board.pieces.push(createdPiece);
+            this.afterMoveActions();
+        }
     }
 }
 
@@ -1430,7 +2146,7 @@ class Board {
     }
     getCastleFENString(color) {
         const king = this.getKingByColor(color);
-        if (king.isMovedAlready) {
+        if (!king || king.isMovedAlready) {
             return '';
         }
         let fen = '';
@@ -1537,171 +2253,34 @@ class Board {
             point.col = Math.abs(point.col - 7);
         }
     }
-}
-
-class MoveTranslation {
-    constructor(xAxis, yAxis, reverted) {
-        this._xAxis = xAxis;
-        this._yAxis = yAxis;
-        this._reverted = reverted;
+    getPieceByPoint(row, col) {
+        row = Math.floor(row);
+        col = Math.floor(col);
+        return this.pieces.find((piece) => piece.point.col === col && piece.point.row === row);
     }
-    get xAxis() {
-        return this._xAxis;
-    }
-    set xAxis(value) {
-        this._xAxis = value;
-    }
-    get yAxis() {
-        return this._yAxis;
-    }
-    set yAxis(value) {
-        this._yAxis = value;
-    }
-    get reverted() {
-        return this._reverted;
-    }
-    set reverted(value) {
-        this._reverted = value;
-    }
-}
-
-class MoveUtils {
-    static willMoveCauseCheck(currentColor, row, col, destRow, destCol, board) {
-        const srcPiece = board.getPieceByField(row, col);
-        const destPiece = board.getPieceByField(destRow, destCol);
-        if (srcPiece) {
-            srcPiece.point.row = destRow;
-            srcPiece.point.col = destCol;
+    checkIfPawnTakesEnPassant(newPoint) {
+        if (newPoint.isEqual(this.enPassantPoint)) {
+            this.pieces = this.pieces.filter((piece) => piece !== this.enPassantPiece);
+            this.enPassantPoint = null;
+            this.enPassantPiece = null;
         }
-        if (destPiece) {
-            board.pieces = board.pieces.filter((piece) => piece !== destPiece);
-        }
-        const isBound = board.isKingInCheck(currentColor, board.pieces);
-        if (srcPiece) {
-            srcPiece.point.col = col;
-            srcPiece.point.row = row;
-        }
-        if (destPiece) {
-            board.pieces.push(destPiece);
-        }
-        return isBound;
     }
-    static format(sourcePoint, destPoint, reverted) {
-        if (reverted) {
-            const sourceX = 104 - sourcePoint.col;
-            const destX = 104 - destPoint.col;
-            return (String.fromCharCode(sourceX) +
-                (sourcePoint.row + 1) +
-                String.fromCharCode(destX) +
-                (destPoint.row + 1));
+    checkIfPawnEnpassanted(piece, newPoint) {
+        if (Math.abs(piece.point.row - newPoint.row) > 1) {
+            this.enPassantPiece = piece;
+            this.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
         }
         else {
-            const incrementX = 97;
-            return (String.fromCharCode(sourcePoint.col + incrementX) +
-                (Math.abs(sourcePoint.row - 7) + 1) +
-                String.fromCharCode(destPoint.col + incrementX) +
-                (Math.abs(destPoint.row - 7) + 1));
+            this.enPassantPoint = null;
+            this.enPassantPiece = null;
         }
     }
-    static translateCoordsToIndex(coords, reverted) {
-        let xAxis;
-        let yAxis;
-        if (reverted) {
-            xAxis = 104 - coords.charCodeAt(0);
-            yAxis = +coords.charAt(1) - 1;
+    isKingChecked(piece) {
+        if (piece instanceof King) {
+            return piece.color === Color.WHITE
+                ? this.whiteKingChecked
+                : this.blackKingChecked;
         }
-        else {
-            xAxis = coords.charCodeAt(0) - 97;
-            yAxis = Math.abs(+coords.charAt(1) - 8);
-        }
-        return new MoveTranslation(xAxis, yAxis, reverted);
-    }
-}
-
-class PieceAbstractDecorator {
-    constructor(piece) {
-        this.piece = piece;
-    }
-}
-
-class AvailableMoveDecorator extends PieceAbstractDecorator {
-    constructor(piece, pointClicked, color, board) {
-        super(piece);
-        this.pointClicked = pointClicked;
-        this.color = color;
-        this.board = board;
-    }
-    getPossibleCaptures() {
-        return this.piece
-            .getPossibleCaptures()
-            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
-    }
-    getPossibleMoves() {
-        return this.piece
-            .getPossibleMoves()
-            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
-    }
-}
-
-class Constants {
-}
-Constants.DEFAULT_DARK_TILE_COLOR = 'rgb(97, 84, 61)';
-Constants.DEFAULT_LIGHT_TILE_COLOR = '#BAA378';
-Constants.DEFAULT_SIZE = 500;
-Constants.MIN_BOARD_SIZE = 100;
-Constants.MAX_BOARD_SIZE = 4000;
-
-class PieceIconInputManager {
-    constructor() {
-        this._defaultIcons = false;
-    }
-    get pieceIconInput() {
-        return this._pieceIconInput;
-    }
-    set pieceIconInput(value) {
-        this._pieceIconInput = value;
-    }
-    get defaultIcons() {
-        return this._defaultIcons;
-    }
-    set defaultIcons(value) {
-        this._defaultIcons = value;
-    }
-    isDefaultIcons() {
-        return this.pieceIconInput === undefined || this.pieceIconInput === null;
-    }
-    getPieceIcon(piece) {
-        let isWhite = (piece.color === Color.WHITE);
-        switch (piece.constructor) {
-            case King:
-                return isWhite ? this.pieceIconInput.whiteKingUrl : this.pieceIconInput.blackKingUrl;
-            case Queen:
-                return isWhite ? this.pieceIconInput.whiteQueenUrl : this.pieceIconInput.blackQueenUrl;
-            case Rook:
-                return isWhite ? this.pieceIconInput.whiteRookUrl : this.pieceIconInput.blackRookUrl;
-            case Bishop:
-                return isWhite ? this.pieceIconInput.whiteBishopUrl : this.pieceIconInput.blackBishopUrl;
-            case Knight:
-                return isWhite ? this.pieceIconInput.whiteKnightUrl : this.pieceIconInput.blackKnightUrl;
-            case Pawn:
-                return isWhite ? this.pieceIconInput.whitePawnUrl : this.pieceIconInput.blackPawnUrl;
-        }
-    }
-    loadDefaultData() {
-        this.pieceIconInput = {
-            blackBishopUrl: '',
-            blackKingUrl: '',
-            blackKnightUrl: '',
-            blackQueenUrl: '',
-            blackRookUrl: '',
-            whiteBishopUrl: '',
-            whiteKingUrl: '',
-            whiteKnightUrl: '',
-            whitePawnUrl: '',
-            whiteQueenUrl: '',
-            whiteRookUrl: '',
-            blackPawnUrl: 'a'
-        };
     }
 }
 
@@ -1794,7 +2373,7 @@ function NgxChessBoardComponent_div_3_div_1_span_1_Template(rf, ctx) { if (rf & 
     const ctx_r11 = ɵɵnextContext();
     ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
     ɵɵadvance(1);
-    ɵɵtextInterpolate1(" ", ctx_r11.coords.yCoords[i_r7], " ");
+    ɵɵtextInterpolate1(" ", ctx_r11.engineFacade.coords.yCoords[i_r7], " ");
 } }
 function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) { if (rf & 1) {
     ɵɵelementStart(0, "span", 16);
@@ -1805,7 +2384,7 @@ function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) { if (rf & 
     const ctx_r12 = ɵɵnextContext(2);
     ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
     ɵɵadvance(1);
-    ɵɵtextInterpolate1(" ", ctx_r12.coords.xCoords[j_r10], " ");
+    ɵɵtextInterpolate1(" ", ctx_r12.engineFacade.coords.xCoords[j_r10], " ");
 } }
 function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) { if (rf & 1) {
     const _r18 = ɵɵgetCurrentView();
@@ -1820,7 +2399,7 @@ function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) { if (rf & 1
     const ctx_r13 = ɵɵnextContext();
     ɵɵadvance(1);
     ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
-    ɵɵproperty("cdkDragDisabled", ctx_r13.dragDisabled)("innerHTML", ctx_r13.pieceIconManager.isDefaultIcons() ? ctx_r13.getPieceByPoint(i_r7, j_r10).constant.icon : "", ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.getPieceByPoint(i_r7, j_r10)));
+    ɵɵproperty("cdkDragDisabled", ctx_r13.engineFacade.dragDisabled)("innerHTML", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10).constant.icon : "", ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10)));
 } }
 function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) { if (rf & 1) {
     ɵɵelementStart(0, "div", 11);
@@ -1833,13 +2412,13 @@ function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) { if (rf & 1) {
     const i_r7 = ɵɵnextContext().index;
     const ctx_r8 = ɵɵnextContext();
     ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
-    ɵɵclassProp("current-selection", ctx_r8.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.isKingChecked(ctx_r8.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.board.isXYInSourceMove(i_r7, j_r10));
+    ɵɵclassProp("current-selection", ctx_r8.engineFacade.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.engineFacade.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.engineFacade.board.isKingChecked(ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.engineFacade.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.engineFacade.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.engineFacade.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.engineFacade.board.isXYInSourceMove(i_r7, j_r10));
     ɵɵadvance(1);
     ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
     ɵɵadvance(1);
     ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
     ɵɵadvance(1);
-    ɵɵproperty("ngIf", ctx_r8.getPieceByPoint(i_r7, j_r10));
+    ɵɵproperty("ngIf", ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10));
 } }
 function NgxChessBoardComponent_div_3_Template(rf, ctx) { if (rf & 1) {
     ɵɵelementStart(0, "div", 9);
@@ -1877,7 +2456,7 @@ function NgxChessBoardComponent__svg_circle_8_Template(rf, ctx) { if (rf & 1) {
 } if (rf & 2) {
     const circle_r25 = ctx.$implicit;
     const ctx_r4 = ɵɵnextContext();
-    ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
+    ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.engineFacade.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
 } }
 const _c2 = function () { return ["red", "green", "blue", "orange"]; };
 class NgxChessBoardComponent {
@@ -1886,43 +2465,44 @@ class NgxChessBoardComponent {
         this.darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
         this.lightTileColor = Constants.DEFAULT_LIGHT_TILE_COLOR;
         this.showCoords = true;
-        this.dragDisabled = false;
-        this.drawDisabled = false;
-        this.lightDisabled = false;
-        this.darkDisabled = false;
         /**
          * Enabling free mode removes turn-based restriction and allows to move any piece freely!
          */
-        this.freeMode = false;
         this.moveChange = new EventEmitter();
         this.checkmate = new EventEmitter();
         this.stalemate = new EventEmitter();
         this.selected = false;
-        this.coords = new CoordsProvider();
-        this.disabling = false;
-        this.heightAndWidth = Constants.DEFAULT_SIZE;
-        this.board = new Board();
-        this.boardLoader = new BoardLoader(this.board);
-        this.boardLoader.addPieces();
-        this.boardStateProvider = new BoardStateProvider();
-        this.moveHistoryProvider = new HistoryMoveProvider();
-        this.drawProvider = new DrawProvider();
-        this.pieceIconManager = new PieceIconInputManager();
+        this.engineFacade = new EngineFacade(new Board(), this.moveChange);
     }
     set size(size) {
         if (size &&
             size >= Constants.MIN_BOARD_SIZE &&
             size <= Constants.MAX_BOARD_SIZE) {
-            this.heightAndWidth = size;
+            this.engineFacade.heightAndWidth = size;
         }
         else {
-            this.heightAndWidth = Constants.DEFAULT_SIZE;
+            this.engineFacade.heightAndWidth = Constants.DEFAULT_SIZE;
         }
-        this.drawProvider.clear();
+        this.engineFacade.drawProvider.clear();
         this.calculatePieceSize();
+    }
+    set freeMode(freeMode) {
+        this.engineFacade.freeMode = freeMode;
+    }
+    set dragDisabled(dragDisabled) {
+        this.engineFacade.dragDisabled = dragDisabled;
+    }
+    set drawDisabled(drawDisabled) {
+        this.engineFacade.drawDisabled = drawDisabled;
     }
     set pieceIcons(pieceIcons) {
         this.pieceIconManager.pieceIconInput = pieceIcons;
+    }
+    set lightDisabled(lightDisabled) {
+        this.engineFacade.lightDisabled = lightDisabled;
+    }
+    set darkDisabled(darkDisabled) {
+        this.engineFacade.darkDisabled = darkDisabled;
     }
     onRightClick(event) {
         event.preventDefault();
@@ -1930,493 +2510,83 @@ class NgxChessBoardComponent {
     ngOnChanges(changes) {
         if ((changes.lightDisabled &&
             this.lightDisabled &&
-            this.board.currentWhitePlayer) ||
+            this.engineFacade.board.currentWhitePlayer) ||
             (changes.darkDisabled &&
                 this.darkDisabled &&
-                !this.board.currentWhitePlayer)) {
-            this.board.possibleCaptures = [];
-            this.board.possibleMoves = [];
+                !this.engineFacade.board.currentWhitePlayer)) {
+            this.engineFacade.board.possibleCaptures = [];
+            this.engineFacade.board.possibleMoves = [];
         }
     }
     ngOnInit() {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
-            this.board.reset();
+            this.engineFacade.reset();
         });
         this.calculatePieceSize();
     }
+    ngAfterViewInit() {
+        this.engineFacade.modal = this.modal;
+    }
     onMouseUp(event) {
-        if (event.button !== 0 && !this.drawDisabled) {
-            this.addDrawPoint(event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey);
-            return;
-        }
-        this.drawProvider.clear();
-        if (this.dragDisabled) {
-            return;
-        }
-        const pointClicked = this.getClickPoint(event);
-        if (this.board.activePiece &&
-            pointClicked.isEqual(this.board.activePiece.point) &&
-            this.disabling) {
-            this.disableSelection();
-            this.disabling = false;
-            return;
-        }
-        const pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-        if (this.isPieceDisabled(pieceClicked)) {
-            return;
-        }
-        if (this.selected) {
-            this.handleClickEvent(pointClicked, false);
-            //   this.possibleMoves = activePiece.getPossibleMoves();
-        }
-    }
-    onPieceClicked(pieceClicked, pointClicked) {
-        if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
-            (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
-            return;
-        }
-        this.prepareActivePiece(pieceClicked, pointClicked);
-    }
-    /**
-     * Validates whether freemode is turned on!
-     */
-    isFreeMode() {
-        return this.freeMode;
-    }
-    /**
-     * Processes logic to allow freeMode based logic processing
-     */
-    onFreeMode(pieceClicked) {
-        if (!this.isFreeMode() ||
-            pieceClicked === undefined ||
-            pieceClicked === null) {
-            return;
-        }
-        // sets player as white in-case white pieces are selected, and vice-versa when black is selected
-        this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
-    }
-    afterMoveActions(promotionIndex) {
-        this.checkIfPawnFirstMove(this.board.activePiece);
-        this.checkIfRookMoved(this.board.activePiece);
-        this.checkIfKingMoved(this.board.activePiece);
-        this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
-        this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
-        const check = this.board.blackKingChecked || this.board.whiteKingChecked;
-        const checkmate = this.checkForPossibleMoves(Color.BLACK) ||
-            this.checkForPossibleMoves(Color.WHITE);
-        const stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
-        this.disabling = false;
-        this.board.calculateFEN();
-        const lastMove = this.moveHistoryProvider.getLastMove();
-        if (lastMove && promotionIndex) {
-            lastMove.move += promotionIndex;
-        }
-        this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check,
-            checkmate,
-            stalemate, fen: this.board.fen, freeMode: this.freeMode }));
-    }
-    disableSelection() {
-        this.selected = false;
-        this.board.possibleCaptures = [];
-        this.board.activePiece = null;
-        this.board.possibleMoves = [];
-    }
-    prepareActivePiece(pieceClicked, pointClicked) {
-        this.board.activePiece = pieceClicked;
-        this.selected = true;
-        this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
-    }
-    getPieceByPoint(row, col) {
-        row = Math.floor(row);
-        col = Math.floor(col);
-        return this.board.pieces.find((piece) => piece.point.col === col && piece.point.row === row);
-    }
-    isKingChecked(piece) {
-        if (piece instanceof King) {
-            return piece.color === Color.WHITE
-                ? this.board.whiteKingChecked
-                : this.board.blackKingChecked;
-        }
-    }
-    getClickPoint(event) {
-        return new Point(Math.floor((event.y -
-            this.boardRef.nativeElement.getBoundingClientRect().top) /
-            (this.boardRef.nativeElement.getBoundingClientRect()
-                .height /
-                8)), Math.floor((event.x -
-            this.boardRef.nativeElement.getBoundingClientRect().left) /
-            (this.boardRef.nativeElement.getBoundingClientRect().width /
-                8)));
-    }
-    movePiece(toMovePiece, newPoint, promotionIndex) {
-        const destPiece = this.board.pieces.find((piece) => piece.point.col === newPoint.col &&
-            piece.point.row === newPoint.row);
-        if (destPiece && toMovePiece.color !== destPiece.color) {
-            this.board.pieces = this.board.pieces.filter((piece) => piece !== destPiece);
-        }
-        else {
-            if (destPiece && toMovePiece.color === destPiece.color) {
-                return;
-            }
-        }
-        const move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
-        this.moveHistoryProvider.addMove(move);
-        if (toMovePiece instanceof King) {
-            const squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
-            if (squaresMoved > 1) {
-                if (newPoint.col < 3) {
-                    const leftRook = this.board.getPieceByField(toMovePiece.point.row, 0);
-                    if (!this.freeMode) {
-                        leftRook.point.col = this.board.reverted ? 2 : 3;
-                    }
-                }
-                else {
-                    const rightRook = this.board.getPieceByField(toMovePiece.point.row, 7);
-                    if (!this.freeMode) {
-                        rightRook.point.col = this.board.reverted ? 4 : 5;
-                    }
-                }
-            }
-        }
-        if (toMovePiece instanceof Pawn) {
-            this.checkIfPawnTakesEnPassant(newPoint);
-            this.checkIfPawnEnpassanted(toMovePiece, newPoint);
-        }
-        toMovePiece.point = newPoint;
-        this.increaseFullMoveCount();
-        this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
-        if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
-            this.afterMoveActions();
-        }
-    }
-    checkIfPawnFirstMove(piece) {
-        if (piece instanceof Pawn) {
-            piece.isMovedAlready = true;
-        }
-    }
-    checkForPawnPromote(toPromotePiece, promotionIndex) {
-        if (!(toPromotePiece instanceof Pawn)) {
-            return;
-        }
-        if (toPromotePiece.point.row === 0 || toPromotePiece.point.row === 7) {
-            this.board.pieces = this.board.pieces.filter((piece) => piece !== toPromotePiece);
-            // When we make move manually, we pass promotion index already, so we don't need
-            // to acquire it from promote dialog
-            if (!promotionIndex) {
-                this.openPromoteDialog(toPromotePiece);
-            }
-            else {
-                this.resolvePromotionChoice(toPromotePiece, promotionIndex);
-                this.afterMoveActions(promotionIndex);
-            }
-            return true;
-        }
-    }
-    openPromoteDialog(piece) {
-        this.modal.open((index) => {
-            this.resolvePromotionChoice(piece, index);
-            this.afterMoveActions(index);
-        });
-    }
-    resolvePromotionChoice(piece, index) {
-        const isWhite = piece.color === Color.WHITE;
-        switch (index) {
-            case 1:
-                this.board.pieces.push(new Queen(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_QUEEN
-                    : UnicodeConstants.BLACK_QUEEN, this.board));
-                break;
-            case 2:
-                this.board.pieces.push(new Rook(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_ROOK
-                    : UnicodeConstants.BLACK_ROOK, this.board));
-                break;
-            case 3:
-                this.board.pieces.push(new Bishop(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_BISHOP
-                    : UnicodeConstants.BLACK_BISHOP, this.board));
-                break;
-            case 4:
-                this.board.pieces.push(new Knight(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_KNIGHT
-                    : UnicodeConstants.BLACK_KNIGHT, this.board));
-                break;
-        }
-    }
-    reset() {
-        this.boardStateProvider.clear();
-        this.moveHistoryProvider.clear();
-        this.boardLoader.addPieces();
-        this.board.reset();
-        this.coords.reset();
-        this.drawProvider.clear();
-        this.freeMode = false;
+        this.engineFacade.onMouseUp(event, this.getClickPoint(event), this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().top);
     }
     reverse() {
         this.selected = false;
-        this.board.reverse();
-        this.coords.reverse();
+        this.engineFacade.board.reverse();
+        this.engineFacade.coords.reverse();
     }
     updateBoard(board) {
-        this.board = board;
-        this.boardLoader.setBoard(this.board);
-        this.board.possibleCaptures = [];
-        this.board.possibleMoves = [];
-    }
-    undo() {
-        if (!this.boardStateProvider.isEmpty()) {
-            const lastBoard = this.boardStateProvider.pop().board;
-            if (this.board.reverted) {
-                lastBoard.reverse();
-            }
-            this.board = lastBoard;
-            this.boardLoader.setBoard(this.board);
-            this.board.possibleCaptures = [];
-            this.board.possibleMoves = [];
-            this.moveHistoryProvider.pop();
-        }
-    }
-    getMoveHistory() {
-        return this.moveHistoryProvider.getAll();
+        this.engineFacade.board = board;
+        this.boardLoader.setBoard(this.engineFacade.board);
+        this.engineFacade.board.possibleCaptures = [];
+        this.engineFacade.board.possibleMoves = [];
     }
     setFEN(fen) {
         try {
-            this.boardLoader.loadFEN(fen);
-            this.board.possibleCaptures = [];
-            this.board.possibleMoves = [];
-            this.coords.reset();
+            this.engineFacade.boardLoader.loadFEN(fen);
+            this.engineFacade.board.possibleCaptures = [];
+            this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.coords.reset();
         }
         catch (exception) {
-            this.boardLoader.addPieces();
+            this.engineFacade.boardLoader.addPieces();
         }
     }
     getFEN() {
-        return this.board.fen;
+        return this.engineFacade.board.fen;
     }
     dragEnded(event) {
-        event.source.reset();
-        event.source.element.nativeElement.style.zIndex = '0';
-        event.source.element.nativeElement.style.pointerEvents = 'auto';
-        event.source.element.nativeElement.style.touchAction = 'auto';
+        this.engineFacade.dragEndStrategy.process(event);
     }
     dragStart(event) {
-        const style = event.source.element.nativeElement.style;
-        style.position = 'relative';
-        style.zIndex = '1000';
-        style.touchAction = 'none';
-        style.pointerEvents = 'none';
+        this.engineFacade.dragStartStrategy.process(event);
     }
     onMouseDown(event) {
-        if (event.button !== 0) {
-            this.drawPoint = this.getDrawingPoint(event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey);
-            return;
-        }
-        const pointClicked = this.getClickPoint(event);
-        this.drawProvider.clear();
-        if (this.board.activePiece &&
-            pointClicked.isEqual(this.board.activePiece.point)) {
-            this.disabling = true;
-            return;
-        }
-        const pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-        if (this.freeMode) {
-            if (pieceClicked) {
-                this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
-            }
-        }
-        if (this.isPieceDisabled(pieceClicked)) {
-            return;
-        }
-        if (this.selected) {
-            this.handleClickEvent(pointClicked, true);
-        }
-        else {
-            if (pieceClicked) {
-                this.onFreeMode(pieceClicked);
-                this.onPieceClicked(pieceClicked, pointClicked);
-            }
-        }
+        this.engineFacade.onMouseDown(event, this.getClickPoint(event), this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().top);
     }
-    getDrawingPoint(x, y, crtl, alt, shift) {
-        const squareSize = this.heightAndWidth / 8;
-        const xx = Math.floor((x - this.boardRef.nativeElement.getBoundingClientRect().left) /
-            squareSize);
-        const yy = Math.floor((y - this.boardRef.nativeElement.getBoundingClientRect().top) /
-            squareSize);
-        let color = 'green';
-        if (crtl || shift) {
-            color = 'red';
-        }
-        if (alt) {
-            color = 'blue';
-        }
-        if ((shift || crtl) && alt) {
-            color = 'orange';
-        }
-        return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
-    }
-    checkIfRookMoved(piece) {
-        if (piece instanceof Rook) {
-            piece.isMovedAlready = true;
-        }
-    }
-    checkIfKingMoved(piece) {
-        if (piece instanceof King) {
-            piece.isMovedAlready = true;
-        }
-    }
-    checkForPossibleMoves(color) {
-        if (!this.board.pieces
-            .filter((piece) => piece.color === color)
-            .some((piece) => piece
-            .getPossibleMoves()
-            .some((move) => !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, move.row, move.col, this.board)) ||
-            piece
-                .getPossibleCaptures()
-                .some((capture) => !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, capture.row, capture.col, this.board)))) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    checkForPat(color) {
-        if (color === Color.WHITE && !this.board.whiteKingChecked) {
-            return this.checkForPossibleMoves(color);
-        }
-        else {
-            if (color === Color.BLACK && !this.board.blackKingChecked) {
-                return this.checkForPossibleMoves(color);
-            }
-        }
-    }
-    checkIfPawnEnpassanted(piece, newPoint) {
-        if (Math.abs(piece.point.row - newPoint.row) > 1) {
-            this.board.enPassantPiece = piece;
-            this.board.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
-        }
-        else {
-            this.board.enPassantPoint = null;
-            this.board.enPassantPiece = null;
-        }
-    }
-    checkIfPawnTakesEnPassant(newPoint) {
-        if (newPoint.isEqual(this.board.enPassantPoint)) {
-            this.board.pieces = this.board.pieces.filter((piece) => piece !== this.board.enPassantPiece);
-            this.board.enPassantPoint = null;
-            this.board.enPassantPiece = null;
-        }
-    }
-    saveClone() {
-        const clone = this.board.clone();
-        if (this.board.reverted) {
-            clone.reverse();
-        }
-        this.boardStateProvider.addMove(new BoardState(clone));
-    }
-    saveMoveClone() {
-        const clone = this.board.clone();
-        if (this.board.reverted) {
-            clone.reverse();
-        }
-        this.moveStateProvider.addMove(new BoardState(clone));
+    getClickPoint(event) {
+        return ClickUtils.getClickPoint(event, this.boardRef.nativeElement.getBoundingClientRect().top, this.boardRef.nativeElement.getBoundingClientRect().height, this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().width);
     }
     calculatePieceSize() {
-        this.pieceSize = this.heightAndWidth / 10;
-    }
-    increaseFullMoveCount() {
-        if (!this.board.currentWhitePlayer) {
-            ++this.board.fullMoveCount;
-        }
-    }
-    handleClickEvent(pointClicked, isMouseDown) {
-        let moving = false;
-        if ((this.board.isPointInPossibleMoves(pointClicked) ||
-            this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
-            this.saveClone();
-            this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
-            this.board.lastMoveDest = pointClicked;
-            this.movePiece(this.board.activePiece, pointClicked);
-            if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
-                moving = true;
-            }
-        }
-        if (isMouseDown || moving) {
-            this.disableSelection();
-        }
-        this.disableSelection();
-        const pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-        if (pieceClicked && !moving) {
-            this.onFreeMode(pieceClicked);
-            this.onPieceClicked(pieceClicked, pointClicked);
-        }
-    }
-    addDrawPoint(x, y, crtl, alt, shift) {
-        const upPoint = this.getDrawingPoint(x, y, crtl, alt, shift);
-        if (this.drawPoint.isEqual(upPoint)) {
-            const circle = new Circle();
-            circle.drawPoint = upPoint;
-            if (!this.drawProvider.containsCircle(circle)) {
-                this.drawProvider.addCircle(circle);
-            }
-            else {
-                this.drawProvider.reomveCircle(circle);
-            }
-        }
-        else {
-            const arrow = new Arrow();
-            arrow.start = this.drawPoint;
-            arrow.end = upPoint;
-            if (!this.drawProvider.containsArrow(arrow)) {
-                this.drawProvider.addArrow(arrow);
-            }
-            else {
-                this.drawProvider.removeArrow(arrow);
-            }
-        }
-    }
-    move(coords) {
-        if (coords) {
-            const sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this.board.reverted);
-            const destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this.board.reverted);
-            const srcPiece = this.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
-            if (srcPiece) {
-                if ((this.board.currentWhitePlayer &&
-                    srcPiece.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        srcPiece.color === Color.WHITE)) {
-                    return;
-                }
-                this.prepareActivePiece(srcPiece, srcPiece.point);
-                if (this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
-                    this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
-                    this.saveClone();
-                    this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis), coords.length === 5 ? +coords.substring(4, 5) : 0);
-                    this.board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
-                    this.board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
-                    this.disableSelection();
-                }
-                else {
-                    this.disableSelection();
-                }
-            }
-        }
+        this.pieceSize = this.engineFacade.heightAndWidth / 10;
     }
     getCustomPieceIcons(piece) {
-        return JSON.parse(`{ "background-image": "url('${this.pieceIconManager.getPieceIcon(piece)}')"}`);
+        return JSON.parse(`{ "background-image": "url('${this.engineFacade.pieceIconManager.getPieceIcon(piece)}')"}`);
     }
-    isPieceDisabled(pieceClicked) {
-        if (pieceClicked && pieceClicked.point) {
-            const foundCapture = this.board.possibleCaptures.find((capture) => capture.col === pieceClicked.point.col &&
-                capture.row === pieceClicked.point.row);
-            if (foundCapture) {
-                return false;
-            }
-        }
-        return (pieceClicked &&
-            ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
-                (this.darkDisabled && pieceClicked.color === Color.BLACK)));
+    move(coords) {
+        this.engineFacade.move(coords);
+    }
+    getMoveHistory() {
+        return this.engineFacade.getMoveHistory();
+    }
+    reset() {
+        this.engineFacade.reset();
+    }
+    undo() {
+        this.engineFacade.undo();
+    }
+    addPiece(pieceTypeInput, colorInput, coords) {
+        this.engineFacade.addPiece(pieceTypeInput, colorInput, coords);
     }
 }
 NgxChessBoardComponent.ɵfac = function NgxChessBoardComponent_Factory(t) { return new (t || NgxChessBoardComponent)(ɵɵdirectiveInject(NgxChessBoardService)); };
@@ -2429,7 +2599,7 @@ NgxChessBoardComponent.ɵcmp = ɵɵdefineComponent({ type: NgxChessBoardComponen
         ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.modal = _t.first);
     } }, hostBindings: function NgxChessBoardComponent_HostBindings(rf, ctx) { if (rf & 1) {
         ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
-    } }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled", freeMode: "freeMode", size: "size", pieceIcons: "pieceIcons" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) { if (rf & 1) {
+    } }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", size: "size", freeMode: "freeMode", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", pieceIcons: "pieceIcons", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) { if (rf & 1) {
         const _r26 = ɵɵgetCurrentView();
         ɵɵelementStart(0, "div", 0, 1);
         ɵɵlistener("pointerdown", function NgxChessBoardComponent_Template_div_pointerdown_0_listener($event) { ɵɵrestoreView(_r26); const _r5 = ɵɵreference(11); return !_r5.opened && ctx.onMouseDown($event); })("pointerup", function NgxChessBoardComponent_Template_div_pointerup_0_listener($event) { ɵɵrestoreView(_r26); const _r5 = ɵɵreference(11); return !_r5.opened && ctx.onMouseUp($event); });
@@ -2448,17 +2618,17 @@ NgxChessBoardComponent.ɵcmp = ɵɵdefineComponent({ type: NgxChessBoardComponen
         ɵɵelement(10, "app-piece-promotion-modal", null, 8);
         ɵɵelementEnd();
     } if (rf & 2) {
-        ɵɵstyleProp("height", ctx.heightAndWidth, "px")("width", ctx.heightAndWidth, "px");
+        ɵɵstyleProp("height", ctx.engineFacade.heightAndWidth, "px")("width", ctx.engineFacade.heightAndWidth, "px");
         ɵɵadvance(3);
-        ɵɵproperty("ngForOf", ctx.board.board);
+        ɵɵproperty("ngForOf", ctx.engineFacade.board.board);
         ɵɵadvance(1);
-        ɵɵattribute("height", ctx.heightAndWidth)("width", ctx.heightAndWidth);
+        ɵɵattribute("height", ctx.engineFacade.heightAndWidth)("width", ctx.engineFacade.heightAndWidth);
         ɵɵadvance(1);
         ɵɵproperty("ngForOf", ɵɵpureFunction0(14, _c2));
         ɵɵadvance(1);
-        ɵɵproperty("ngForOf", ɵɵpipeBind1(7, 10, ctx.drawProvider.arrows$));
+        ɵɵproperty("ngForOf", ɵɵpipeBind1(7, 10, ctx.engineFacade.drawProvider.arrows$));
         ɵɵadvance(2);
-        ɵɵproperty("ngForOf", ɵɵpipeBind1(9, 12, ctx.drawProvider.circles$));
+        ɵɵproperty("ngForOf", ɵɵpipeBind1(9, 12, ctx.engineFacade.drawProvider.circles$));
     } }, directives: [NgForOf, PiecePromotionModalComponent, NgIf, CdkDrag, NgClass, NgStyle], pipes: [AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
 /*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardComponent, [{
         type: Component,
@@ -2472,16 +2642,6 @@ NgxChessBoardComponent.ɵcmp = ɵɵdefineComponent({ type: NgxChessBoardComponen
         }], lightTileColor: [{
             type: Input
         }], showCoords: [{
-            type: Input
-        }], dragDisabled: [{
-            type: Input
-        }], drawDisabled: [{
-            type: Input
-        }], lightDisabled: [{
-            type: Input
-        }], darkDisabled: [{
-            type: Input
-        }], freeMode: [{
             type: Input
         }], moveChange: [{
             type: Output
@@ -2498,9 +2658,24 @@ NgxChessBoardComponent.ɵcmp = ɵɵdefineComponent({ type: NgxChessBoardComponen
         }], size: [{
             type: Input,
             args: ['size']
+        }], freeMode: [{
+            type: Input,
+            args: ['freeMode']
+        }], dragDisabled: [{
+            type: Input,
+            args: ['dragDisabled']
+        }], drawDisabled: [{
+            type: Input,
+            args: ['drawDisabled']
         }], pieceIcons: [{
             type: Input,
             args: ['pieceIcons']
+        }], lightDisabled: [{
+            type: Input,
+            args: ['lightDisabled']
+        }], darkDisabled: [{
+            type: Input,
+            args: ['darkDisabled']
         }], onRightClick: [{
             type: HostListener,
             args: ['contextmenu', ['$event']]

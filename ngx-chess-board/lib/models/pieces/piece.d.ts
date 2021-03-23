@@ -1,4 +1,4 @@
-import { AbstractPiece } from '../../piece-decorator/abstract-piece';
+import { AbstractPiece } from '../../engine/piece-decorator/abstract-piece';
 import { PieceConstant } from '../../utils/unicode-constants';
 import { Board } from '../board';
 import { Color } from './color';

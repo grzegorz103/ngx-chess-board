@@ -1,5 +1,6 @@
 import { Color } from './pieces/color';
 import { King } from './pieces/king';
+import { Pawn } from './pieces/pawn';
 import { Piece } from './pieces/piece';
 import { Point } from './pieces/point';
 export declare class Board {
@@ -40,4 +41,8 @@ export declare class Board {
     calculateFEN(): void;
     isXYInPointSelection(i: number, j: number): boolean;
     private reversePoint;
+    getPieceByPoint(row: number, col: number): Piece;
+    checkIfPawnTakesEnPassant(newPoint: Point): void;
+    checkIfPawnEnpassanted(piece: Pawn, newPoint: Point): void;
+    isKingChecked(piece: Piece): boolean;
 }

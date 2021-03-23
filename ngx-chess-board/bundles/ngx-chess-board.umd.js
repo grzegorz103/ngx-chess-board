@@ -4,6 +4,60 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global['ngx-chess-board'] = {}, global.ng.cdk.dragDrop, global.ng.common, global.ng.core, global.rxjs, global.lodash));
 }(this, (function (exports, i4, i2, i0, rxjs, lodash) { 'use strict';
 
+    var Point = /** @class */ (function () {
+        function Point(row, col) {
+            this.row = row;
+            this.col = col;
+        }
+        Point.prototype.isEqual = function (that) {
+            return that && this.row === that.row && this.col === that.col;
+        };
+        Point.prototype.hasCoordsEqual = function (row, col) {
+            return row && col && this.row === row && this.col === col;
+        };
+        return Point;
+    }());
+
+    var DrawPoint = /** @class */ (function () {
+        function DrawPoint(x, y, color) {
+            this.x = x + 0.5;
+            this.y = y + 0.5;
+            this.color = color;
+        }
+        DrawPoint.prototype.isEqual = function (that) {
+            return that && that.x === this.x && this.y === that.y;
+        };
+        return DrawPoint;
+    }());
+
+    var ClickUtils = /** @class */ (function () {
+        function ClickUtils() {
+        }
+        ClickUtils.getClickPoint = function (event, top, height, left, width) {
+            return new Point(Math.floor((event.y - top) / (height / 8)), Math.floor((event.x - left) / (width / 8)));
+        };
+        ClickUtils.getDrawingPoint = function (tileSize, colorStrategy, x, y, ctrl, alt, shift, xAxis, yAxis) {
+            var squareSize = tileSize / 8;
+            var xx = Math.floor((x - xAxis) /
+                squareSize);
+            var yy = Math.floor((y - yAxis) /
+                squareSize);
+            var color = colorStrategy.resolve(ctrl, shift, alt);
+            return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
+        };
+        return ClickUtils;
+    }());
+
+    var HistoryMove = /** @class */ (function () {
+        function HistoryMove(move, piece, color, captured) {
+            this.move = move;
+            this.piece = piece;
+            this.color = color;
+            this.x = captured;
+        }
+        return HistoryMove;
+    }());
+
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
 
@@ -321,20 +375,6 @@
             this.board = board;
         }
         return Piece;
-    }());
-
-    var Point = /** @class */ (function () {
-        function Point(row, col) {
-            this.row = row;
-            this.col = col;
-        }
-        Point.prototype.isEqual = function (that) {
-            return that && this.row === that.row && this.col === that.col;
-        };
-        Point.prototype.hasCoordsEqual = function (row, col) {
-            return row && col && this.row === row && this.col === col;
-        };
-        return Point;
     }());
 
     var Rook = /** @class */ (function (_super) {
@@ -1567,16 +1607,36 @@
         return Circle;
     }());
 
-    var DrawPoint = /** @class */ (function () {
-        function DrawPoint(x, y, color) {
-            this.x = x + 0.5;
-            this.y = y + 0.5;
-            this.color = color;
+    var DefaultColorProcessor = /** @class */ (function () {
+        function DefaultColorProcessor() {
         }
-        DrawPoint.prototype.isEqual = function (that) {
-            return that && that.x === this.x && this.y === that.y;
+        DefaultColorProcessor.prototype.resolve = function (ctrl, shift, alt) {
+            var color = 'green';
+            if (ctrl || shift) {
+                color = 'red';
+            }
+            if (alt) {
+                color = 'blue';
+            }
+            if ((shift || ctrl) && alt) {
+                color = 'orange';
+            }
+            return color;
         };
-        return DrawPoint;
+        return DefaultColorProcessor;
+    }());
+
+    var ColorStrategy = /** @class */ (function () {
+        function ColorStrategy() {
+            this.colorProcessor = new DefaultColorProcessor();
+        }
+        ColorStrategy.prototype.resolve = function (ctrl, shift, alt) {
+            return this.colorProcessor.resolve(ctrl, shift, alt);
+        };
+        ColorStrategy.prototype.setColorProcessor = function (colorProcessor) {
+            this.colorProcessor = colorProcessor;
+        };
+        return ColorStrategy;
     }());
 
     var DrawProvider = /** @class */ (function () {
@@ -1631,16 +1691,6 @@
         return DrawProvider;
     }());
 
-    var HistoryMove = /** @class */ (function () {
-        function HistoryMove(move, piece, color, captured) {
-            this.move = move;
-            this.piece = piece;
-            this.color = color;
-            this.x = captured;
-        }
-        return HistoryMove;
-    }());
-
     var HistoryMoveProvider = /** @class */ (function () {
         function HistoryMoveProvider() {
             this.historyMovesSubject$ = new rxjs.BehaviorSubject([]);
@@ -1676,233 +1726,6 @@
             return this.historyMoves.length - 1;
         };
         return HistoryMoveProvider;
-    }());
-
-    var Board = /** @class */ (function () {
-        function Board() {
-            this.board = [];
-            this.pieces = [];
-            this.enPassantPoint = null;
-            this.enPassantPiece = null;
-            this.lastMoveSrc = null;
-            this.lastMoveDest = null;
-            this.possibleCaptures = [];
-            this.possibleMoves = [];
-            this.currentWhitePlayer = true;
-            this.reverted = false;
-            this.fullMoveCount = 1;
-            for (var i = 0; i < 8; ++i) {
-                this.board[i] = [];
-                for (var j = 0; j < 8; ++j) {
-                    this.board[i][j] = 0;
-                }
-            }
-        }
-        Board.prototype.isXYInPossibleMoves = function (row, col) {
-            return this.possibleMoves.some(function (move) { return move.row === row && move.col === col; });
-        };
-        Board.prototype.isXYInPossibleCaptures = function (row, col) {
-            return this.possibleCaptures.some(function (capture) { return capture.row === row && capture.col === col; });
-        };
-        Board.prototype.isXYInSourceMove = function (i, j) {
-            return this.lastMoveSrc && this.lastMoveSrc.row === i && this.lastMoveSrc.col === j;
-        };
-        Board.prototype.isXYInDestMove = function (i, j) {
-            return this.lastMoveDest && this.lastMoveDest.row === i && this.lastMoveDest.col === j;
-        };
-        Board.prototype.isXYInActiveMove = function (i, j) {
-            return this.activePiece && this.activePiece.point.row === i && this.activePiece.point.col === j;
-        };
-        Board.prototype.isPointInPossibleMoves = function (point) {
-            return this.possibleMoves.some(function (move) { return move.row === point.row && move.col === point.col; });
-        };
-        Board.prototype.isPointInPossibleCaptures = function (point) {
-            return this.possibleCaptures.some(function (capture) { return capture.row === point.row && capture.col === point.col; });
-        };
-        Board.prototype.reset = function () {
-            this.lastMoveDest = null;
-            this.lastMoveSrc = null;
-            this.whiteKingChecked = false;
-            this.blackKingChecked = false;
-            this.possibleCaptures = [];
-            this.possibleMoves = [];
-            this.activePiece = null;
-            this.reverted = false;
-            this.currentWhitePlayer = true;
-            this.enPassantPoint = null;
-            this.enPassantPiece = null;
-            this.fullMoveCount = 1;
-            this.calculateFEN();
-        };
-        Board.prototype.reverse = function () {
-            var _this = this;
-            this.reverted = !this.reverted;
-            this.activePiece = null;
-            this.possibleMoves = [];
-            this.possibleCaptures = [];
-            this.pieces.forEach(function (piece) { return _this.reversePoint(piece.point); });
-            this.reversePoint(this.lastMoveSrc);
-            if (this.enPassantPoint && this.enPassantPiece) {
-                this.reversePoint(this.enPassantPoint);
-            }
-        };
-        Board.prototype.clone = function () {
-            return lodash.cloneDeep(this);
-        };
-        Board.prototype.isFieldTakenByEnemy = function (row, col, enemyColor) {
-            if (row > 7 || row < 0 || col > 7 || col < 0) {
-                return false;
-            }
-            return this.pieces.some(function (piece) { return piece.point.col === col && piece.point.row === row && piece.color === enemyColor; });
-        };
-        Board.prototype.isFieldEmpty = function (row, col) {
-            if (row > 7 || row < 0 || col > 7 || col < 0) {
-                return false;
-            }
-            return !this.pieces.some(function (piece) { return piece.point.col === col && piece.point.row === row; });
-        };
-        Board.prototype.isFieldUnderAttack = function (row, col, color) {
-            return this.pieces
-                .filter(function (piece) { return piece.color === color; })
-                .some(function (piece) { return piece.getCoveredFields().some(function (field) { return field.col === col && field.row === row; }); });
-        };
-        Board.prototype.getPieceByField = function (row, col) {
-            if (this.isFieldEmpty(row, col)) {
-                //   throw new Error('Piece not found');
-                return undefined;
-            }
-            return this.pieces.find(function (piece) { return piece.point.col === col && piece.point.row === row; });
-        };
-        Board.prototype.isKingInCheck = function (color, pieces) {
-            var king = pieces.find(function (piece) { return piece.color === color && piece instanceof King; });
-            if (king) {
-                return pieces.some(function (piece) { return piece
-                    .getPossibleCaptures()
-                    .some(function (point) { return point.col === king.point.col && point.row === king.point.row; }) &&
-                    piece.color !== color; });
-            }
-            return false;
-        };
-        Board.prototype.getKingByColor = function (color) {
-            return this.pieces.find(function (piece) { return piece instanceof King && piece.color === color; });
-        };
-        Board.prototype.getCastleFENString = function (color) {
-            var king = this.getKingByColor(color);
-            if (king.isMovedAlready) {
-                return '';
-            }
-            var fen = '';
-            var leftRook = this.getPieceByField(king.point.row, 0);
-            var rightRook = this.getPieceByField(king.point.row, 7);
-            if (rightRook instanceof Rook && rightRook.color === color) {
-                if (!rightRook.isMovedAlready) {
-                    fen += this.reverted ? 'q' : 'k';
-                }
-            }
-            if (leftRook instanceof Rook && leftRook.color === color) {
-                if (!leftRook.isMovedAlready) {
-                    fen += this.reverted ? 'k' : 'q';
-                }
-            }
-            fen = fen.split('').sort().join('');
-            return color === Color.BLACK ? fen : fen.toUpperCase();
-        };
-        Board.prototype.getEnPassantFENString = function () {
-            if (this.enPassantPoint) {
-                if (this.reverted) {
-                    return String.fromCharCode(104 - this.enPassantPoint.col) + (this.enPassantPoint.row + 1);
-                }
-                else {
-                    return String.fromCharCode(97 + this.enPassantPoint.col) + (Math.abs(this.enPassantPoint.row - 7) + 1);
-                }
-            }
-            else {
-                return '-';
-            }
-        };
-        Board.prototype.calculateFEN = function () {
-            var fen = '';
-            var _loop_1 = function (i) {
-                var emptyFields = 0;
-                var _loop_2 = function (j) {
-                    var foundPiece = this_1.pieces.find(function (piece) { return piece.point.col === j && piece.point.row === i; });
-                    if (foundPiece) {
-                        if (emptyFields > 0) {
-                            fen += emptyFields;
-                            emptyFields = 0;
-                        }
-                        if (foundPiece instanceof Rook) {
-                            fen += foundPiece.color === Color.BLACK ? 'r' : 'R';
-                        }
-                        else {
-                            if (foundPiece instanceof Knight) {
-                                fen += foundPiece.color === Color.BLACK ? 'n' : 'N';
-                            }
-                            else {
-                                if (foundPiece instanceof Bishop) {
-                                    fen += foundPiece.color === Color.BLACK ? 'b' : 'B';
-                                }
-                                else {
-                                    if (foundPiece instanceof Queen) {
-                                        fen += foundPiece.color === Color.BLACK ? 'q' : 'Q';
-                                    }
-                                    else {
-                                        if (foundPiece instanceof King) {
-                                            fen += foundPiece.color === Color.BLACK ? 'k' : 'K';
-                                        }
-                                        else {
-                                            if (foundPiece instanceof Pawn) {
-                                                fen += foundPiece.color === Color.BLACK ? 'p' : 'P';
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        ++emptyFields;
-                    }
-                };
-                for (var j = 0; j < 8; ++j) {
-                    _loop_2(j);
-                }
-                if (emptyFields > 0) {
-                    fen += emptyFields;
-                }
-                fen += '/';
-            };
-            var this_1 = this;
-            for (var i = 0; i < 8; ++i) {
-                _loop_1(i);
-            }
-            fen = fen.substr(0, fen.length - 1);
-            if (this.reverted) {
-                fen = fen.split('').reverse().join('');
-            }
-            fen += ' ' + (this.currentWhitePlayer ? 'w' : 'b');
-            var whiteEnPassant = this.getCastleFENString(Color.WHITE);
-            var blackEnPassant = this.getCastleFENString(Color.BLACK);
-            var concatedEnPassant = whiteEnPassant + blackEnPassant;
-            if (!concatedEnPassant) {
-                concatedEnPassant = '-';
-            }
-            fen += ' ' + concatedEnPassant;
-            fen += ' ' + this.getEnPassantFENString();
-            fen += ' ' + 0;
-            fen += ' ' + this.fullMoveCount;
-            this.fen = fen;
-        };
-        Board.prototype.isXYInPointSelection = function (i, j) {
-            return false;
-        };
-        Board.prototype.reversePoint = function (point) {
-            if (point) {
-                point.row = Math.abs(point.row - 7);
-                point.col = Math.abs(point.col - 7);
-            }
-        };
-        return Board;
     }());
 
     var MoveTranslation = /** @class */ (function () {
@@ -2031,6 +1854,37 @@
         return AvailableMoveDecorator;
     }(PieceAbstractDecorator));
 
+    var PiecePromotionResolver = /** @class */ (function () {
+        function PiecePromotionResolver() {
+        }
+        PiecePromotionResolver.resolvePromotionChoice = function (board, piece, index) {
+            var isWhite = piece.color === Color.WHITE;
+            switch (index) {
+                case 1:
+                    board.pieces.push(new Queen(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_QUEEN
+                        : UnicodeConstants.BLACK_QUEEN, board));
+                    break;
+                case 2:
+                    board.pieces.push(new Rook(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_ROOK
+                        : UnicodeConstants.BLACK_ROOK, board));
+                    break;
+                case 3:
+                    board.pieces.push(new Bishop(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_BISHOP
+                        : UnicodeConstants.BLACK_BISHOP, board));
+                    break;
+                case 4:
+                    board.pieces.push(new Knight(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_KNIGHT
+                        : UnicodeConstants.BLACK_KNIGHT, board));
+                    break;
+            }
+        };
+        return PiecePromotionResolver;
+    }());
+
     var Constants = /** @class */ (function () {
         function Constants() {
         }
@@ -2103,6 +1957,768 @@
             };
         };
         return PieceIconInputManager;
+    }());
+
+    var DefaultDragEndProcessor = /** @class */ (function () {
+        function DefaultDragEndProcessor() {
+        }
+        DefaultDragEndProcessor.prototype.dragEnded = function (event) {
+            event.source.reset();
+            event.source.element.nativeElement.style.zIndex = '0';
+            event.source.element.nativeElement.style.pointerEvents = 'auto';
+            event.source.element.nativeElement.style.touchAction = 'auto';
+        };
+        return DefaultDragEndProcessor;
+    }());
+
+    var DragEndStrategy = /** @class */ (function () {
+        function DragEndStrategy() {
+            this.dragEndProcessor = new DefaultDragEndProcessor();
+        }
+        DragEndStrategy.prototype.process = function (event) {
+            this.dragEndProcessor.dragEnded(event);
+        };
+        DragEndStrategy.prototype.setDragEndProcessor = function (processor) {
+            this.dragEndProcessor = processor;
+        };
+        return DragEndStrategy;
+    }());
+
+    var DefaultDragStartProcessor = /** @class */ (function () {
+        function DefaultDragStartProcessor() {
+        }
+        DefaultDragStartProcessor.prototype.dragStarted = function (event) {
+            var style = event.source.element.nativeElement.style;
+            style.position = 'relative';
+            style.zIndex = '1000';
+            style.touchAction = 'none';
+            style.pointerEvents = 'none';
+        };
+        return DefaultDragStartProcessor;
+    }());
+
+    var DragStartStrategy = /** @class */ (function () {
+        function DragStartStrategy() {
+            this.dragStartProcessor = new DefaultDragStartProcessor();
+        }
+        DragStartStrategy.prototype.process = function (event) {
+            this.dragStartProcessor.dragStarted(event);
+        };
+        DragStartStrategy.prototype.setDragStartProcessor = function (processor) {
+            this.dragStartProcessor = processor;
+        };
+        return DragStartStrategy;
+    }());
+
+    var PieceTypeInput;
+    (function (PieceTypeInput) {
+        PieceTypeInput[PieceTypeInput["KING"] = 1] = "KING";
+        PieceTypeInput[PieceTypeInput["QUEEN"] = 2] = "QUEEN";
+        PieceTypeInput[PieceTypeInput["BISHOP"] = 3] = "BISHOP";
+        PieceTypeInput[PieceTypeInput["KNIGHT"] = 4] = "KNIGHT";
+        PieceTypeInput[PieceTypeInput["ROOK"] = 5] = "ROOK";
+        PieceTypeInput[PieceTypeInput["PAWN"] = 6] = "PAWN";
+    })(PieceTypeInput || (PieceTypeInput = {}));
+    var ColorInput;
+    (function (ColorInput) {
+        ColorInput[ColorInput["LIGHT"] = 1] = "LIGHT";
+        ColorInput[ColorInput["DARK"] = 2] = "DARK";
+    })(ColorInput || (ColorInput = {}));
+
+    var PieceFactory = /** @class */ (function () {
+        function PieceFactory() {
+        }
+        PieceFactory.create = function (indexes, pieceTypeInput, colorInput, board) {
+            var piece;
+            var color = colorInput === ColorInput.LIGHT
+                ? Color.WHITE
+                : Color.BLACK;
+            switch (pieceTypeInput) {
+                case PieceTypeInput.QUEEN:
+                    piece = new Queen(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_QUEEN : UnicodeConstants.BLACK_QUEEN, board);
+                    break;
+                case PieceTypeInput.KING:
+                    piece = new King(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_KING : UnicodeConstants.BLACK_KING, board);
+                    break;
+                case PieceTypeInput.KNIGHT:
+                    piece = new Knight(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_KNIGHT : UnicodeConstants.BLACK_KNIGHT, board);
+                    break;
+                case PieceTypeInput.BISHOP:
+                    piece = new Bishop(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_BISHOP : UnicodeConstants.BLACK_BISHOP, board);
+                    break;
+                case PieceTypeInput.ROOK:
+                    piece = new Rook(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_ROOK : UnicodeConstants.BLACK_ROOK, board);
+                    break;
+                case PieceTypeInput.PAWN:
+                    piece = new Pawn(new Point(indexes.yAxis, indexes.xAxis), color, color === Color.WHITE ? UnicodeConstants.WHITE_PAWN : UnicodeConstants.BLACK_PAWN, board);
+                    break;
+            }
+            return piece;
+        };
+        return PieceFactory;
+    }());
+
+    var EngineFacade = /** @class */ (function () {
+        function EngineFacade(board, moveChange) {
+            this._selected = false;
+            this._freeMode = false;
+            this.disabling = false;
+            this.heightAndWidth = Constants.DEFAULT_SIZE;
+            this.coords = new CoordsProvider();
+            this.dragStartStrategy = new DragStartStrategy();
+            this.dragEndStrategy = new DragEndStrategy();
+            this.colorStrategy = new ColorStrategy();
+            this._board = board;
+            this.moveChange = moveChange;
+            this.boardLoader = new BoardLoader(this.board);
+            this.boardLoader.addPieces();
+            this.drawProvider = new DrawProvider();
+            this.pieceIconManager = new PieceIconInputManager();
+            this.boardStateProvider = new BoardStateProvider();
+            this.moveHistoryProvider = new HistoryMoveProvider();
+        }
+        EngineFacade.prototype.reset = function () {
+            this.boardStateProvider.clear();
+            this.moveHistoryProvider.clear();
+            this.boardLoader.addPieces();
+            this.board.reset();
+            this.coords.reset();
+            this.drawProvider.clear();
+            this.freeMode = false;
+        };
+        EngineFacade.prototype.undo = function () {
+            if (!this.boardStateProvider.isEmpty()) {
+                var lastBoard = this.boardStateProvider.pop().board;
+                if (this.board.reverted) {
+                    lastBoard.reverse();
+                }
+                this.board = lastBoard;
+                this.boardLoader.setBoard(this.board);
+                this.board.possibleCaptures = [];
+                this.board.possibleMoves = [];
+                this.moveHistoryProvider.pop();
+            }
+        };
+        EngineFacade.prototype.getMoveHistory = function () {
+            return this.moveHistoryProvider.getAll();
+        };
+        EngineFacade.prototype.saveMoveClone = function () {
+            var clone = this.board.clone();
+            if (this.board.reverted) {
+                clone.reverse();
+            }
+            this.moveStateProvider.addMove(new BoardState(clone));
+        };
+        EngineFacade.prototype.move = function (coords) {
+            if (coords) {
+                var sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this._board.reverted);
+                var destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this._board.reverted);
+                var srcPiece = this._board.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
+                if (srcPiece) {
+                    if ((this._board.currentWhitePlayer &&
+                        srcPiece.color === Color.BLACK) ||
+                        (!this._board.currentWhitePlayer &&
+                            srcPiece.color === Color.WHITE)) {
+                        return;
+                    }
+                    this.prepareActivePiece(srcPiece, srcPiece.point);
+                    if (this._board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
+                        this._board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                        this.saveClone();
+                        this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis), coords.length === 5 ? +coords.substring(4, 5) : 0);
+                        this._board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
+                        this._board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
+                        this.disableSelection();
+                    }
+                    else {
+                        this.disableSelection();
+                    }
+                }
+            }
+        };
+        EngineFacade.prototype.prepareActivePiece = function (pieceClicked, pointClicked) {
+            this._board.activePiece = pieceClicked;
+            this._selected = true;
+            this._board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleCaptures();
+            this._board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleMoves();
+        };
+        EngineFacade.prototype.onPieceClicked = function (pieceClicked, pointClicked) {
+            if ((this._board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+                (!this._board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+                return;
+            }
+            this.prepareActivePiece(pieceClicked, pointClicked);
+        };
+        EngineFacade.prototype.handleClickEvent = function (pointClicked, isMouseDown) {
+            var moving = false;
+            if ((this._board.isPointInPossibleMoves(pointClicked) ||
+                this._board.isPointInPossibleCaptures(pointClicked)) || this._freeMode) {
+                this.saveClone();
+                this._board.lastMoveSrc = new Point(this._board.activePiece.point.row, this._board.activePiece.point.col);
+                this._board.lastMoveDest = pointClicked;
+                this.movePiece(this._board.activePiece, pointClicked);
+                if (!this._board.activePiece.point.isEqual(this._board.lastMoveSrc)) {
+                    moving = true;
+                }
+            }
+            if (isMouseDown || moving) {
+                this.disableSelection();
+            }
+            this.disableSelection();
+            var pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+            if (pieceClicked && !moving) {
+                this.onFreeMode(pieceClicked);
+                this.onPieceClicked(pieceClicked, pointClicked);
+            }
+        };
+        EngineFacade.prototype.onMouseDown = function (event, pointClicked, left, top) {
+            if (event.button !== 0) {
+                this.drawPoint = ClickUtils.getDrawingPoint(this.heightAndWidth, this.colorStrategy, event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey, left, top);
+                return;
+            }
+            this.drawProvider.clear();
+            if (this._board.activePiece &&
+                pointClicked.isEqual(this._board.activePiece.point)) {
+                this.disabling = true;
+                return;
+            }
+            var pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+            if (this._freeMode) {
+                if (pieceClicked) {
+                    if (event.ctrlKey) {
+                        this.board.pieces = this.board.pieces.filter(function (e) { return e !== pieceClicked; });
+                        return;
+                    }
+                    this._board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+                }
+            }
+            if (this.isPieceDisabled(pieceClicked)) {
+                return;
+            }
+            if (this._selected) {
+                this.handleClickEvent(pointClicked, true);
+            }
+            else {
+                if (pieceClicked) {
+                    this.onFreeMode(pieceClicked);
+                    this.onPieceClicked(pieceClicked, pointClicked);
+                }
+            }
+        };
+        EngineFacade.prototype.onMouseUp = function (event, pointClicked, left, top) {
+            if (event.button !== 0 && !this.drawDisabled) {
+                this.addDrawPoint(event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey, left, top);
+                return;
+            }
+            this.drawProvider.clear();
+            if (this.dragDisabled) {
+                return;
+            }
+            if (this._board.activePiece &&
+                pointClicked.isEqual(this._board.activePiece.point) &&
+                this.disabling) {
+                this.disableSelection();
+                this.disabling = false;
+                return;
+            }
+            var pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+            if (this.isPieceDisabled(pieceClicked)) {
+                return;
+            }
+            if (this._selected) {
+                this.handleClickEvent(pointClicked, false);
+                //   this.possibleMoves = activePiece.getPossibleMoves();
+            }
+        };
+        EngineFacade.prototype.saveClone = function () {
+            var clone = this._board.clone();
+            if (this._board.reverted) {
+                clone.reverse();
+            }
+            this.boardStateProvider.addMove(new BoardState(clone));
+        };
+        EngineFacade.prototype.movePiece = function (toMovePiece, newPoint, promotionIndex) {
+            var destPiece = this._board.pieces.find(function (piece) { return piece.point.col === newPoint.col &&
+                piece.point.row === newPoint.row; });
+            if (destPiece && toMovePiece.color !== destPiece.color) {
+                this._board.pieces = this._board.pieces.filter(function (piece) { return piece !== destPiece; });
+            }
+            else {
+                if (destPiece && toMovePiece.color === destPiece.color) {
+                    return;
+                }
+            }
+            var move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this._board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
+            this.moveHistoryProvider.addMove(move);
+            if (toMovePiece instanceof King) {
+                var squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
+                if (squaresMoved > 1) {
+                    if (newPoint.col < 3) {
+                        var leftRook = this._board.getPieceByField(toMovePiece.point.row, 0);
+                        if (!this._freeMode) {
+                            leftRook.point.col = this._board.reverted ? 2 : 3;
+                        }
+                    }
+                    else {
+                        var rightRook = this._board.getPieceByField(toMovePiece.point.row, 7);
+                        if (!this._freeMode) {
+                            rightRook.point.col = this._board.reverted ? 4 : 5;
+                        }
+                    }
+                }
+            }
+            if (toMovePiece instanceof Pawn) {
+                this.board.checkIfPawnTakesEnPassant(newPoint);
+                this.board.checkIfPawnEnpassanted(toMovePiece, newPoint);
+            }
+            toMovePiece.point = newPoint;
+            this.increaseFullMoveCount();
+            this._board.currentWhitePlayer = !this._board.currentWhitePlayer;
+            if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+                this.afterMoveActions();
+            }
+        };
+        EngineFacade.prototype.checkForPawnPromote = function (toPromotePiece, promotionIndex) {
+            if (!(toPromotePiece instanceof Pawn)) {
+                return;
+            }
+            if (toPromotePiece.point.row === 0 || toPromotePiece.point.row === 7) {
+                this.board.pieces = this.board.pieces.filter(function (piece) { return piece !== toPromotePiece; });
+                // When we make move manually, we pass promotion index already, so we don't need
+                // to acquire it from promote dialog
+                if (!promotionIndex) {
+                    this.openPromoteDialog(toPromotePiece);
+                }
+                else {
+                    PiecePromotionResolver.resolvePromotionChoice(this.board, toPromotePiece, promotionIndex);
+                    this.afterMoveActions(promotionIndex);
+                }
+                return true;
+            }
+        };
+        EngineFacade.prototype.checkIfPawnFirstMove = function (piece) {
+            if (piece instanceof Pawn) {
+                piece.isMovedAlready = true;
+            }
+        };
+        EngineFacade.prototype.checkIfRookMoved = function (piece) {
+            if (piece instanceof Rook) {
+                piece.isMovedAlready = true;
+            }
+        };
+        EngineFacade.prototype.checkIfKingMoved = function (piece) {
+            if (piece instanceof King) {
+                piece.isMovedAlready = true;
+            }
+        };
+        EngineFacade.prototype.afterMoveActions = function (promotionIndex) {
+            this.checkIfPawnFirstMove(this._board.activePiece);
+            this.checkIfRookMoved(this._board.activePiece);
+            this.checkIfKingMoved(this._board.activePiece);
+            this._board.blackKingChecked = this._board.isKingInCheck(Color.BLACK, this._board.pieces);
+            this._board.whiteKingChecked = this._board.isKingInCheck(Color.WHITE, this._board.pieces);
+            var check = this._board.blackKingChecked || this._board.whiteKingChecked;
+            var checkmate = this.checkForPossibleMoves(Color.BLACK) ||
+                this.checkForPossibleMoves(Color.WHITE);
+            var stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+            this.disabling = false;
+            this._board.calculateFEN();
+            var lastMove = this.moveHistoryProvider.getLastMove();
+            if (lastMove && promotionIndex) {
+                lastMove.move += promotionIndex;
+            }
+            this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check: check,
+                checkmate: checkmate,
+                stalemate: stalemate, fen: this._board.fen, freeMode: this._freeMode }));
+        };
+        EngineFacade.prototype.checkForPat = function (color) {
+            if (color === Color.WHITE && !this.board.whiteKingChecked) {
+                return this.checkForPossibleMoves(color);
+            }
+            else {
+                if (color === Color.BLACK && !this.board.blackKingChecked) {
+                    return this.checkForPossibleMoves(color);
+                }
+            }
+        };
+        EngineFacade.prototype.openPromoteDialog = function (piece) {
+            var _this = this;
+            this.modal.open(function (index) {
+                PiecePromotionResolver.resolvePromotionChoice(_this.board, piece, index);
+                _this.afterMoveActions(index);
+            });
+        };
+        EngineFacade.prototype.checkForPossibleMoves = function (color) {
+            var _this = this;
+            return !this.board.pieces
+                .filter(function (piece) { return piece.color === color; })
+                .some(function (piece) { return piece
+                .getPossibleMoves()
+                .some(function (move) { return !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, move.row, move.col, _this.board); }) ||
+                piece
+                    .getPossibleCaptures()
+                    .some(function (capture) { return !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, capture.row, capture.col, _this.board); }); });
+        };
+        EngineFacade.prototype.disableSelection = function () {
+            this._selected = false;
+            this._board.possibleCaptures = [];
+            this._board.activePiece = null;
+            this._board.possibleMoves = [];
+        };
+        /**
+         * Processes logic to allow freeMode based logic processing
+         */
+        EngineFacade.prototype.onFreeMode = function (pieceClicked) {
+            if (!this.freeMode ||
+                pieceClicked === undefined ||
+                pieceClicked === null) {
+                return;
+            }
+            // sets player as white in-case white pieces are selected, and vice-versa when black is selected
+            this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
+        };
+        EngineFacade.prototype.isPieceDisabled = function (pieceClicked) {
+            if (pieceClicked && pieceClicked.point) {
+                var foundCapture = this.board.possibleCaptures.find(function (capture) { return capture.col === pieceClicked.point.col &&
+                    capture.row === pieceClicked.point.row; });
+                if (foundCapture) {
+                    return false;
+                }
+            }
+            return (pieceClicked &&
+                ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
+                    (this.darkDisabled && pieceClicked.color === Color.BLACK)));
+        };
+        EngineFacade.prototype.addDrawPoint = function (x, y, crtl, alt, shift, left, top) {
+            var upPoint = ClickUtils.getDrawingPoint(this.heightAndWidth, this.colorStrategy, x, y, crtl, alt, shift, left, top);
+            if (this.drawPoint.isEqual(upPoint)) {
+                var circle = new Circle();
+                circle.drawPoint = upPoint;
+                if (!this.drawProvider.containsCircle(circle)) {
+                    this.drawProvider.addCircle(circle);
+                }
+                else {
+                    this.drawProvider.reomveCircle(circle);
+                }
+            }
+            else {
+                var arrow = new Arrow();
+                arrow.start = this.drawPoint;
+                arrow.end = upPoint;
+                if (!this.drawProvider.containsArrow(arrow)) {
+                    this.drawProvider.addArrow(arrow);
+                }
+                else {
+                    this.drawProvider.removeArrow(arrow);
+                }
+            }
+        };
+        EngineFacade.prototype.increaseFullMoveCount = function () {
+            if (!this.board.currentWhitePlayer) {
+                ++this.board.fullMoveCount;
+            }
+        };
+        Object.defineProperty(EngineFacade.prototype, "board", {
+            get: function () {
+                return this._board;
+            },
+            set: function (value) {
+                this._board = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(EngineFacade.prototype, "selected", {
+            get: function () {
+                return this._selected;
+            },
+            set: function (value) {
+                this._selected = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(EngineFacade.prototype, "freeMode", {
+            get: function () {
+                return this._freeMode;
+            },
+            set: function (value) {
+                this._freeMode = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        EngineFacade.prototype.addPiece = function (pieceTypeInput, colorInput, coords) {
+            if (this.freeMode && coords && pieceTypeInput > 0 && colorInput > 0) {
+                var indexes = MoveUtils.translateCoordsToIndex(coords, this.board.reverted);
+                var existing_1 = this.board.getPieceByPoint(indexes.yAxis, indexes.xAxis);
+                if (existing_1) {
+                    this.board.pieces = this.board.pieces.filter(function (e) { return e !== existing_1; });
+                }
+                var createdPiece = PieceFactory.create(indexes, pieceTypeInput, colorInput, this.board);
+                this.saveClone();
+                this.board.pieces.push(createdPiece);
+                this.afterMoveActions();
+            }
+        };
+        return EngineFacade;
+    }());
+
+    var Board = /** @class */ (function () {
+        function Board() {
+            this.board = [];
+            this.pieces = [];
+            this.enPassantPoint = null;
+            this.enPassantPiece = null;
+            this.lastMoveSrc = null;
+            this.lastMoveDest = null;
+            this.possibleCaptures = [];
+            this.possibleMoves = [];
+            this.currentWhitePlayer = true;
+            this.reverted = false;
+            this.fullMoveCount = 1;
+            for (var i = 0; i < 8; ++i) {
+                this.board[i] = [];
+                for (var j = 0; j < 8; ++j) {
+                    this.board[i][j] = 0;
+                }
+            }
+        }
+        Board.prototype.isXYInPossibleMoves = function (row, col) {
+            return this.possibleMoves.some(function (move) { return move.row === row && move.col === col; });
+        };
+        Board.prototype.isXYInPossibleCaptures = function (row, col) {
+            return this.possibleCaptures.some(function (capture) { return capture.row === row && capture.col === col; });
+        };
+        Board.prototype.isXYInSourceMove = function (i, j) {
+            return this.lastMoveSrc && this.lastMoveSrc.row === i && this.lastMoveSrc.col === j;
+        };
+        Board.prototype.isXYInDestMove = function (i, j) {
+            return this.lastMoveDest && this.lastMoveDest.row === i && this.lastMoveDest.col === j;
+        };
+        Board.prototype.isXYInActiveMove = function (i, j) {
+            return this.activePiece && this.activePiece.point.row === i && this.activePiece.point.col === j;
+        };
+        Board.prototype.isPointInPossibleMoves = function (point) {
+            return this.possibleMoves.some(function (move) { return move.row === point.row && move.col === point.col; });
+        };
+        Board.prototype.isPointInPossibleCaptures = function (point) {
+            return this.possibleCaptures.some(function (capture) { return capture.row === point.row && capture.col === point.col; });
+        };
+        Board.prototype.reset = function () {
+            this.lastMoveDest = null;
+            this.lastMoveSrc = null;
+            this.whiteKingChecked = false;
+            this.blackKingChecked = false;
+            this.possibleCaptures = [];
+            this.possibleMoves = [];
+            this.activePiece = null;
+            this.reverted = false;
+            this.currentWhitePlayer = true;
+            this.enPassantPoint = null;
+            this.enPassantPiece = null;
+            this.fullMoveCount = 1;
+            this.calculateFEN();
+        };
+        Board.prototype.reverse = function () {
+            var _this = this;
+            this.reverted = !this.reverted;
+            this.activePiece = null;
+            this.possibleMoves = [];
+            this.possibleCaptures = [];
+            this.pieces.forEach(function (piece) { return _this.reversePoint(piece.point); });
+            this.reversePoint(this.lastMoveSrc);
+            if (this.enPassantPoint && this.enPassantPiece) {
+                this.reversePoint(this.enPassantPoint);
+            }
+        };
+        Board.prototype.clone = function () {
+            return lodash.cloneDeep(this);
+        };
+        Board.prototype.isFieldTakenByEnemy = function (row, col, enemyColor) {
+            if (row > 7 || row < 0 || col > 7 || col < 0) {
+                return false;
+            }
+            return this.pieces.some(function (piece) { return piece.point.col === col && piece.point.row === row && piece.color === enemyColor; });
+        };
+        Board.prototype.isFieldEmpty = function (row, col) {
+            if (row > 7 || row < 0 || col > 7 || col < 0) {
+                return false;
+            }
+            return !this.pieces.some(function (piece) { return piece.point.col === col && piece.point.row === row; });
+        };
+        Board.prototype.isFieldUnderAttack = function (row, col, color) {
+            return this.pieces
+                .filter(function (piece) { return piece.color === color; })
+                .some(function (piece) { return piece.getCoveredFields().some(function (field) { return field.col === col && field.row === row; }); });
+        };
+        Board.prototype.getPieceByField = function (row, col) {
+            if (this.isFieldEmpty(row, col)) {
+                //   throw new Error('Piece not found');
+                return undefined;
+            }
+            return this.pieces.find(function (piece) { return piece.point.col === col && piece.point.row === row; });
+        };
+        Board.prototype.isKingInCheck = function (color, pieces) {
+            var king = pieces.find(function (piece) { return piece.color === color && piece instanceof King; });
+            if (king) {
+                return pieces.some(function (piece) { return piece
+                    .getPossibleCaptures()
+                    .some(function (point) { return point.col === king.point.col && point.row === king.point.row; }) &&
+                    piece.color !== color; });
+            }
+            return false;
+        };
+        Board.prototype.getKingByColor = function (color) {
+            return this.pieces.find(function (piece) { return piece instanceof King && piece.color === color; });
+        };
+        Board.prototype.getCastleFENString = function (color) {
+            var king = this.getKingByColor(color);
+            if (!king || king.isMovedAlready) {
+                return '';
+            }
+            var fen = '';
+            var leftRook = this.getPieceByField(king.point.row, 0);
+            var rightRook = this.getPieceByField(king.point.row, 7);
+            if (rightRook instanceof Rook && rightRook.color === color) {
+                if (!rightRook.isMovedAlready) {
+                    fen += this.reverted ? 'q' : 'k';
+                }
+            }
+            if (leftRook instanceof Rook && leftRook.color === color) {
+                if (!leftRook.isMovedAlready) {
+                    fen += this.reverted ? 'k' : 'q';
+                }
+            }
+            fen = fen.split('').sort().join('');
+            return color === Color.BLACK ? fen : fen.toUpperCase();
+        };
+        Board.prototype.getEnPassantFENString = function () {
+            if (this.enPassantPoint) {
+                if (this.reverted) {
+                    return String.fromCharCode(104 - this.enPassantPoint.col) + (this.enPassantPoint.row + 1);
+                }
+                else {
+                    return String.fromCharCode(97 + this.enPassantPoint.col) + (Math.abs(this.enPassantPoint.row - 7) + 1);
+                }
+            }
+            else {
+                return '-';
+            }
+        };
+        Board.prototype.calculateFEN = function () {
+            var fen = '';
+            var _loop_1 = function (i) {
+                var emptyFields = 0;
+                var _loop_2 = function (j) {
+                    var foundPiece = this_1.pieces.find(function (piece) { return piece.point.col === j && piece.point.row === i; });
+                    if (foundPiece) {
+                        if (emptyFields > 0) {
+                            fen += emptyFields;
+                            emptyFields = 0;
+                        }
+                        if (foundPiece instanceof Rook) {
+                            fen += foundPiece.color === Color.BLACK ? 'r' : 'R';
+                        }
+                        else {
+                            if (foundPiece instanceof Knight) {
+                                fen += foundPiece.color === Color.BLACK ? 'n' : 'N';
+                            }
+                            else {
+                                if (foundPiece instanceof Bishop) {
+                                    fen += foundPiece.color === Color.BLACK ? 'b' : 'B';
+                                }
+                                else {
+                                    if (foundPiece instanceof Queen) {
+                                        fen += foundPiece.color === Color.BLACK ? 'q' : 'Q';
+                                    }
+                                    else {
+                                        if (foundPiece instanceof King) {
+                                            fen += foundPiece.color === Color.BLACK ? 'k' : 'K';
+                                        }
+                                        else {
+                                            if (foundPiece instanceof Pawn) {
+                                                fen += foundPiece.color === Color.BLACK ? 'p' : 'P';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        ++emptyFields;
+                    }
+                };
+                for (var j = 0; j < 8; ++j) {
+                    _loop_2(j);
+                }
+                if (emptyFields > 0) {
+                    fen += emptyFields;
+                }
+                fen += '/';
+            };
+            var this_1 = this;
+            for (var i = 0; i < 8; ++i) {
+                _loop_1(i);
+            }
+            fen = fen.substr(0, fen.length - 1);
+            if (this.reverted) {
+                fen = fen.split('').reverse().join('');
+            }
+            fen += ' ' + (this.currentWhitePlayer ? 'w' : 'b');
+            var whiteEnPassant = this.getCastleFENString(Color.WHITE);
+            var blackEnPassant = this.getCastleFENString(Color.BLACK);
+            var concatedEnPassant = whiteEnPassant + blackEnPassant;
+            if (!concatedEnPassant) {
+                concatedEnPassant = '-';
+            }
+            fen += ' ' + concatedEnPassant;
+            fen += ' ' + this.getEnPassantFENString();
+            fen += ' ' + 0;
+            fen += ' ' + this.fullMoveCount;
+            this.fen = fen;
+        };
+        Board.prototype.isXYInPointSelection = function (i, j) {
+            return false;
+        };
+        Board.prototype.reversePoint = function (point) {
+            if (point) {
+                point.row = Math.abs(point.row - 7);
+                point.col = Math.abs(point.col - 7);
+            }
+        };
+        Board.prototype.getPieceByPoint = function (row, col) {
+            row = Math.floor(row);
+            col = Math.floor(col);
+            return this.pieces.find(function (piece) { return piece.point.col === col && piece.point.row === row; });
+        };
+        Board.prototype.checkIfPawnTakesEnPassant = function (newPoint) {
+            var _this = this;
+            if (newPoint.isEqual(this.enPassantPoint)) {
+                this.pieces = this.pieces.filter(function (piece) { return piece !== _this.enPassantPiece; });
+                this.enPassantPoint = null;
+                this.enPassantPiece = null;
+            }
+        };
+        Board.prototype.checkIfPawnEnpassanted = function (piece, newPoint) {
+            if (Math.abs(piece.point.row - newPoint.row) > 1) {
+                this.enPassantPiece = piece;
+                this.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
+            }
+            else {
+                this.enPassantPoint = null;
+                this.enPassantPiece = null;
+            }
+        };
+        Board.prototype.isKingChecked = function (piece) {
+            if (piece instanceof King) {
+                return piece.color === Color.WHITE
+                    ? this.whiteKingChecked
+                    : this.blackKingChecked;
+            }
+        };
+        return Board;
     }());
 
     var NgxChessBoardService = /** @class */ (function () {
@@ -2207,7 +2823,7 @@
             var ctx_r11 = i0.ɵɵnextContext();
             i0.ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
             i0.ɵɵadvance(1);
-            i0.ɵɵtextInterpolate1(" ", ctx_r11.coords.yCoords[i_r7], " ");
+            i0.ɵɵtextInterpolate1(" ", ctx_r11.engineFacade.coords.yCoords[i_r7], " ");
         }
     }
     function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) {
@@ -2221,7 +2837,7 @@
             var ctx_r12 = i0.ɵɵnextContext(2);
             i0.ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
             i0.ɵɵadvance(1);
-            i0.ɵɵtextInterpolate1(" ", ctx_r12.coords.xCoords[j_r10], " ");
+            i0.ɵɵtextInterpolate1(" ", ctx_r12.engineFacade.coords.xCoords[j_r10], " ");
         }
     }
     function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) {
@@ -2239,7 +2855,7 @@
             var ctx_r13 = i0.ɵɵnextContext();
             i0.ɵɵadvance(1);
             i0.ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
-            i0.ɵɵproperty("cdkDragDisabled", ctx_r13.dragDisabled)("innerHTML", ctx_r13.pieceIconManager.isDefaultIcons() ? ctx_r13.getPieceByPoint(i_r7, j_r10).constant.icon : "", i0.ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.getPieceByPoint(i_r7, j_r10)));
+            i0.ɵɵproperty("cdkDragDisabled", ctx_r13.engineFacade.dragDisabled)("innerHTML", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10).constant.icon : "", i0.ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10)));
         }
     }
     function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) {
@@ -2255,13 +2871,13 @@
             var i_r7 = i0.ɵɵnextContext().index;
             var ctx_r8 = i0.ɵɵnextContext();
             i0.ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
-            i0.ɵɵclassProp("current-selection", ctx_r8.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.isKingChecked(ctx_r8.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.board.isXYInSourceMove(i_r7, j_r10));
+            i0.ɵɵclassProp("current-selection", ctx_r8.engineFacade.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.engineFacade.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.engineFacade.board.isKingChecked(ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.engineFacade.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.engineFacade.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.engineFacade.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.engineFacade.board.isXYInSourceMove(i_r7, j_r10));
             i0.ɵɵadvance(1);
             i0.ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
             i0.ɵɵadvance(1);
             i0.ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
             i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.getPieceByPoint(i_r7, j_r10));
+            i0.ɵɵproperty("ngIf", ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10));
         }
     }
     function NgxChessBoardComponent_div_3_Template(rf, ctx) {
@@ -2311,7 +2927,7 @@
         if (rf & 2) {
             var circle_r25 = ctx.$implicit;
             var ctx_r4 = i0.ɵɵnextContext();
-            i0.ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
+            i0.ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.engineFacade.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
         }
     }
     var _c2 = function () { return ["red", "green", "blue", "orange"]; };
@@ -2321,41 +2937,48 @@
             this.darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
             this.lightTileColor = Constants.DEFAULT_LIGHT_TILE_COLOR;
             this.showCoords = true;
-            this.dragDisabled = false;
-            this.drawDisabled = false;
-            this.lightDisabled = false;
-            this.darkDisabled = false;
             /**
              * Enabling free mode removes turn-based restriction and allows to move any piece freely!
              */
-            this.freeMode = false;
             this.moveChange = new i0.EventEmitter();
             this.checkmate = new i0.EventEmitter();
             this.stalemate = new i0.EventEmitter();
             this.selected = false;
-            this.coords = new CoordsProvider();
-            this.disabling = false;
-            this.heightAndWidth = Constants.DEFAULT_SIZE;
-            this.board = new Board();
-            this.boardLoader = new BoardLoader(this.board);
-            this.boardLoader.addPieces();
-            this.boardStateProvider = new BoardStateProvider();
-            this.moveHistoryProvider = new HistoryMoveProvider();
-            this.drawProvider = new DrawProvider();
-            this.pieceIconManager = new PieceIconInputManager();
+            this.engineFacade = new EngineFacade(new Board(), this.moveChange);
         }
         Object.defineProperty(NgxChessBoardComponent.prototype, "size", {
             set: function (size) {
                 if (size &&
                     size >= Constants.MIN_BOARD_SIZE &&
                     size <= Constants.MAX_BOARD_SIZE) {
-                    this.heightAndWidth = size;
+                    this.engineFacade.heightAndWidth = size;
                 }
                 else {
-                    this.heightAndWidth = Constants.DEFAULT_SIZE;
+                    this.engineFacade.heightAndWidth = Constants.DEFAULT_SIZE;
                 }
-                this.drawProvider.clear();
+                this.engineFacade.drawProvider.clear();
                 this.calculatePieceSize();
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(NgxChessBoardComponent.prototype, "freeMode", {
+            set: function (freeMode) {
+                this.engineFacade.freeMode = freeMode;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(NgxChessBoardComponent.prototype, "dragDisabled", {
+            set: function (dragDisabled) {
+                this.engineFacade.dragDisabled = dragDisabled;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(NgxChessBoardComponent.prototype, "drawDisabled", {
+            set: function (drawDisabled) {
+                this.engineFacade.drawDisabled = drawDisabled;
             },
             enumerable: false,
             configurable: true
@@ -2367,503 +2990,104 @@
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(NgxChessBoardComponent.prototype, "lightDisabled", {
+            set: function (lightDisabled) {
+                this.engineFacade.lightDisabled = lightDisabled;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(NgxChessBoardComponent.prototype, "darkDisabled", {
+            set: function (darkDisabled) {
+                this.engineFacade.darkDisabled = darkDisabled;
+            },
+            enumerable: false,
+            configurable: true
+        });
         NgxChessBoardComponent.prototype.onRightClick = function (event) {
             event.preventDefault();
         };
         NgxChessBoardComponent.prototype.ngOnChanges = function (changes) {
             if ((changes.lightDisabled &&
                 this.lightDisabled &&
-                this.board.currentWhitePlayer) ||
+                this.engineFacade.board.currentWhitePlayer) ||
                 (changes.darkDisabled &&
                     this.darkDisabled &&
-                    !this.board.currentWhitePlayer)) {
-                this.board.possibleCaptures = [];
-                this.board.possibleMoves = [];
+                    !this.engineFacade.board.currentWhitePlayer)) {
+                this.engineFacade.board.possibleCaptures = [];
+                this.engineFacade.board.possibleMoves = [];
             }
         };
         NgxChessBoardComponent.prototype.ngOnInit = function () {
             var _this = this;
             this.ngxChessBoardService.componentMethodCalled$.subscribe(function () {
-                _this.board.reset();
+                _this.engineFacade.reset();
             });
             this.calculatePieceSize();
         };
+        NgxChessBoardComponent.prototype.ngAfterViewInit = function () {
+            this.engineFacade.modal = this.modal;
+        };
         NgxChessBoardComponent.prototype.onMouseUp = function (event) {
-            if (event.button !== 0 && !this.drawDisabled) {
-                this.addDrawPoint(event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey);
-                return;
-            }
-            this.drawProvider.clear();
-            if (this.dragDisabled) {
-                return;
-            }
-            var pointClicked = this.getClickPoint(event);
-            if (this.board.activePiece &&
-                pointClicked.isEqual(this.board.activePiece.point) &&
-                this.disabling) {
-                this.disableSelection();
-                this.disabling = false;
-                return;
-            }
-            var pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-            if (this.isPieceDisabled(pieceClicked)) {
-                return;
-            }
-            if (this.selected) {
-                this.handleClickEvent(pointClicked, false);
-                //   this.possibleMoves = activePiece.getPossibleMoves();
-            }
-        };
-        NgxChessBoardComponent.prototype.onPieceClicked = function (pieceClicked, pointClicked) {
-            if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
-                (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
-                return;
-            }
-            this.prepareActivePiece(pieceClicked, pointClicked);
-        };
-        /**
-         * Validates whether freemode is turned on!
-         */
-        NgxChessBoardComponent.prototype.isFreeMode = function () {
-            return this.freeMode;
-        };
-        /**
-         * Processes logic to allow freeMode based logic processing
-         */
-        NgxChessBoardComponent.prototype.onFreeMode = function (pieceClicked) {
-            if (!this.isFreeMode() ||
-                pieceClicked === undefined ||
-                pieceClicked === null) {
-                return;
-            }
-            // sets player as white in-case white pieces are selected, and vice-versa when black is selected
-            this.board.currentWhitePlayer = pieceClicked.color === Color.WHITE;
-        };
-        NgxChessBoardComponent.prototype.afterMoveActions = function (promotionIndex) {
-            this.checkIfPawnFirstMove(this.board.activePiece);
-            this.checkIfRookMoved(this.board.activePiece);
-            this.checkIfKingMoved(this.board.activePiece);
-            this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
-            this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
-            var check = this.board.blackKingChecked || this.board.whiteKingChecked;
-            var checkmate = this.checkForPossibleMoves(Color.BLACK) ||
-                this.checkForPossibleMoves(Color.WHITE);
-            var stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
-            this.disabling = false;
-            this.board.calculateFEN();
-            var lastMove = this.moveHistoryProvider.getLastMove();
-            if (lastMove && promotionIndex) {
-                lastMove.move += promotionIndex;
-            }
-            this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check: check,
-                checkmate: checkmate,
-                stalemate: stalemate, fen: this.board.fen, freeMode: this.freeMode }));
-        };
-        NgxChessBoardComponent.prototype.disableSelection = function () {
-            this.selected = false;
-            this.board.possibleCaptures = [];
-            this.board.activePiece = null;
-            this.board.possibleMoves = [];
-        };
-        NgxChessBoardComponent.prototype.prepareActivePiece = function (pieceClicked, pointClicked) {
-            this.board.activePiece = pieceClicked;
-            this.selected = true;
-            this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
-            this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
-        };
-        NgxChessBoardComponent.prototype.getPieceByPoint = function (row, col) {
-            row = Math.floor(row);
-            col = Math.floor(col);
-            return this.board.pieces.find(function (piece) { return piece.point.col === col && piece.point.row === row; });
-        };
-        NgxChessBoardComponent.prototype.isKingChecked = function (piece) {
-            if (piece instanceof King) {
-                return piece.color === Color.WHITE
-                    ? this.board.whiteKingChecked
-                    : this.board.blackKingChecked;
-            }
-        };
-        NgxChessBoardComponent.prototype.getClickPoint = function (event) {
-            return new Point(Math.floor((event.y -
-                this.boardRef.nativeElement.getBoundingClientRect().top) /
-                (this.boardRef.nativeElement.getBoundingClientRect()
-                    .height /
-                    8)), Math.floor((event.x -
-                this.boardRef.nativeElement.getBoundingClientRect().left) /
-                (this.boardRef.nativeElement.getBoundingClientRect().width /
-                    8)));
-        };
-        NgxChessBoardComponent.prototype.movePiece = function (toMovePiece, newPoint, promotionIndex) {
-            var destPiece = this.board.pieces.find(function (piece) { return piece.point.col === newPoint.col &&
-                piece.point.row === newPoint.row; });
-            if (destPiece && toMovePiece.color !== destPiece.color) {
-                this.board.pieces = this.board.pieces.filter(function (piece) { return piece !== destPiece; });
-            }
-            else {
-                if (destPiece && toMovePiece.color === destPiece.color) {
-                    return;
-                }
-            }
-            var move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
-            this.moveHistoryProvider.addMove(move);
-            if (toMovePiece instanceof King) {
-                var squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
-                if (squaresMoved > 1) {
-                    if (newPoint.col < 3) {
-                        var leftRook = this.board.getPieceByField(toMovePiece.point.row, 0);
-                        if (!this.freeMode) {
-                            leftRook.point.col = this.board.reverted ? 2 : 3;
-                        }
-                    }
-                    else {
-                        var rightRook = this.board.getPieceByField(toMovePiece.point.row, 7);
-                        if (!this.freeMode) {
-                            rightRook.point.col = this.board.reverted ? 4 : 5;
-                        }
-                    }
-                }
-            }
-            if (toMovePiece instanceof Pawn) {
-                this.checkIfPawnTakesEnPassant(newPoint);
-                this.checkIfPawnEnpassanted(toMovePiece, newPoint);
-            }
-            toMovePiece.point = newPoint;
-            this.increaseFullMoveCount();
-            this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
-            if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
-                this.afterMoveActions();
-            }
-        };
-        NgxChessBoardComponent.prototype.checkIfPawnFirstMove = function (piece) {
-            if (piece instanceof Pawn) {
-                piece.isMovedAlready = true;
-            }
-        };
-        NgxChessBoardComponent.prototype.checkForPawnPromote = function (toPromotePiece, promotionIndex) {
-            if (!(toPromotePiece instanceof Pawn)) {
-                return;
-            }
-            if (toPromotePiece.point.row === 0 || toPromotePiece.point.row === 7) {
-                this.board.pieces = this.board.pieces.filter(function (piece) { return piece !== toPromotePiece; });
-                // When we make move manually, we pass promotion index already, so we don't need
-                // to acquire it from promote dialog
-                if (!promotionIndex) {
-                    this.openPromoteDialog(toPromotePiece);
-                }
-                else {
-                    this.resolvePromotionChoice(toPromotePiece, promotionIndex);
-                    this.afterMoveActions(promotionIndex);
-                }
-                return true;
-            }
-        };
-        NgxChessBoardComponent.prototype.openPromoteDialog = function (piece) {
-            var _this = this;
-            this.modal.open(function (index) {
-                _this.resolvePromotionChoice(piece, index);
-                _this.afterMoveActions(index);
-            });
-        };
-        NgxChessBoardComponent.prototype.resolvePromotionChoice = function (piece, index) {
-            var isWhite = piece.color === Color.WHITE;
-            switch (index) {
-                case 1:
-                    this.board.pieces.push(new Queen(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_QUEEN
-                        : UnicodeConstants.BLACK_QUEEN, this.board));
-                    break;
-                case 2:
-                    this.board.pieces.push(new Rook(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_ROOK
-                        : UnicodeConstants.BLACK_ROOK, this.board));
-                    break;
-                case 3:
-                    this.board.pieces.push(new Bishop(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_BISHOP
-                        : UnicodeConstants.BLACK_BISHOP, this.board));
-                    break;
-                case 4:
-                    this.board.pieces.push(new Knight(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_KNIGHT
-                        : UnicodeConstants.BLACK_KNIGHT, this.board));
-                    break;
-            }
-        };
-        NgxChessBoardComponent.prototype.reset = function () {
-            this.boardStateProvider.clear();
-            this.moveHistoryProvider.clear();
-            this.boardLoader.addPieces();
-            this.board.reset();
-            this.coords.reset();
-            this.drawProvider.clear();
-            this.freeMode = false;
+            this.engineFacade.onMouseUp(event, this.getClickPoint(event), this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().top);
         };
         NgxChessBoardComponent.prototype.reverse = function () {
             this.selected = false;
-            this.board.reverse();
-            this.coords.reverse();
+            this.engineFacade.board.reverse();
+            this.engineFacade.coords.reverse();
         };
         NgxChessBoardComponent.prototype.updateBoard = function (board) {
-            this.board = board;
-            this.boardLoader.setBoard(this.board);
-            this.board.possibleCaptures = [];
-            this.board.possibleMoves = [];
-        };
-        NgxChessBoardComponent.prototype.undo = function () {
-            if (!this.boardStateProvider.isEmpty()) {
-                var lastBoard = this.boardStateProvider.pop().board;
-                if (this.board.reverted) {
-                    lastBoard.reverse();
-                }
-                this.board = lastBoard;
-                this.boardLoader.setBoard(this.board);
-                this.board.possibleCaptures = [];
-                this.board.possibleMoves = [];
-                this.moveHistoryProvider.pop();
-            }
-        };
-        NgxChessBoardComponent.prototype.getMoveHistory = function () {
-            return this.moveHistoryProvider.getAll();
+            this.engineFacade.board = board;
+            this.boardLoader.setBoard(this.engineFacade.board);
+            this.engineFacade.board.possibleCaptures = [];
+            this.engineFacade.board.possibleMoves = [];
         };
         NgxChessBoardComponent.prototype.setFEN = function (fen) {
             try {
-                this.boardLoader.loadFEN(fen);
-                this.board.possibleCaptures = [];
-                this.board.possibleMoves = [];
-                this.coords.reset();
+                this.engineFacade.boardLoader.loadFEN(fen);
+                this.engineFacade.board.possibleCaptures = [];
+                this.engineFacade.board.possibleMoves = [];
+                this.engineFacade.coords.reset();
             }
             catch (exception) {
-                this.boardLoader.addPieces();
+                this.engineFacade.boardLoader.addPieces();
             }
         };
         NgxChessBoardComponent.prototype.getFEN = function () {
-            return this.board.fen;
+            return this.engineFacade.board.fen;
         };
         NgxChessBoardComponent.prototype.dragEnded = function (event) {
-            event.source.reset();
-            event.source.element.nativeElement.style.zIndex = '0';
-            event.source.element.nativeElement.style.pointerEvents = 'auto';
-            event.source.element.nativeElement.style.touchAction = 'auto';
+            this.engineFacade.dragEndStrategy.process(event);
         };
         NgxChessBoardComponent.prototype.dragStart = function (event) {
-            var style = event.source.element.nativeElement.style;
-            style.position = 'relative';
-            style.zIndex = '1000';
-            style.touchAction = 'none';
-            style.pointerEvents = 'none';
+            this.engineFacade.dragStartStrategy.process(event);
         };
         NgxChessBoardComponent.prototype.onMouseDown = function (event) {
-            if (event.button !== 0) {
-                this.drawPoint = this.getDrawingPoint(event.x, event.y, event.ctrlKey, event.altKey, event.shiftKey);
-                return;
-            }
-            var pointClicked = this.getClickPoint(event);
-            this.drawProvider.clear();
-            if (this.board.activePiece &&
-                pointClicked.isEqual(this.board.activePiece.point)) {
-                this.disabling = true;
-                return;
-            }
-            var pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-            if (this.freeMode) {
-                if (pieceClicked) {
-                    this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
-                }
-            }
-            if (this.isPieceDisabled(pieceClicked)) {
-                return;
-            }
-            if (this.selected) {
-                this.handleClickEvent(pointClicked, true);
-            }
-            else {
-                if (pieceClicked) {
-                    this.onFreeMode(pieceClicked);
-                    this.onPieceClicked(pieceClicked, pointClicked);
-                }
-            }
+            this.engineFacade.onMouseDown(event, this.getClickPoint(event), this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().top);
         };
-        NgxChessBoardComponent.prototype.getDrawingPoint = function (x, y, crtl, alt, shift) {
-            var squareSize = this.heightAndWidth / 8;
-            var xx = Math.floor((x - this.boardRef.nativeElement.getBoundingClientRect().left) /
-                squareSize);
-            var yy = Math.floor((y - this.boardRef.nativeElement.getBoundingClientRect().top) /
-                squareSize);
-            var color = 'green';
-            if (crtl || shift) {
-                color = 'red';
-            }
-            if (alt) {
-                color = 'blue';
-            }
-            if ((shift || crtl) && alt) {
-                color = 'orange';
-            }
-            return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
-        };
-        NgxChessBoardComponent.prototype.checkIfRookMoved = function (piece) {
-            if (piece instanceof Rook) {
-                piece.isMovedAlready = true;
-            }
-        };
-        NgxChessBoardComponent.prototype.checkIfKingMoved = function (piece) {
-            if (piece instanceof King) {
-                piece.isMovedAlready = true;
-            }
-        };
-        NgxChessBoardComponent.prototype.checkForPossibleMoves = function (color) {
-            var _this = this;
-            if (!this.board.pieces
-                .filter(function (piece) { return piece.color === color; })
-                .some(function (piece) { return piece
-                .getPossibleMoves()
-                .some(function (move) { return !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, move.row, move.col, _this.board); }) ||
-                piece
-                    .getPossibleCaptures()
-                    .some(function (capture) { return !MoveUtils.willMoveCauseCheck(color, piece.point.row, piece.point.col, capture.row, capture.col, _this.board); }); })) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        };
-        NgxChessBoardComponent.prototype.checkForPat = function (color) {
-            if (color === Color.WHITE && !this.board.whiteKingChecked) {
-                return this.checkForPossibleMoves(color);
-            }
-            else {
-                if (color === Color.BLACK && !this.board.blackKingChecked) {
-                    return this.checkForPossibleMoves(color);
-                }
-            }
-        };
-        NgxChessBoardComponent.prototype.checkIfPawnEnpassanted = function (piece, newPoint) {
-            if (Math.abs(piece.point.row - newPoint.row) > 1) {
-                this.board.enPassantPiece = piece;
-                this.board.enPassantPoint = new Point((piece.point.row + newPoint.row) / 2, piece.point.col);
-            }
-            else {
-                this.board.enPassantPoint = null;
-                this.board.enPassantPiece = null;
-            }
-        };
-        NgxChessBoardComponent.prototype.checkIfPawnTakesEnPassant = function (newPoint) {
-            var _this = this;
-            if (newPoint.isEqual(this.board.enPassantPoint)) {
-                this.board.pieces = this.board.pieces.filter(function (piece) { return piece !== _this.board.enPassantPiece; });
-                this.board.enPassantPoint = null;
-                this.board.enPassantPiece = null;
-            }
-        };
-        NgxChessBoardComponent.prototype.saveClone = function () {
-            var clone = this.board.clone();
-            if (this.board.reverted) {
-                clone.reverse();
-            }
-            this.boardStateProvider.addMove(new BoardState(clone));
-        };
-        NgxChessBoardComponent.prototype.saveMoveClone = function () {
-            var clone = this.board.clone();
-            if (this.board.reverted) {
-                clone.reverse();
-            }
-            this.moveStateProvider.addMove(new BoardState(clone));
+        NgxChessBoardComponent.prototype.getClickPoint = function (event) {
+            return ClickUtils.getClickPoint(event, this.boardRef.nativeElement.getBoundingClientRect().top, this.boardRef.nativeElement.getBoundingClientRect().height, this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().width);
         };
         NgxChessBoardComponent.prototype.calculatePieceSize = function () {
-            this.pieceSize = this.heightAndWidth / 10;
-        };
-        NgxChessBoardComponent.prototype.increaseFullMoveCount = function () {
-            if (!this.board.currentWhitePlayer) {
-                ++this.board.fullMoveCount;
-            }
-        };
-        NgxChessBoardComponent.prototype.handleClickEvent = function (pointClicked, isMouseDown) {
-            var moving = false;
-            if ((this.board.isPointInPossibleMoves(pointClicked) ||
-                this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
-                this.saveClone();
-                this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
-                this.board.lastMoveDest = pointClicked;
-                this.movePiece(this.board.activePiece, pointClicked);
-                if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
-                    moving = true;
-                }
-            }
-            if (isMouseDown || moving) {
-                this.disableSelection();
-            }
-            this.disableSelection();
-            var pieceClicked = this.getPieceByPoint(pointClicked.row, pointClicked.col);
-            if (pieceClicked && !moving) {
-                this.onFreeMode(pieceClicked);
-                this.onPieceClicked(pieceClicked, pointClicked);
-            }
-        };
-        NgxChessBoardComponent.prototype.addDrawPoint = function (x, y, crtl, alt, shift) {
-            var upPoint = this.getDrawingPoint(x, y, crtl, alt, shift);
-            if (this.drawPoint.isEqual(upPoint)) {
-                var circle = new Circle();
-                circle.drawPoint = upPoint;
-                if (!this.drawProvider.containsCircle(circle)) {
-                    this.drawProvider.addCircle(circle);
-                }
-                else {
-                    this.drawProvider.reomveCircle(circle);
-                }
-            }
-            else {
-                var arrow = new Arrow();
-                arrow.start = this.drawPoint;
-                arrow.end = upPoint;
-                if (!this.drawProvider.containsArrow(arrow)) {
-                    this.drawProvider.addArrow(arrow);
-                }
-                else {
-                    this.drawProvider.removeArrow(arrow);
-                }
-            }
-        };
-        NgxChessBoardComponent.prototype.move = function (coords) {
-            if (coords) {
-                var sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this.board.reverted);
-                var destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this.board.reverted);
-                var srcPiece = this.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
-                if (srcPiece) {
-                    if ((this.board.currentWhitePlayer &&
-                        srcPiece.color === Color.BLACK) ||
-                        (!this.board.currentWhitePlayer &&
-                            srcPiece.color === Color.WHITE)) {
-                        return;
-                    }
-                    this.prepareActivePiece(srcPiece, srcPiece.point);
-                    if (this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
-                        this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
-                        this.saveClone();
-                        this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis), coords.length === 5 ? +coords.substring(4, 5) : 0);
-                        this.board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
-                        this.board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
-                        this.disableSelection();
-                    }
-                    else {
-                        this.disableSelection();
-                    }
-                }
-            }
+            this.pieceSize = this.engineFacade.heightAndWidth / 10;
         };
         NgxChessBoardComponent.prototype.getCustomPieceIcons = function (piece) {
-            return JSON.parse("{ \"background-image\": \"url('" + this.pieceIconManager.getPieceIcon(piece) + "')\"}");
+            return JSON.parse("{ \"background-image\": \"url('" + this.engineFacade.pieceIconManager.getPieceIcon(piece) + "')\"}");
         };
-        NgxChessBoardComponent.prototype.isPieceDisabled = function (pieceClicked) {
-            if (pieceClicked && pieceClicked.point) {
-                var foundCapture = this.board.possibleCaptures.find(function (capture) { return capture.col === pieceClicked.point.col &&
-                    capture.row === pieceClicked.point.row; });
-                if (foundCapture) {
-                    return false;
-                }
-            }
-            return (pieceClicked &&
-                ((this.lightDisabled && pieceClicked.color === Color.WHITE) ||
-                    (this.darkDisabled && pieceClicked.color === Color.BLACK)));
+        NgxChessBoardComponent.prototype.move = function (coords) {
+            this.engineFacade.move(coords);
+        };
+        NgxChessBoardComponent.prototype.getMoveHistory = function () {
+            return this.engineFacade.getMoveHistory();
+        };
+        NgxChessBoardComponent.prototype.reset = function () {
+            this.engineFacade.reset();
+        };
+        NgxChessBoardComponent.prototype.undo = function () {
+            this.engineFacade.undo();
+        };
+        NgxChessBoardComponent.prototype.addPiece = function (pieceTypeInput, colorInput, coords) {
+            this.engineFacade.addPiece(pieceTypeInput, colorInput, coords);
         };
         return NgxChessBoardComponent;
     }());
@@ -2882,7 +3106,7 @@
             if (rf & 1) {
                 i0.ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
             }
-        }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled", freeMode: "freeMode", size: "size", pieceIcons: "pieceIcons" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [i0.ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) {
+        }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", size: "size", freeMode: "freeMode", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", pieceIcons: "pieceIcons", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [i0.ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) {
             if (rf & 1) {
                 var _r26_1 = i0.ɵɵgetCurrentView();
                 i0.ɵɵelementStart(0, "div", 0, 1);
@@ -2903,17 +3127,17 @@
                 i0.ɵɵelementEnd();
             }
             if (rf & 2) {
-                i0.ɵɵstyleProp("height", ctx.heightAndWidth, "px")("width", ctx.heightAndWidth, "px");
+                i0.ɵɵstyleProp("height", ctx.engineFacade.heightAndWidth, "px")("width", ctx.engineFacade.heightAndWidth, "px");
                 i0.ɵɵadvance(3);
-                i0.ɵɵproperty("ngForOf", ctx.board.board);
+                i0.ɵɵproperty("ngForOf", ctx.engineFacade.board.board);
                 i0.ɵɵadvance(1);
-                i0.ɵɵattribute("height", ctx.heightAndWidth)("width", ctx.heightAndWidth);
+                i0.ɵɵattribute("height", ctx.engineFacade.heightAndWidth)("width", ctx.engineFacade.heightAndWidth);
                 i0.ɵɵadvance(1);
                 i0.ɵɵproperty("ngForOf", i0.ɵɵpureFunction0(14, _c2));
                 i0.ɵɵadvance(1);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(7, 10, ctx.drawProvider.arrows$));
+                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(7, 10, ctx.engineFacade.drawProvider.arrows$));
                 i0.ɵɵadvance(2);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(9, 12, ctx.drawProvider.circles$));
+                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(9, 12, ctx.engineFacade.drawProvider.circles$));
             }
         }, directives: [i2.NgForOf, PiecePromotionModalComponent, i2.NgIf, i4.CdkDrag, i2.NgClass, i2.NgStyle], pipes: [i2.AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
     /*@__PURE__*/ (function () {
@@ -2930,16 +3154,6 @@
                     type: i0.Input
                 }], showCoords: [{
                     type: i0.Input
-                }], dragDisabled: [{
-                    type: i0.Input
-                }], drawDisabled: [{
-                    type: i0.Input
-                }], lightDisabled: [{
-                    type: i0.Input
-                }], darkDisabled: [{
-                    type: i0.Input
-                }], freeMode: [{
-                    type: i0.Input
                 }], moveChange: [{
                     type: i0.Output
                 }], checkmate: [{
@@ -2955,9 +3169,24 @@
                 }], size: [{
                     type: i0.Input,
                     args: ['size']
+                }], freeMode: [{
+                    type: i0.Input,
+                    args: ['freeMode']
+                }], dragDisabled: [{
+                    type: i0.Input,
+                    args: ['dragDisabled']
+                }], drawDisabled: [{
+                    type: i0.Input,
+                    args: ['drawDisabled']
                 }], pieceIcons: [{
                     type: i0.Input,
                     args: ['pieceIcons']
+                }], lightDisabled: [{
+                    type: i0.Input,
+                    args: ['lightDisabled']
+                }], darkDisabled: [{
+                    type: i0.Input,
+                    args: ['darkDisabled']
                 }], onRightClick: [{
                     type: i0.HostListener,
                     args: ['contextmenu', ['$event']]

@@ -1,7 +1,7 @@
 import { ModuleWithProviders } from '@angular/core';
 import * as i0 from "@angular/core";
 import * as i1 from "./ngx-chess-board.component";
-import * as i2 from "./piece-promotion-modal/piece-promotion-modal.component";
+import * as i2 from "./piece-promotion/piece-promotion-modal/piece-promotion-modal.component";
 import * as i3 from "@angular/common";
 import * as i4 from "@angular/cdk/drag-drop";
 export declare class NgxChessBoardModule {
