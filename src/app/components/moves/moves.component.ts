@@ -55,57 +55,6 @@ export class MovesComponent {
     }
 
     public addMove(historyMove: MoveChange): void {
-        const source = historyMove.move.substring(0, 2);
-        const target = historyMove.move.substring(2, 4);
 
-        let sourceLetter = source.charAt(0);
-        let move: string;
-        const piece = historyMove.piece;
-        const isPawn = piece === 'Pawn';
-        const isRook = piece === 'Eook';
-        const isBishop = piece === 'Bishop';
-        const isKing = piece === 'King';
-        const isQueen = piece === 'Queen';
-        const isKnight = piece === 'Knight';
-        if (isPawn) {
-            sourceLetter = historyMove.x ? sourceLetter : '';
-        }
-        if (isRook) {
-            sourceLetter = historyMove.color === 'black' ? '&#x2656;' : '&#x265C;';
-        }
-        if (isBishop) {
-            sourceLetter = historyMove.color === 'black' ? '&#x2657;' : '&#x265D;';
-        }
-        if (isKing) {
-            sourceLetter = historyMove.color === 'black' ? '&#x2654;' : '&#x265A;';
-        }
-        if (isQueen) {
-            sourceLetter = historyMove.color === 'black' ? '&#x2655;' : '&#x265B;';
-        }
-        if (isKnight) {
-            sourceLetter = historyMove.color === 'black' ? '&#x2658;' : '&#x265E;';
-        }
-        if (historyMove.x) {
-            move = sourceLetter + 'x' + target;
-        } else {
-            move = sourceLetter + target;
-        }
-
-        if (isKing) {
-            if (historyMove.move === 'e1g1' || historyMove.move === 'e8g8') {
-                move = 'O-O';
-            }
-            if (historyMove.move === 'e1c1' || historyMove.move === 'e8c8') {
-                move = 'O-O-O';
-            }
-        }
-
-        if (historyMove.check) {
-            move += '+';
-        }
-        if (historyMove.checkmate) {
-            move += '#';
-        }
-        historyMove.color === 'white' ? this.addWhiteMove(move) : this.addBlackMove(move);
     }
 }

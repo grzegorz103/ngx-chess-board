@@ -1,5 +1,5 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {Piece} from '../models/pieces/piece';
+import {Piece} from '../../models/pieces/piece';
 import {Observable} from 'rxjs';
 
 @Component({

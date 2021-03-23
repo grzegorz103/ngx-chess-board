@@ -1,7 +1,7 @@
-import { Board } from '../models/board';
-import { Color } from '../models/pieces/color';
-import { Point } from '../models/pieces/point';
-import { MoveUtils } from '../utils/move-utils';
+import { Board } from '../../models/board';
+import { Color } from '../../models/pieces/color';
+import { Point } from '../../models/pieces/point';
+import { MoveUtils } from '../../utils/move-utils';
 import { AbstractPiece } from './abstract-piece';
 import { PieceAbstractDecorator } from './piece-abstract-decorator';
 

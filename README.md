@@ -112,3 +112,4 @@ getMoveHistory() | JSON | Returns array in JSON format which contains informatio
 setFEN(fen: string) | void | Allows to import specified board position by FEN
 getFEN() | string | Returns current board FEN position
 move(coords: string) | void | Makes move by specified coords. The coords parameter contains source and destination position e.g. 'd2d4'.
+addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string) | void | Adds new piece to the board at specified square, e.g. 'd4'. Free mode must be enabled first.

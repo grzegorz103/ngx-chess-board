@@ -1,5 +1,3 @@
-import { Board } from '../models/board';
-
 export class HistoryMove {
     move: string;
     piece: string;

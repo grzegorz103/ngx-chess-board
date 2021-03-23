@@ -1,8 +1,14 @@
 import { Component, ViewChild } from '@angular/core';
-import { MoveChange, NgxChessBoardComponent } from 'ngx-chess-board';
-import { PieceIconInput } from 'ngx-chess-board';
+import {
+    MoveChange,
+    NgxChessBoardComponent,
+    PieceIconInput
+} from 'ngx-chess-board';
+import {
+    ColorInput,
+    PieceTypeInput
+} from 'ngx-chess-board/src/lib/utils/inputs/piece-type-input';
 import { FenComponent } from './components/fen/fen.component';
-import { MovesComponent } from './components/moves/moves.component';
 
 @Component({
     selector: 'app-root',
@@ -40,6 +46,9 @@ export class AppComponent {
     public lightDisabled = false;
     public darkDisabled = false;
     public freeMode = false;
+    public addPieceCoords: string = 'a4';
+    public selectedPiece = '1';
+    public selectedColor = '1';
 
     public reset(): void {
         alert('Resetting board');
@@ -97,7 +106,39 @@ export class AppComponent {
         this.lightDisabled = !this.lightDisabled;
     }
 
-    switchFreeMode(){
+    switchFreeMode() {
         this.freeMode = !this.freeMode;
+    }
+
+    addPiece() {
+        let piece = this.resolveSelectedPiece();
+        let color = this.resolveSelectedColor();
+        this.boardManager.addPiece(piece, color, this.addPieceCoords);
+    }
+
+    private resolveSelectedPiece(): PieceTypeInput {
+        switch (this.selectedPiece) {
+            case '1':
+                return PieceTypeInput.QUEEN;
+            case '2':
+                return PieceTypeInput.KING;
+            case '3':
+                return PieceTypeInput.ROOK;
+            case '4':
+                return PieceTypeInput.BISHOP;
+            case '5':
+                return PieceTypeInput.KNIGHT;
+            case '6':
+                return PieceTypeInput.PAWN;
+        }
+    }
+
+    private resolveSelectedColor(): ColorInput {
+        switch (this.selectedColor) {
+            case '1':
+                return ColorInput.LIGHT;
+            case '2':
+                return ColorInput.DARK;
+        }
     }
 }
