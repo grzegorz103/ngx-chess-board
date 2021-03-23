@@ -9,8 +9,8 @@ import { BoardStateProvider } from './board-state-provider/board-state-provider'
 import { MoveStateProvider } from './board-state-provider/move-state-provider';
 import { CoordsProvider } from './coords/coords-provider';
 import { ClickUtils } from './click/click-utils';
-import { Arrow } from './drawing-tools/arrow';
-import { Circle } from './drawing-tools/circle';
+import { Arrow } from './drawing-tools/shapes/arrow';
+import { Circle } from './drawing-tools/shapes/circle';
 import { ColorStrategy } from './drawing-tools/colors/color-strategy';
 import { DrawPoint } from './drawing-tools/draw-point';
 import { DrawProvider } from './drawing-tools/draw-provider';
@@ -677,6 +677,7 @@ export class EngineFacade {
                 this.board.pieces = this.board.pieces.filter(e => e !== existing);
             }
             let createdPiece = PieceFactory.create(indexes, pieceTypeInput, colorInput, this.board);
+            this.saveClone();
             this.board.pieces.push(createdPiece);
             this.afterMoveActions();
         }

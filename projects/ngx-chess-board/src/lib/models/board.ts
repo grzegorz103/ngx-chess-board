@@ -82,7 +82,7 @@ export class Board {
         this.calculateFEN();
     }
 
-    reverse() {
+        reverse() {
         this.reverted = !this.reverted;
         this.activePiece = null;
         this.possibleMoves = [];
@@ -154,7 +154,7 @@ export class Board {
     getCastleFENString(color: Color) {
         const king = this.getKingByColor(color);
 
-        if (king.isMovedAlready) {
+        if (!king || king.isMovedAlready) {
             return '';
         }
 

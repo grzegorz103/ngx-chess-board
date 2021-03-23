@@ -116,7 +116,7 @@ export class AppComponent {
         this.boardManager.addPiece(piece, color, this.addPieceCoords);
     }
 
-    private resolveSelectedPiece() {
+    private resolveSelectedPiece(): PieceTypeInput {
         switch (this.selectedPiece) {
             case '1':
                 return PieceTypeInput.QUEEN;
@@ -133,7 +133,7 @@ export class AppComponent {
         }
     }
 
-    private resolveSelectedColor() {
+    private resolveSelectedColor(): ColorInput {
         switch (this.selectedColor) {
             case '1':
                 return ColorInput.LIGHT;

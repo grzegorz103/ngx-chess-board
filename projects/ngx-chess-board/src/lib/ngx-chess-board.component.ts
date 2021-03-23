@@ -1,5 +1,6 @@
 import { CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
+    AfterViewInit,
     Component,
     ElementRef,
     EventEmitter,
@@ -34,7 +35,8 @@ import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
     styleUrls: ['./ngx-chess-board.component.scss'],
 })
 export class NgxChessBoardComponent
-    implements OnInit, OnChanges, NgxChessBoardView {
+    implements OnInit, OnChanges, NgxChessBoardView , AfterViewInit{
+
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
     @Input() showCoords = true;
@@ -132,6 +134,10 @@ export class NgxChessBoardComponent
             this.engineFacade.reset();
         });
         this.calculatePieceSize();
+    }
+
+    ngAfterViewInit(): void {
+        this.engineFacade.modal = this.modal;
     }
 
     onMouseUp(event: MouseEvent) {
