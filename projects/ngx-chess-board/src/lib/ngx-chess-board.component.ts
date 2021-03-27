@@ -11,17 +11,16 @@ import {
     Output,
     SimpleChanges, ViewChild,
 } from '@angular/core';
-import { BoardLoader } from './engine/board-state-provider/board-loader';
-
+import { AbstractEngineFacade } from './engine/abstract-engine-facade';
+import { BoardLoader } from './engine/board-state-provider/board-loader/board-loader';
 import { ClickUtils } from './engine/click/click-utils';
 import { EngineFacade } from './engine/engine-facade';
-import { MoveChange } from './engine/move-change';
+import { MoveChange } from './engine/move-change/move-change';
 import { HistoryMove } from './history-move-provider/history-move';
 import { Board } from './models/board';
 import { Piece } from './models/pieces/piece';
 import { NgxChessBoardView } from './ngx-chess-board-view';
 import { PiecePromotionModalComponent } from './piece-promotion/piece-promotion-modal/piece-promotion-modal.component';
-
 import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { Constants } from './utils/constants';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
@@ -35,7 +34,7 @@ import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
     styleUrls: ['./ngx-chess-board.component.scss'],
 })
 export class NgxChessBoardComponent
-    implements OnInit, OnChanges, NgxChessBoardView , AfterViewInit{
+    implements OnInit, OnChanges, NgxChessBoardView, AfterViewInit {
 
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
@@ -56,7 +55,8 @@ export class NgxChessBoardComponent
     selected = false;
     boardLoader: BoardLoader;
     pieceIconManager: PieceIconInputManager;
-    engineFacade: EngineFacade;
+
+    engineFacade: AbstractEngineFacade;
 
     constructor(private ngxChessBoardService: NgxChessBoardService) {
         this.engineFacade = new EngineFacade(

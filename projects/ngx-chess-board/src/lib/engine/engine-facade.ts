@@ -1,79 +1,51 @@
-import { ElementRef, EventEmitter, ViewChild } from '@angular/core';
-import { PiecePromotionModalComponent } from '../piece-promotion/piece-promotion-modal/piece-promotion-modal.component';
+import { EventEmitter } from '@angular/core';
 import { HistoryMove } from '../history-move-provider/history-move';
 import { ColorInput, PieceTypeInput } from '../utils/inputs/piece-type-input';
+import { AbstractEngineFacade } from './abstract-engine-facade';
 
-import { BoardLoader } from './board-state-provider/board-loader';
+import { BoardLoader } from './board-state-provider/board-loader/board-loader';
 import { BoardState } from './board-state-provider/board-state';
 import { BoardStateProvider } from './board-state-provider/board-state-provider';
 import { MoveStateProvider } from './board-state-provider/move-state-provider';
-import { CoordsProvider } from './coords/coords-provider';
 import { ClickUtils } from './click/click-utils';
 import { Arrow } from './drawing-tools/shapes/arrow';
 import { Circle } from './drawing-tools/shapes/circle';
-import { ColorStrategy } from './drawing-tools/colors/color-strategy';
 import { DrawPoint } from './drawing-tools/draw-point';
 import { DrawProvider } from './drawing-tools/draw-provider';
-import { HistoryMoveProvider } from '../history-move-provider/history-move-provider';
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
 import { King } from '../models/pieces/king';
 import { Pawn } from '../models/pieces/pawn';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
-import { Rook } from '../models/pieces/rook';
 import { AvailableMoveDecorator } from './piece-decorator/available-move-decorator';
 import { PiecePromotionResolver } from '../piece-promotion/piece-promotion-resolver';
-import { Constants } from '../utils/constants';
-import { PieceIconInputManager } from '../utils/inputs/piece-icon-input-manager';
 import { MoveUtils } from '../utils/move-utils';
-import { DragEndStrategy } from './drag/end/drag-end-strategy';
-import { DragStartStrategy } from './drag/start/drag-start-strategy';
-import { MoveChange } from './move-change';
+import { MoveChange } from './move-change/move-change';
 import { PieceFactory } from './utils/piece-factory';
 
-export class EngineFacade {
+export class EngineFacade extends AbstractEngineFacade {
 
-    _board: Board;
     _selected = false;
-    _freeMode = false;
     drawPoint: DrawPoint;
     drawProvider: DrawProvider;
     disabling = false;
-    dragDisabled: boolean;
-    drawDisabled: boolean;
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;
-    moveHistoryProvider: HistoryMoveProvider;
-    heightAndWidth: number = Constants.DEFAULT_SIZE;
-    lightDisabled: boolean;
-    darkDisabled: boolean;
     moveChange: EventEmitter<MoveChange>;
-    boardLoader: BoardLoader;
-    coords: CoordsProvider = new CoordsProvider();
-    pieceIconManager: PieceIconInputManager;
-
-    dragStartStrategy: DragStartStrategy = new DragStartStrategy();
-    dragEndStrategy: DragEndStrategy = new DragEndStrategy();
-    colorStrategy: ColorStrategy = new ColorStrategy();
-
-    modal: PiecePromotionModalComponent;
 
     constructor(
         board: Board,
         moveChange: EventEmitter<MoveChange>
     ) {
-        this._board = board;
+        super(board);
         this.moveChange = moveChange;
         this.boardLoader = new BoardLoader(this.board);
         this.boardLoader.addPieces();
-        this.drawProvider = new DrawProvider();
-        this.pieceIconManager = new PieceIconInputManager();
         this.boardStateProvider = new BoardStateProvider();
-        this.moveHistoryProvider = new HistoryMoveProvider();
     }
 
-    reset(): void {
+    public reset(): void {
         this.boardStateProvider.clear();
         this.moveHistoryProvider.clear();
         this.boardLoader.addPieces();
@@ -83,7 +55,7 @@ export class EngineFacade {
         this.freeMode = false;
     }
 
-    undo(): void {
+    public undo(): void {
         if (!this.boardStateProvider.isEmpty()) {
             const lastBoard = this.boardStateProvider.pop().board;
             if (this.board.reverted) {
@@ -97,10 +69,6 @@ export class EngineFacade {
         }
     }
 
-    getMoveHistory(): HistoryMove[] {
-        return this.moveHistoryProvider.getAll();
-    }
-
     saveMoveClone() {
         const clone = this.board.clone();
 
@@ -110,28 +78,28 @@ export class EngineFacade {
         this.moveStateProvider.addMove(new BoardState(clone));
     }
 
-    move(coords: string) {
+    public move(coords: string) {
         if (coords) {
             const sourceIndexes = MoveUtils.translateCoordsToIndex(
                 coords.substring(0, 2),
-                this._board.reverted
+                this.board.reverted
             );
 
             const destIndexes = MoveUtils.translateCoordsToIndex(
                 coords.substring(2, 4),
-                this._board.reverted
+                this.board.reverted
             );
 
-            const srcPiece = this._board.getPieceByPoint(
+            const srcPiece = this.board.getPieceByPoint(
                 sourceIndexes.yAxis,
                 sourceIndexes.xAxis
             );
 
             if (srcPiece) {
                 if (
-                    (this._board.currentWhitePlayer &&
+                    (this.board.currentWhitePlayer &&
                         srcPiece.color === Color.BLACK) ||
-                    (!this._board.currentWhitePlayer &&
+                    (!this.board.currentWhitePlayer &&
                         srcPiece.color === Color.WHITE)
                 ) {
                     return;
@@ -140,10 +108,10 @@ export class EngineFacade {
                 this.prepareActivePiece(srcPiece, srcPiece.point);
 
                 if (
-                    this._board.isPointInPossibleMoves(
+                    this.board.isPointInPossibleMoves(
                         new Point(destIndexes.yAxis, destIndexes.xAxis)
                     ) ||
-                    this._board.isPointInPossibleCaptures(
+                    this.board.isPointInPossibleCaptures(
                         new Point(destIndexes.yAxis, destIndexes.xAxis)
                     )
                 ) {
@@ -154,11 +122,11 @@ export class EngineFacade {
                         coords.length === 5 ? +coords.substring(4, 5) : 0
                     );
 
-                    this._board.lastMoveSrc = new Point(
+                    this.board.lastMoveSrc = new Point(
                         sourceIndexes.yAxis,
                         sourceIndexes.xAxis
                     );
-                    this._board.lastMoveDest = new Point(
+                    this.board.lastMoveDest = new Point(
                         destIndexes.yAxis,
                         destIndexes.xAxis
                     );
@@ -173,26 +141,26 @@ export class EngineFacade {
     }
 
     prepareActivePiece(pieceClicked: Piece, pointClicked: Point) {
-        this._board.activePiece = pieceClicked;
+        this.board.activePiece = pieceClicked;
         this._selected = true;
-        this._board.possibleCaptures = new AvailableMoveDecorator(
+        this.board.possibleCaptures = new AvailableMoveDecorator(
             pieceClicked,
             pointClicked,
-            this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK,
-            this._board
+            this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK,
+            this.board
         ).getPossibleCaptures();
-        this._board.possibleMoves = new AvailableMoveDecorator(
+        this.board.possibleMoves = new AvailableMoveDecorator(
             pieceClicked,
             pointClicked,
-            this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK,
-            this._board
+            this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK,
+            this.board
         ).getPossibleMoves();
     }
 
     onPieceClicked(pieceClicked, pointClicked) {
         if (
-            (this._board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
-            (!this._board.currentWhitePlayer && pieceClicked.color === Color.WHITE)
+            (this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+            (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)
         ) {
             return;
         }
@@ -204,18 +172,18 @@ export class EngineFacade {
         let moving = false;
 
         if ((
-            this._board.isPointInPossibleMoves(pointClicked) ||
-            this._board.isPointInPossibleCaptures(pointClicked)
-        ) || this._freeMode) {
+            this.board.isPointInPossibleMoves(pointClicked) ||
+            this.board.isPointInPossibleCaptures(pointClicked)
+        ) || this.freeMode) {
             this.saveClone();
-            this._board.lastMoveSrc = new Point(
-                this._board.activePiece.point.row,
-                this._board.activePiece.point.col
+            this.board.lastMoveSrc = new Point(
+                this.board.activePiece.point.row,
+                this.board.activePiece.point.col
             );
-            this._board.lastMoveDest = pointClicked;
-            this.movePiece(this._board.activePiece, pointClicked);
+            this.board.lastMoveDest = pointClicked;
+            this.movePiece(this.board.activePiece, pointClicked);
 
-            if (!this._board.activePiece.point.isEqual(this._board.lastMoveSrc)) {
+            if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
                 moving = true;
             }
         }
@@ -224,7 +192,7 @@ export class EngineFacade {
             this.disableSelection();
         }
         this.disableSelection();
-        const pieceClicked = this._board.getPieceByPoint(
+        const pieceClicked = this.board.getPieceByPoint(
             pointClicked.row,
             pointClicked.col
         );
@@ -258,25 +226,25 @@ export class EngineFacade {
         this.drawProvider.clear();
 
         if (
-            this._board.activePiece &&
-            pointClicked.isEqual(this._board.activePiece.point)
+            this.board.activePiece &&
+            pointClicked.isEqual(this.board.activePiece.point)
         ) {
             this.disabling = true;
             return;
         }
 
-        const pieceClicked = this._board.getPieceByPoint(
+        const pieceClicked = this.board.getPieceByPoint(
             pointClicked.row,
             pointClicked.col
         );
 
-        if (this._freeMode) {
+        if (this.freeMode) {
             if (pieceClicked) {
                 if (event.ctrlKey) {
                     this.board.pieces = this.board.pieces.filter(e => e !== pieceClicked);
                     return;
                 }
-                this._board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+                this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
             }
         }
 
@@ -319,15 +287,15 @@ export class EngineFacade {
         }
 
         if (
-            this._board.activePiece &&
-            pointClicked.isEqual(this._board.activePiece.point) &&
+            this.board.activePiece &&
+            pointClicked.isEqual(this.board.activePiece.point) &&
             this.disabling
         ) {
             this.disableSelection();
             this.disabling = false;
             return;
         }
-        const pieceClicked = this._board.getPieceByPoint(
+        const pieceClicked = this.board.getPieceByPoint(
             pointClicked.row,
             pointClicked.col
         );
@@ -343,23 +311,23 @@ export class EngineFacade {
     }
 
     saveClone() {
-        const clone = this._board.clone();
+        const clone = this.board.clone();
 
-        if (this._board.reverted) {
+        if (this.board.reverted) {
             clone.reverse();
         }
         this.boardStateProvider.addMove(new BoardState(clone));
     }
 
     movePiece(toMovePiece: Piece, newPoint: Point, promotionIndex?: number) {
-        const destPiece = this._board.pieces.find(
+        const destPiece = this.board.pieces.find(
             (piece) =>
                 piece.point.col === newPoint.col &&
                 piece.point.row === newPoint.row
         );
 
         if (destPiece && toMovePiece.color !== destPiece.color) {
-            this._board.pieces = this._board.pieces.filter(
+            this.board.pieces = this.board.pieces.filter(
                 (piece) => piece !== destPiece
             );
         } else {
@@ -369,7 +337,7 @@ export class EngineFacade {
         }
 
         const move = new HistoryMove(
-            MoveUtils.format(toMovePiece.point, newPoint, this._board.reverted),
+            MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
             toMovePiece.constant.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece
@@ -380,20 +348,20 @@ export class EngineFacade {
             const squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
             if (squaresMoved > 1) {
                 if (newPoint.col < 3) {
-                    const leftRook = this._board.getPieceByField(
+                    const leftRook = this.board.getPieceByField(
                         toMovePiece.point.row,
                         0
                     );
-                    if (!this._freeMode) {
-                        leftRook.point.col = this._board.reverted ? 2 : 3;
+                    if (!this.freeMode) {
+                        leftRook.point.col = this.board.reverted ? 2 : 3;
                     }
                 } else {
-                    const rightRook = this._board.getPieceByField(
+                    const rightRook = this.board.getPieceByField(
                         toMovePiece.point.row,
                         7
                     );
-                    if (!this._freeMode) {
-                        rightRook.point.col = this._board.reverted ? 4 : 5;
+                    if (!this.freeMode) {
+                        rightRook.point.col = this.board.reverted ? 4 : 5;
                     }
                 }
             }
@@ -406,7 +374,7 @@ export class EngineFacade {
 
         toMovePiece.point = newPoint;
         this.increaseFullMoveCount();
-        this._board.currentWhitePlayer = !this._board.currentWhitePlayer;
+        this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
 
         if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
             this.afterMoveActions();
@@ -440,39 +408,21 @@ export class EngineFacade {
         }
     }
 
-    checkIfPawnFirstMove(piece: Piece) {
-        if (piece instanceof Pawn) {
-            piece.isMovedAlready = true;
-        }
-    }
-
-    checkIfRookMoved(piece: Piece) {
-        if (piece instanceof Rook) {
-            piece.isMovedAlready = true;
-        }
-    }
-
-    checkIfKingMoved(piece: Piece) {
-        if (piece instanceof King) {
-            piece.isMovedAlready = true;
-        }
-    }
-
     afterMoveActions(promotionIndex?: number) {
-        this.checkIfPawnFirstMove(this._board.activePiece);
-        this.checkIfRookMoved(this._board.activePiece);
-        this.checkIfKingMoved(this._board.activePiece);
+        this.checkIfPawnFirstMove(this.board.activePiece);
+        this.checkIfRookMoved(this.board.activePiece);
+        this.checkIfKingMoved(this.board.activePiece);
 
-        this._board.blackKingChecked = this._board.isKingInCheck(
+        this.board.blackKingChecked = this.board.isKingInCheck(
             Color.BLACK,
-            this._board.pieces
+            this.board.pieces
         );
-        this._board.whiteKingChecked = this._board.isKingInCheck(
+        this.board.whiteKingChecked = this.board.isKingInCheck(
             Color.WHITE,
-            this._board.pieces
+            this.board.pieces
         );
         const check =
-            this._board.blackKingChecked || this._board.whiteKingChecked;
+            this.board.blackKingChecked || this.board.whiteKingChecked;
         const checkmate =
             this.checkForPossibleMoves(Color.BLACK) ||
             this.checkForPossibleMoves(Color.WHITE);
@@ -480,7 +430,7 @@ export class EngineFacade {
             this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
 
         this.disabling = false;
-        this._board.calculateFEN();
+        this.board.calculateFEN();
 
         const lastMove = this.moveHistoryProvider.getLastMove();
         if (lastMove && promotionIndex) {
@@ -492,8 +442,8 @@ export class EngineFacade {
             check,
             checkmate,
             stalemate,
-            fen: this._board.fen,
-            freeMode: this._freeMode
+            fen: this.board.fen,
+            freeMode: this.freeMode
         });
     }
 
@@ -554,9 +504,9 @@ export class EngineFacade {
 
     disableSelection() {
         this._selected = false;
-        this._board.possibleCaptures = [];
-        this._board.activePiece = null;
-        this._board.possibleMoves = [];
+        this.board.possibleCaptures = [];
+        this.board.activePiece = null;
+        this.board.possibleMoves = [];
     }
 
     /**
@@ -641,42 +591,29 @@ export class EngineFacade {
         }
     }
 
-    get board(): Board {
-        return this._board;
-    }
-
-    set board(value: Board) {
-        this._board = value;
-    }
-
-    get selected(): boolean {
-        return this._selected;
-    }
-
-    set selected(value: boolean) {
-        this._selected = value;
-    }
-
-    get freeMode(): boolean {
-        return this._freeMode;
-    }
-
-    set freeMode(value: boolean) {
-        this._freeMode = value;
-    }
-
     addPiece(
         pieceTypeInput: PieceTypeInput,
         colorInput: ColorInput,
         coords: string
     ) {
         if (this.freeMode && coords && pieceTypeInput > 0 && colorInput > 0) {
-            let indexes = MoveUtils.translateCoordsToIndex(coords, this.board.reverted);
-            let existing = this.board.getPieceByPoint(indexes.yAxis, indexes.xAxis);
-            if(existing) {
+            let indexes = MoveUtils.translateCoordsToIndex(
+                coords,
+                this.board.reverted
+            );
+            let existing = this.board.getPieceByPoint(
+                indexes.yAxis,
+                indexes.xAxis
+            );
+            if (existing) {
                 this.board.pieces = this.board.pieces.filter(e => e !== existing);
             }
-            let createdPiece = PieceFactory.create(indexes, pieceTypeInput, colorInput, this.board);
+            let createdPiece = PieceFactory.create(
+                indexes,
+                pieceTypeInput,
+                colorInput,
+                this.board
+            );
             this.saveClone();
             this.board.pieces.push(createdPiece);
             this.afterMoveActions();
