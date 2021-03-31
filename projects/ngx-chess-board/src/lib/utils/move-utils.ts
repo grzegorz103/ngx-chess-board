@@ -1,5 +1,6 @@
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
+import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
 import { MoveTranslation } from '../models/move-translation';
 
@@ -75,4 +76,52 @@ export class MoveUtils {
 
         return new MoveTranslation(xAxis, yAxis, reverted);
     }
+
+    public static findPieceByPossibleMovesContaining(
+        coords: string,
+        board: Board,
+        color: Color
+    ): Piece[] {
+        let indexes = this.translateCoordsToIndex(coords, board.reverted);
+        let destPoint = new Point(indexes.yAxis, indexes.xAxis);
+        let foundPieces = [];
+
+        for (let piece of board.pieces.filter(piece => piece.color === color)) {
+            for (let point of piece.getPossibleMoves()) {
+                if (!MoveUtils.willMoveCauseCheck(
+                    piece.color,
+                    piece.point.row,
+                    piece.point.col,
+                    indexes.xAxis,
+                    indexes.yAxis,
+                    board
+                ) && point.isEqual(destPoint)) {
+                    foundPieces.push(piece);
+                }
+            }
+        }
+
+        return foundPieces;
+    }
+
+    public static findPieceByPossibleCapturesContaining(
+        coords: string,
+        board: Board,
+        color: Color
+    ): Piece[] {
+        let indexes = this.translateCoordsToIndex(coords, board.reverted);
+        let destPoint = new Point(indexes.yAxis, indexes.xAxis);
+        let foundPieces = [];
+        console.log(destPoint);
+        for (let piece of board.pieces.filter(piece => piece.color === color)) {
+            for (let point of piece.getPossibleCaptures()) {
+                if ( point.isEqual(destPoint)) {
+                    foundPieces.push(piece);
+                }
+            }
+        }
+
+        return foundPieces;
+    }
+
 }

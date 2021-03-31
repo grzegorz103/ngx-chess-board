@@ -4,9 +4,9 @@ import { ColorInput, PieceTypeInput } from '../utils/inputs/piece-type-input';
 import { AbstractEngineFacade } from './abstract-engine-facade';
 
 import { BoardLoader } from './board-state-provider/board-loader/board-loader';
-import { BoardState } from './board-state-provider/board-state';
-import { BoardStateProvider } from './board-state-provider/board-state-provider';
-import { MoveStateProvider } from './board-state-provider/move-state-provider';
+import { BoardState } from './board-state-provider/board-state/board-state';
+import { BoardStateProvider } from './board-state-provider/board-state/board-state-provider';
+import { MoveStateProvider } from './board-state-provider/board-state/move-state-provider';
 import { ClickUtils } from './click/click-utils';
 import { Arrow } from './drawing-tools/shapes/arrow';
 import { Circle } from './drawing-tools/shapes/circle';

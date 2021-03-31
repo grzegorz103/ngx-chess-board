@@ -1,26 +1,22 @@
-import { Board } from '../../../../models/board';
-import { Bishop } from '../../../../models/pieces/bishop';
-import { Color } from '../../../../models/pieces/color';
-import { King } from '../../../../models/pieces/king';
-import { Knight } from '../../../../models/pieces/knight';
-import { Pawn } from '../../../../models/pieces/pawn';
-import { Point } from '../../../../models/pieces/point';
-import { Queen } from '../../../../models/pieces/queen';
-import { Rook } from '../../../../models/pieces/rook';
-import { UnicodeConstants } from '../../../../utils/unicode-constants';
-import { AbstractFenResolver } from './abstract-fen-resolver';
+import { Board } from '../../../../../models/board';
+import { Bishop } from '../../../../../models/pieces/bishop';
+import { Color } from '../../../../../models/pieces/color';
+import { King } from '../../../../../models/pieces/king';
+import { Knight } from '../../../../../models/pieces/knight';
+import { Pawn } from '../../../../../models/pieces/pawn';
+import { Point } from '../../../../../models/pieces/point';
+import { Queen } from '../../../../../models/pieces/queen';
+import { Rook } from '../../../../../models/pieces/rook';
+import { UnicodeConstants } from '../../../../../utils/unicode-constants';
+import { NotationProcessor } from '../notation-processor';
 
-export class DefaultFenResolver extends AbstractFenResolver {
+export class DefaultFenProcessor implements NotationProcessor {
 
-    constructor(board: Board) {
-        super(board);
-    }
-
-    public resolve(fen: string): void {
-        console.log(fen);
-        if (fen) {
-            this.board.reverted = false;
-            this.board.pieces = [];
+    public process(notation: string, board: Board): void {
+        let fen = notation;
+        if (notation) {
+            board.reverted = false;
+            board.pieces = [];
             const split = fen.split('/');
             for (let i = 0; i < 8; ++i) {
                 let pointer = 0;
@@ -31,53 +27,53 @@ export class DefaultFenResolver extends AbstractFenResolver {
                     } else {
                         switch (chunk) {
                             case 'r':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Rook(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_ROOK,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
                             case 'n':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Knight(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_KNIGHT,
-                                        this.board
+                                        board
                                     )
                                 );
 
                                 break;
                             case 'b':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Bishop(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_BISHOP,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
                             case 'q':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Queen(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_QUEEN,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
                             case 'k':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new King(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_KING,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
@@ -86,7 +82,7 @@ export class DefaultFenResolver extends AbstractFenResolver {
                                     new Point(i, pointer),
                                     Color.BLACK,
                                     UnicodeConstants.BLACK_PAWN,
-                                    this.board
+                                    board
                                 );
                                 if (
                                     (pawn.color === Color.BLACK && pawn.point.row !== 1) ||
@@ -94,60 +90,60 @@ export class DefaultFenResolver extends AbstractFenResolver {
                                 ) {
                                     pawn.isMovedAlready = true;
                                 }
-                                this.board.pieces.push(pawn);
+                                board.pieces.push(pawn);
                                 break;
                             }
                             case 'R':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Rook(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_ROOK,
-                                        this.board
+                                        board
                                     )
                                 );
 
                                 break;
                             case 'N':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Knight(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_KNIGHT,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
 
                             case 'B':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Bishop(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_BISHOP,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
 
                             case 'Q':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new Queen(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_QUEEN,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
 
                             case 'K':
-                                this.board.pieces.push(
+                                board.pieces.push(
                                     new King(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_KING,
-                                        this.board
+                                        board
                                     )
                                 );
                                 break;
@@ -157,7 +153,7 @@ export class DefaultFenResolver extends AbstractFenResolver {
                                     new Point(i, pointer),
                                     Color.WHITE,
                                     UnicodeConstants.WHITE_PAWN,
-                                    this.board
+                                    board
                                 );
                                 if (
                                     (pawn.color === Color.BLACK && pawn.point.row !== 1) ||
@@ -165,7 +161,7 @@ export class DefaultFenResolver extends AbstractFenResolver {
                                 ) {
                                     pawn.isMovedAlready = true;
                                 }
-                                this.board.pieces.push(pawn);
+                                board.pieces.push(pawn);
                                 break;
                             }
                         }
@@ -174,42 +170,43 @@ export class DefaultFenResolver extends AbstractFenResolver {
                 }
             }
 
-            this.setCurrentPlayer(fen);
-            this.setCastles(fen);
+            this.setCurrentPlayer(board, fen);
+            this.setCastles(board, fen);
             this.setEnPassant(fen);
             this.setFullMoveCount(fen);
+            board.fen = fen;
         } else {
             throw Error('Incorrect FEN provided');
         }
     }
 
 
-    private setCurrentPlayer(fen: string) {
+    private setCurrentPlayer(board: Board, fen: string) {
         if (fen) {
             const split = fen.split(' ');
-            this.board.currentWhitePlayer = split[1] === 'w';
+            board.currentWhitePlayer = split[1] === 'w';
         }
     }
 
-    private setCastles(fen: string) {
+    private setCastles(board: Board, fen: string) {
         if (fen) {
             const split = fen.split(' ');
             const castleChunk = split[2];
 
             if (!castleChunk.includes('K')) {
-                this.setRookAlreadyMoved(Color.WHITE, 7);
+                this.setRookAlreadyMoved(board, Color.WHITE, 7);
             }
 
             if (!castleChunk.includes('Q')) {
-                this.setRookAlreadyMoved(Color.WHITE, 0);
+                this.setRookAlreadyMoved(board, Color.WHITE, 0);
             }
 
             if (!castleChunk.includes('k')) {
-                this.setRookAlreadyMoved(Color.BLACK, 7);
+                this.setRookAlreadyMoved(board, Color.BLACK, 7);
             }
 
             if (!castleChunk.includes('q')) {
-                this.setRookAlreadyMoved(Color.BLACK, 0);
+                this.setRookAlreadyMoved(board, Color.BLACK, 0);
             }
         }
     }
@@ -229,12 +226,12 @@ export class DefaultFenResolver extends AbstractFenResolver {
         }
     }
 
-    private setRookAlreadyMoved(color: Color, col: number) {
-        const rook = this.board.pieces.find(
+    private setRookAlreadyMoved(board: Board, color: Color, col: number) {
+        const rook = board.pieces.find(
             (piece) => piece.color === color && piece instanceof Rook && piece.point.col === col
         ) as Rook;
 
-        if(rook) {
+        if (rook) {
             rook.isMovedAlready = true;
         }
     }

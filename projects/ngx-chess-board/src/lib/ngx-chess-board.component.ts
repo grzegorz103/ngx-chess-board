@@ -9,10 +9,14 @@ import {
     OnChanges,
     OnInit,
     Output,
-    SimpleChanges, ViewChild,
+    SimpleChanges,
+    ViewChild,
 } from '@angular/core';
 import { AbstractEngineFacade } from './engine/abstract-engine-facade';
 import { BoardLoader } from './engine/board-state-provider/board-loader/board-loader';
+import {
+    NotationProcessorFactory, NotationType,
+} from './engine/board-state-provider/board-loader/notation-processors/notation-processor-factory';
 import { ClickUtils } from './engine/click/click-utils';
 import { EngineFacade } from './engine/engine-facade';
 import { MoveChange } from './engine/move-change/move-change';
@@ -133,11 +137,22 @@ export class NgxChessBoardComponent
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.engineFacade.reset();
         });
-        this.calculatePieceSize();
+        this.calculatePieceSize();        this.setPGN('[Event "F/S Return Match"]\n' +
+            '[Site "Belgrade"]\n' +
+            '[Date "1992.11.04"]\n' +
+            '[Round "29"]\n' +
+            '[White "Fischer, Robert J."]\n' +
+            '[Black "Spassky, Boris V."]\n' +
+            '[Result "1/2-1/2"]\n' +
+            '\n' +
+            '1. Nf3 Nf6 2. d4 c5 3. e3 b5 4. Bc4 a6 ' +
+        '5. O-O e6 6. d5 Bd6 7. b3 O-O'+
+            '');
     }
 
     ngAfterViewInit(): void {
         this.engineFacade.modal = this.modal;
+
     }
 
     onMouseUp(event: MouseEvent) {
@@ -164,11 +179,29 @@ export class NgxChessBoardComponent
 
     setFEN(fen: string): void {
         try {
+            this.engineFacade.boardLoader.setNotationProcessor(
+                NotationProcessorFactory.getProcessor(NotationType.FEN)
+            );
             this.engineFacade.boardLoader.loadFEN(fen);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
             this.engineFacade.coords.reset();
         } catch (exception) {
+            this.engineFacade.boardLoader.addPieces();
+        }
+    }
+
+    setPGN(pgn: string): void {
+        try {
+            this.engineFacade.boardLoader.setNotationProcessor(
+                NotationProcessorFactory.getProcessor(NotationType.PGN)
+            );
+            this.engineFacade.boardLoader.loadPGN(pgn);
+            this.engineFacade.board.possibleCaptures = [];
+            this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.coords.reset();
+        } catch (exception) {
+            console.log(exception);
             this.engineFacade.boardLoader.addPieces();
         }
     }
