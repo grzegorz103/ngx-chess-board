@@ -16,5 +16,7 @@ export interface NgxChessBoardView {
 
     getFEN(): string;
 
+    setPGN(pgn: string): void;
+
     addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string);
 }

@@ -117,6 +117,23 @@
         </button>
     </div>
 
+    <div class="form-group input-group-sm">
+        <label for="fen">PGN</label>
+        <textarea rows="5" type="text" class="form-control  form-control-lg" id="pgn" aria-describedby="fen" [(ngModel)]="pgn"
+                  placeholder="Paste PGN here"></textarea>
+    </div>
+
+    <div style="display:flex;">
+        <button type="button" class="btn btn-success"
+                style="margin-left:auto; margin-right: 10px" (click)="setPgn()">Set PGN
+        </button>
+
+        <button type="button" class="btn btn-info"
+                style="margin-right:auto" (click)="loadDefaultPgn()">Show example PGN
+        </button>
+
+    </div>
+
     <hr>
 
     <label for="manualMove">Manual move:</label>
