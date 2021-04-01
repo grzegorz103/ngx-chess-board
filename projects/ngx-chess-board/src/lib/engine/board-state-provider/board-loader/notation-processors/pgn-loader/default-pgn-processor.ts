@@ -10,15 +10,29 @@ import { Queen } from '../../../../../models/pieces/queen';
 import { Rook } from '../../../../../models/pieces/rook';
 import { MoveUtils } from '../../../../../utils/move-utils';
 import { AbstractEngineFacade } from '../../../../abstract-engine-facade';
+import { DefaultPiecesLoader } from '../../default-pieces-loader';
 import { NotationProcessor } from '../notation-processor';
 
 export class DefaultPgnProcessor implements NotationProcessor {
 
     public process(notation: string, engineFacade: AbstractEngineFacade): void {
         if (notation) {
+            engineFacade.board.reverted = false;
+            engineFacade.board.pieces = [];
+            engineFacade.reset();
+            DefaultPiecesLoader.loadDefaultPieces(engineFacade.board);
             let moves = this.extractMoves(notation);
-            let counter = 0;
+            let counter = -1;
             for (let move of moves) {
+                ++counter;
+                move = move.replace(/[+#]/g, '');
+                let promotionIndex = '';
+
+                if (move.includes('=')) {
+                    promotionIndex = this.resolvePromotion(move.substring(move.length - 1));
+                    move = move.substring(0, move.length - 2);
+                }
+
                 let color = (counter === 0 || counter % 2 === 0)
                     ? Color.WHITE
                     : Color.BLACK;
@@ -28,23 +42,21 @@ export class DefaultPgnProcessor implements NotationProcessor {
                         move,
                         engineFacade.board,
                         color
-                    )[0];
+                    ).find(piece => piece instanceof Pawn);
                     if (piece) {
                         engineFacade.move(MoveUtils.formatSingle(
                             piece.point,
                             false
-                        ) + move);
+                        ) + move + promotionIndex);
                     } else {
-                        console.log('nie znalazlem ' + move);
                     }
                 } else {
-                    if (/^[A-Z][a-z]\d$/g.test(move)) {// jezeli ma wielka litere, czyli trzeba odszukac ktora figura Nf3
+                    if (/^[A-Z][a-h]\d$/g.test(move)) {// jezeli ma wielka litere, czyli trzeba odszukac ktora figura Nf3
                         let pieces = MoveUtils.findPieceByPossibleMovesContaining(
                             move.substring(1),
                             engineFacade.board,
                             color
                         );
-                        console.log(pieces);
                         let piece = pieces.find(piece => this.resolvePieceByFirstChar(
                             move.charAt(0),
                             piece
@@ -53,7 +65,7 @@ export class DefaultPgnProcessor implements NotationProcessor {
                             engineFacade.move(MoveUtils.formatSingle(
                                 piece.point,
                                 false
-                            ) + move.substring(1));
+                            ) + move.substring(1) + promotionIndex);
                         } else {
                         }
                     } else {
@@ -61,47 +73,61 @@ export class DefaultPgnProcessor implements NotationProcessor {
                             engineFacade.move(color === Color.WHITE ? 'e1g1' : 'e8g8');
                         } else {
                             if (/^[a-z]x[a-z]\d$/g.test(move)) { //exd5
-                                let piece = MoveUtils.findPieceByPossibleCapturesContaining(
+                                let pieces = MoveUtils.findPieceByPossibleCapturesContaining(
                                     move.substring(move.indexOf('x') + 1),
                                     engineFacade.board,
                                     color
-                                )[0];
+                                ).filter(piece => piece instanceof Pawn);
+
+                                let piece;
+                                if (pieces.length > 1) {
+                                    piece = this.resolveByCol(
+                                        pieces,
+                                        move.substring(0, 1)
+                                    );
+                                } else {
+                                    piece = pieces[0];
+                                }
+
                                 if (piece) {
                                     engineFacade.move(MoveUtils.formatSingle(
                                         piece.point,
                                         false
-                                    ) + move.substring(move.indexOf('x') + 1));
+                                    ) + move.substring(move.indexOf('x') + 1) + promotionIndex);
                                 } else {
                                 }
                             } else {
-                                if (/^[A-Z]x[a-z]\d$]/g.test(move)) {
+                                if (/^[A-Z]x[a-z]\d$/g.test(move)) {
                                     let piece = MoveUtils.findPieceByPossibleCapturesContaining(
                                         move.substring(move.indexOf('x') + 1),
                                         engineFacade.board,
                                         color
                                     ).find(piece => this.resolvePieceByFirstChar(
-                                        move[0],
+                                        move.substring(0, 1),
                                         piece
                                     ));
                                     if (piece) {
                                         engineFacade.move(MoveUtils.formatSingle(
                                             piece.point,
                                             false
-                                        ) + move.substring(move.indexOf('x') + 1));
+                                        ) + move.substring(move.indexOf('x') + 1) + promotionIndex);
                                     } else {
                                     }
                                 } else {
                                     if (move === 'O-O-O') {
                                         engineFacade.move(color === Color.WHITE ? 'e1c1' : 'e8c8');
                                     } else {
-                                        if (/^[A-Z][a-z]x[a-z]\d$/g.test(move)) {  //Ngxe4 sytuacja 2 skoczkow pion
+                                        if (/^[A-Z]\dx[a-z]\d$/g.test(move)) {  //Ngxe4 sytuacja 2 skoczkow pion bicie
                                             let pieces = MoveUtils.findPieceByPossibleCapturesContaining(
                                                 move.substring(move.indexOf('x') + 1),
                                                 engineFacade.board,
                                                 color
-                                            );
+                                            ).filter(piece => this.resolvePieceByFirstChar(
+                                                move.charAt(0),
+                                                piece
+                                            ));
 
-                                            let piece = this.resolveByCol(
+                                            let piece = this.resolveByRow(
                                                 pieces,
                                                 move.substring(1, 2)
                                             );
@@ -111,7 +137,7 @@ export class DefaultPgnProcessor implements NotationProcessor {
                                                     piece.point,
                                                     false
                                                 ) + move.substring(move.indexOf(
-                                                    'x') + 1));
+                                                    'x') + 1) + promotionIndex);
                                             }
                                         } else {
                                             if (/^[A-Z][a-z][a-z]\d$/g.test(move)) { // dwie wieze bez bicia Rac1 pion
@@ -133,7 +159,38 @@ export class DefaultPgnProcessor implements NotationProcessor {
                                                     engineFacade.move(MoveUtils.formatSingle(
                                                         piece.point,
                                                         false
-                                                    ) + move.substring(2, 4));
+                                                    ) + move.substring(
+                                                        2,
+                                                        4
+                                                    ) + promotionIndex);
+                                                }
+                                            } else {
+                                                if (/^[A-Z][a-z]x[a-z]\d$/g.test(
+                                                    move)) {
+                                                    let pieces = MoveUtils.findPieceByPossibleCapturesContaining(
+                                                        move.substring(move.indexOf(
+                                                            'x') + 1),
+                                                        engineFacade.board,
+                                                        color
+                                                    ).filter(piece => this.resolvePieceByFirstChar(
+                                                        move.charAt(0),
+                                                        piece
+                                                    ));
+
+                                                    let piece = this.resolveByCol(
+                                                        pieces,
+                                                        move.substring(1, 2)
+                                                    );
+
+                                                    if (piece) {
+                                                        engineFacade.move(
+                                                            MoveUtils.formatSingle(
+                                                                piece.point,
+                                                                false
+                                                            ) + move.substring(
+                                                            move.indexOf(
+                                                                'x') + 1) + promotionIndex);
+                                                    }
                                                 }
                                             }
                                         }
@@ -143,8 +200,6 @@ export class DefaultPgnProcessor implements NotationProcessor {
                         }
                     }
                 }
-
-                ++counter;
             }
         }
     }
@@ -153,8 +208,10 @@ export class DefaultPgnProcessor implements NotationProcessor {
         return notation.substring(notation.lastIndexOf(']') + 1)
             .replace(/[0-9]+\./g, '')
             .replace(/\s+/g, ' ')
+            .replace(/{[^}]*}/g, '')
             .trim()
-            .split(' ');
+            .split(' ')
+            .filter(s => s);
     }
 
     protected movePiece(piece: Piece, board: Board, move: string) {
@@ -218,5 +275,35 @@ export class DefaultPgnProcessor implements NotationProcessor {
         return firstPieceFormat.substring(0, 1) === char
             ? pieces[0]
             : pieces[1];
+    }
+
+    private resolveByRow(pieces: Piece[], char: string) {
+        let firstPieceFormat = MoveUtils.formatSingle(pieces[0].point, false);
+        let secondPieceFormat = MoveUtils.formatSingle(pieces[1].point, false);
+        return firstPieceFormat.substring(1, 2) === char
+            ? pieces[0]
+            : pieces[1];
+    }
+
+    private replacePromotion(move: string) {
+        return move
+            .replace('=Q', '1')
+            .replace('=R', '2')
+            .replace('=B', '3')
+            .replace('=K', '4');
+    }
+
+    private resolvePromotion(promotionChar: string) {
+        switch (promotionChar) {
+            case 'Q':
+                return '1';
+            case 'R':
+                return '2';
+            case 'B':
+                return '3';
+            case 'N':
+                return '4';
+        }
+        return '';
     }
 }

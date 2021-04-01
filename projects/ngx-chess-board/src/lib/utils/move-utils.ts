@@ -1,6 +1,7 @@
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
 import { King } from '../models/pieces/king';
+import { Knight } from '../models/pieces/knight';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
 import { MoveTranslation } from '../models/move-translation';
@@ -101,7 +102,9 @@ export class MoveUtils {
                 }
             }
         }
-
+        if (foundPieces.length === 0) {
+            console.log(coords + ' debug');
+        }
         return foundPieces;
     }
 
@@ -115,10 +118,20 @@ export class MoveUtils {
         let foundPieces = [];
         for (let piece of board.pieces.filter(piece => piece.color === color)) {
             for (let point of piece.getPossibleCaptures()) {
-                if (point.isEqual(destPoint)) {
+                if (!MoveUtils.willMoveCauseCheck(
+                    piece.color,
+                    piece.point.row,
+                    piece.point.col,
+                    indexes.yAxis,
+                    indexes.xAxis,
+                    board
+                ) && point.isEqual(destPoint)) {
                     foundPieces.push(piece);
                 }
             }
+        }
+        if (foundPieces.length === 0) {
+            console.log(coords + ' debug');
         }
 
         return foundPieces;

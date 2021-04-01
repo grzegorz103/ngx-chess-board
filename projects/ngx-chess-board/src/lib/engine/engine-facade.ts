@@ -179,7 +179,7 @@ export class EngineFacade extends AbstractEngineFacade {
                 this.board.activePiece.point.row,
                 this.board.activePiece.point.col
             );
-            this.board.lastMoveDest = pointClicked;
+            this.board.lastMoveDest = pointClicked.clone();
             this.movePiece(this.board.activePiece, pointClicked);
 
             if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
@@ -369,6 +369,9 @@ export class EngineFacade extends AbstractEngineFacade {
         if (toMovePiece instanceof Pawn) {
             this.board.checkIfPawnTakesEnPassant(newPoint);
             this.board.checkIfPawnEnpassanted(toMovePiece, newPoint);
+        } else {
+            this.board.enPassantPoint = null;
+            this.board.enPassantPiece = null;
         }
 
         toMovePiece.point = newPoint;
