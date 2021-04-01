@@ -1,8 +1,8 @@
 import { CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
 import { AfterViewInit, ElementRef, EventEmitter, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { BoardLoader } from './engine/board-state-provider/board-loader';
-import { EngineFacade } from './engine/engine-facade';
-import { MoveChange } from './engine/move-change';
+import { AbstractEngineFacade } from './engine/abstract-engine-facade';
+import { BoardLoader } from './engine/board-state-provider/board-loader/board-loader';
+import { MoveChange } from './engine/move-change/move-change';
 import { HistoryMove } from './history-move-provider/history-move';
 import { Board } from './models/board';
 import { Piece } from './models/pieces/piece';
@@ -12,7 +12,6 @@ import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
-import * as i0 from "@angular/core";
 export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChessBoardView, AfterViewInit {
     private ngxChessBoardService;
     darkTileColor: string;
@@ -30,7 +29,7 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     selected: boolean;
     boardLoader: BoardLoader;
     pieceIconManager: PieceIconInputManager;
-    engineFacade: EngineFacade;
+    engineFacade: AbstractEngineFacade;
     constructor(ngxChessBoardService: NgxChessBoardService);
     set size(size: number);
     set freeMode(freeMode: boolean);
@@ -47,6 +46,7 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     reverse(): void;
     updateBoard(board: Board): void;
     setFEN(fen: string): void;
+    setPGN(pgn: string): void;
     getFEN(): string;
     dragEnded(event: CdkDragEnd): void;
     dragStart(event: CdkDragStart): void;
@@ -59,6 +59,4 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     reset(): void;
     undo(): void;
     addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string): void;
-    static ɵfac: i0.ɵɵFactoryDef<NgxChessBoardComponent, never>;
-    static ɵcmp: i0.ɵɵComponentDefWithMeta<NgxChessBoardComponent, "ngx-chess-board", never, { "darkTileColor": "darkTileColor"; "lightTileColor": "lightTileColor"; "showCoords": "showCoords"; "size": "size"; "freeMode": "freeMode"; "dragDisabled": "dragDisabled"; "drawDisabled": "drawDisabled"; "pieceIcons": "pieceIcons"; "lightDisabled": "lightDisabled"; "darkDisabled": "darkDisabled"; }, { "moveChange": "moveChange"; "checkmate": "checkmate"; "stalemate": "stalemate"; }, never, never>;
 }

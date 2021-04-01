@@ -1,56 +1,8 @@
-import { CdkDrag, DragDropModule } from '@angular/cdk/drag-drop';
-import { NgForOf, NgIf, NgClass, NgStyle, AsyncPipe, CommonModule } from '@angular/common';
-import { ɵɵdefineInjectable, ɵsetClassMetadata, Injectable, ɵɵdefineComponent, ɵɵviewQuery, ɵɵqueryRefresh, ɵɵloadQuery, ɵɵelementStart, ɵɵlistener, ɵɵtext, ɵɵelementEnd, Component, ViewChild, ɵɵnextContext, ɵɵstyleProp, ɵɵadvance, ɵɵtextInterpolate1, ɵɵgetCurrentView, ɵɵrestoreView, ɵɵproperty, ɵɵsanitizeHtml, ɵɵtemplate, ɵɵclassProp, ɵɵnamespaceSVG, ɵɵelement, ɵɵattribute, EventEmitter, ɵɵdirectiveInject, ɵɵNgOnChangesFeature, ɵɵreference, ɵɵpipe, ɵɵnamespaceHTML, ɵɵpureFunction0, ɵɵpipeBind1, Input, Output, HostListener, ɵɵdefineNgModule, ɵɵdefineInjector, ɵɵsetNgModuleScope, NgModule } from '@angular/core';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
+import { ɵɵdefineInjectable, Injectable, EventEmitter, Component, Input, Output, ViewChild, HostListener, NgModule } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { cloneDeep } from 'lodash';
-
-class Point {
-    constructor(row, col) {
-        this.row = row;
-        this.col = col;
-    }
-    isEqual(that) {
-        return that && this.row === that.row && this.col === that.col;
-    }
-    hasCoordsEqual(row, col) {
-        return row && col && this.row === row && this.col === col;
-    }
-}
-
-class DrawPoint {
-    constructor(x, y, color) {
-        this.x = x + 0.5;
-        this.y = y + 0.5;
-        this.color = color;
-    }
-    isEqual(that) {
-        return that && that.x === this.x && this.y === that.y;
-    }
-}
-
-class ClickUtils {
-    static getClickPoint(event, top, height, left, width) {
-        return new Point(Math.floor((event.y - top) / (height / 8)), Math.floor((event.x - left) / (width / 8)));
-    }
-    static getDrawingPoint(tileSize, colorStrategy, x, y, ctrl, alt, shift, xAxis, yAxis) {
-        const squareSize = tileSize / 8;
-        const xx = Math.floor((x - xAxis) /
-            squareSize);
-        const yy = Math.floor((y - yAxis) /
-            squareSize);
-        let color = colorStrategy.resolve(ctrl, shift, alt);
-        return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
-    }
-}
-
-class HistoryMove {
-    constructor(move, piece, color, captured) {
-        this.move = move;
-        this.piece = piece;
-        this.color = color;
-        this.x = captured;
-    }
-}
 
 var Color;
 (function (Color) {
@@ -66,6 +18,22 @@ class Piece {
         this.point = point;
         this.relValue = relValue;
         this.board = board;
+    }
+}
+
+class Point {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
+    }
+    isEqual(that) {
+        return that && this.row === that.row && this.col === that.col;
+    }
+    hasCoordsEqual(row, col) {
+        return row && col && this.row === row && this.col === col;
+    }
+    clone() {
+        return new Point(this.row, this.col);
     }
 }
 
@@ -1027,43 +995,12 @@ const UnicodeConstants = {
     BLACK_BISHOP: { name: 'Bishop', icon: '&#x265D' },
 };
 
-class BoardLoader {
-    constructor(board) {
-        this.board = board;
-    }
-    addPieces() {
-        this.board.pieces = [];
-        // piony czarne
-        for (let i = 0; i < 8; ++i) {
-            this.board.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board));
-        }
-        this.board.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
-        this.board.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
-        this.board.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
-        this.board.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.board));
-        this.board.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
-        this.board.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
-        this.board.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
-        this.board.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
-        // piony biale
-        for (let i = 0; i < 8; ++i) {
-            this.board.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board));
-        }
-        this.board.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
-        this.board.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
-        this.board.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
-        this.board.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.board));
-        this.board.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
-        this.board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
-        this.board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
-        this.board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
-        this.board.calculateFEN();
-    }
-    loadFEN(fen) {
-        console.log(fen);
-        if (fen) {
-            this.board.reverted = false;
-            this.board.pieces = [];
+class DefaultFenProcessor {
+    process(notation, engineFacade) {
+        let fen = notation;
+        if (notation) {
+            engineFacade.board.reverted = false;
+            engineFacade.board.pieces = [];
             const split = fen.split('/');
             for (let i = 0; i < 8; ++i) {
                 let pointer = 0;
@@ -1075,51 +1012,51 @@ class BoardLoader {
                     else {
                         switch (chunk) {
                             case 'r':
-                                this.board.pieces.push(new Rook(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
+                                engineFacade.board.pieces.push(new Rook(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_ROOK, engineFacade.board));
                                 break;
                             case 'n':
-                                this.board.pieces.push(new Knight(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
+                                engineFacade.board.pieces.push(new Knight(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, engineFacade.board));
                                 break;
                             case 'b':
-                                this.board.pieces.push(new Bishop(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
+                                engineFacade.board.pieces.push(new Bishop(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_BISHOP, engineFacade.board));
                                 break;
                             case 'q':
-                                this.board.pieces.push(new Queen(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.board));
+                                engineFacade.board.pieces.push(new Queen(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_QUEEN, engineFacade.board));
                                 break;
                             case 'k':
-                                this.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
+                                engineFacade.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, engineFacade.board));
                                 break;
                             case 'p': {
-                                const pawn = new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board);
+                                const pawn = new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, engineFacade.board);
                                 if ((pawn.color === Color.BLACK && pawn.point.row !== 1) ||
                                     (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
                                     pawn.isMovedAlready = true;
                                 }
-                                this.board.pieces.push(pawn);
+                                engineFacade.board.pieces.push(pawn);
                                 break;
                             }
                             case 'R':
-                                this.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
+                                engineFacade.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, engineFacade.board));
                                 break;
                             case 'N':
-                                this.board.pieces.push(new Knight(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
+                                engineFacade.board.pieces.push(new Knight(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, engineFacade.board));
                                 break;
                             case 'B':
-                                this.board.pieces.push(new Bishop(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
+                                engineFacade.board.pieces.push(new Bishop(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_BISHOP, engineFacade.board));
                                 break;
                             case 'Q':
-                                this.board.pieces.push(new Queen(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.board));
+                                engineFacade.board.pieces.push(new Queen(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_QUEEN, engineFacade.board));
                                 break;
                             case 'K':
-                                this.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
+                                engineFacade.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, engineFacade.board));
                                 break;
                             case 'P': {
-                                const pawn = new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board);
+                                const pawn = new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, engineFacade.board);
                                 if ((pawn.color === Color.BLACK && pawn.point.row !== 1) ||
                                     (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
                                     pawn.isMovedAlready = true;
                                 }
-                                this.board.pieces.push(pawn);
+                                engineFacade.board.pieces.push(pawn);
                                 break;
                             }
                         }
@@ -1127,39 +1064,37 @@ class BoardLoader {
                     }
                 }
             }
-            this.setCurrentPlayer(fen);
-            this.setCastles(fen);
+            this.setCurrentPlayer(engineFacade.board, fen);
+            this.setCastles(engineFacade.board, fen);
             this.setEnPassant(fen);
             this.setFullMoveCount(fen);
+            engineFacade.board.fen = fen;
         }
         else {
             throw Error('Incorrect FEN provided');
         }
     }
-    setBoard(board) {
-        this.board = board;
-    }
-    setCurrentPlayer(fen) {
+    setCurrentPlayer(board, fen) {
         if (fen) {
             const split = fen.split(' ');
-            this.board.currentWhitePlayer = split[1] === 'w';
+            board.currentWhitePlayer = split[1] === 'w';
         }
     }
-    setCastles(fen) {
+    setCastles(board, fen) {
         if (fen) {
             const split = fen.split(' ');
             const castleChunk = split[2];
             if (!castleChunk.includes('K')) {
-                this.setRookAlreadyMoved(Color.WHITE, 7);
+                this.setRookAlreadyMoved(board, Color.WHITE, 7);
             }
             if (!castleChunk.includes('Q')) {
-                this.setRookAlreadyMoved(Color.WHITE, 0);
+                this.setRookAlreadyMoved(board, Color.WHITE, 0);
             }
             if (!castleChunk.includes('k')) {
-                this.setRookAlreadyMoved(Color.BLACK, 7);
+                this.setRookAlreadyMoved(board, Color.BLACK, 7);
             }
             if (!castleChunk.includes('q')) {
-                this.setRookAlreadyMoved(Color.BLACK, 0);
+                this.setRookAlreadyMoved(board, Color.BLACK, 0);
             }
         }
     }
@@ -1174,193 +1109,11 @@ class BoardLoader {
             // if()
         }
     }
-    setRookAlreadyMoved(color, col) {
-        const rook = this.board.pieces.find((piece) => piece.color === color && piece instanceof Rook && piece.point.col === col);
+    setRookAlreadyMoved(board, color, col) {
+        const rook = board.pieces.find((piece) => piece.color === color && piece instanceof Rook && piece.point.col === col);
         if (rook) {
             rook.isMovedAlready = true;
         }
-    }
-}
-
-class BoardState {
-    constructor(board) {
-        this.board = board;
-    }
-}
-
-class BoardStateProvider {
-    constructor() {
-        this.statesSubject$ = new BehaviorSubject([]);
-    }
-    get states() {
-        return this.statesSubject$.value;
-    }
-    set states(states) {
-        this.statesSubject$.next(states);
-    }
-    addMove(state) {
-        this.states = [...this.states, state];
-    }
-    getStates() {
-        return this.states;
-    }
-    pop() {
-        const lastState = this.getLastState();
-        this.states = this.states.filter((state) => state !== lastState);
-        return lastState;
-    }
-    isEmpty() {
-        return this.states.length === 0;
-    }
-    clear() {
-        this.states = [];
-    }
-    getLastState() {
-        return this.states[this.getLastStateIndex()];
-    }
-    getLastStateIndex() {
-        return this.states.length - 1;
-    }
-}
-
-class CoordsProvider {
-    constructor() {
-        this.defaultXCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        this.defaultYCoords = [8, 7, 6, 5, 4, 3, 2, 1];
-        this.currentXCoords = [...this.defaultXCoords];
-        this.currentYCoords = [...this.defaultYCoords];
-    }
-    get xCoords() {
-        return this.currentXCoords;
-    }
-    get yCoords() {
-        return this.currentYCoords;
-    }
-    reverse() {
-        this.currentXCoords = this.currentXCoords.reverse();
-        this.currentYCoords = this.currentYCoords.reverse();
-    }
-    reset() {
-        this.init();
-    }
-    init() {
-        this.currentXCoords = [...this.defaultXCoords];
-        this.currentYCoords = [...this.defaultYCoords];
-    }
-}
-
-class Arrow {
-    isEqual(arrow) {
-        return arrow && this.start.isEqual(arrow.start) && this.end.isEqual(arrow.end);
-    }
-}
-
-class Circle {
-    isEqual(circle) {
-        return circle && this.drawPoint.isEqual(circle.drawPoint);
-    }
-}
-
-class DefaultColorProcessor {
-    resolve(ctrl, shift, alt) {
-        let color = 'green';
-        if (ctrl || shift) {
-            color = 'red';
-        }
-        if (alt) {
-            color = 'blue';
-        }
-        if ((shift || ctrl) && alt) {
-            color = 'orange';
-        }
-        return color;
-    }
-}
-
-class ColorStrategy {
-    constructor() {
-        this.colorProcessor = new DefaultColorProcessor();
-    }
-    resolve(ctrl, shift, alt) {
-        return this.colorProcessor.resolve(ctrl, shift, alt);
-    }
-    setColorProcessor(colorProcessor) {
-        this.colorProcessor = colorProcessor;
-    }
-}
-
-class DrawProvider {
-    constructor() {
-        this.arrowsSubject$ = new BehaviorSubject([]);
-        this.circlesSubject$ = new BehaviorSubject([]);
-        this.arrows$ = this.arrowsSubject$.asObservable();
-        this.circles$ = this.circlesSubject$.asObservable();
-    }
-    get circles() {
-        return this.circlesSubject$.value;
-    }
-    set circles(circles) {
-        this.circlesSubject$.next(circles);
-    }
-    get arrows() {
-        return this.arrowsSubject$.value;
-    }
-    set arrows(arrows) {
-        this.arrowsSubject$.next(arrows);
-    }
-    addCircle(circle) {
-        this.circles = [...this.circles, circle];
-    }
-    reomveCircle(removeCircle) {
-        this.circles = this.circles.filter((circle) => !circle.isEqual(removeCircle));
-    }
-    addArrow(arrow) {
-        this.arrows = [...this.arrows, arrow];
-    }
-    removeArrow(removeArrow) {
-        this.arrows = this.arrows.filter((arrow) => !arrow.isEqual(removeArrow));
-    }
-    containsCircle(checkCircle) {
-        return this.circles.some((circle) => circle.isEqual(checkCircle));
-    }
-    containsArrow(checkArrow) {
-        return this.arrows.some((arrow) => arrow.isEqual(checkArrow));
-    }
-    clear() {
-        this.arrows = [];
-        this.circles = [];
-    }
-}
-
-class HistoryMoveProvider {
-    constructor() {
-        this.historyMovesSubject$ = new BehaviorSubject([]);
-    }
-    get historyMoves() {
-        return this.historyMovesSubject$.value;
-    }
-    set historyMoves(states) {
-        this.historyMovesSubject$.next(states);
-    }
-    addMove(historyMove) {
-        this.historyMoves = [...this.historyMoves, historyMove];
-    }
-    pop() {
-        const lastHistoryMove = this.getLastMove();
-        this.historyMoves = this.historyMoves.filter((state) => state !== lastHistoryMove);
-        return lastHistoryMove;
-    }
-    getAll() {
-        return this.historyMoves;
-    }
-    clear() {
-        this.historyMoves = [];
-    }
-    getLastMove() {
-        return this.historyMoves[this.getLastMoveIndex()];
-    }
-    getLastMoveIndex() {
-        return this.historyMoves.length - 1;
     }
 }
 
@@ -1441,58 +1194,367 @@ class MoveUtils {
         }
         return new MoveTranslation(xAxis, yAxis, reverted);
     }
-}
-
-class PieceAbstractDecorator {
-    constructor(piece) {
-        this.piece = piece;
-    }
-}
-
-class AvailableMoveDecorator extends PieceAbstractDecorator {
-    constructor(piece, pointClicked, color, board) {
-        super(piece);
-        this.pointClicked = pointClicked;
-        this.color = color;
-        this.board = board;
-    }
-    getPossibleCaptures() {
-        return this.piece
-            .getPossibleCaptures()
-            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
-    }
-    getPossibleMoves() {
-        return this.piece
-            .getPossibleMoves()
-            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
-    }
-}
-
-class PiecePromotionResolver {
-    static resolvePromotionChoice(board, piece, index) {
-        const isWhite = piece.color === Color.WHITE;
-        switch (index) {
-            case 1:
-                board.pieces.push(new Queen(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_QUEEN
-                    : UnicodeConstants.BLACK_QUEEN, board));
-                break;
-            case 2:
-                board.pieces.push(new Rook(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_ROOK
-                    : UnicodeConstants.BLACK_ROOK, board));
-                break;
-            case 3:
-                board.pieces.push(new Bishop(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_BISHOP
-                    : UnicodeConstants.BLACK_BISHOP, board));
-                break;
-            case 4:
-                board.pieces.push(new Knight(piece.point, piece.color, isWhite
-                    ? UnicodeConstants.WHITE_KNIGHT
-                    : UnicodeConstants.BLACK_KNIGHT, board));
-                break;
+    static findPieceByPossibleMovesContaining(coords, board, color) {
+        let indexes = this.translateCoordsToIndex(coords, board.reverted);
+        let destPoint = new Point(indexes.yAxis, indexes.xAxis);
+        let foundPieces = [];
+        for (let piece of board.pieces.filter(piece => piece.color === color)) {
+            for (let point of piece.getPossibleMoves()) {
+                if (!MoveUtils.willMoveCauseCheck(piece.color, piece.point.row, piece.point.col, indexes.yAxis, indexes.xAxis, board) && point.isEqual(destPoint)) {
+                    foundPieces.push(piece);
+                }
+            }
         }
+        if (foundPieces.length === 0) {
+            console.log(coords + ' debug');
+        }
+        return foundPieces;
+    }
+    static findPieceByPossibleCapturesContaining(coords, board, color) {
+        let indexes = this.translateCoordsToIndex(coords, board.reverted);
+        let destPoint = new Point(indexes.yAxis, indexes.xAxis);
+        let foundPieces = [];
+        for (let piece of board.pieces.filter(piece => piece.color === color)) {
+            for (let point of piece.getPossibleCaptures()) {
+                if (!MoveUtils.willMoveCauseCheck(piece.color, piece.point.row, piece.point.col, indexes.yAxis, indexes.xAxis, board) && point.isEqual(destPoint)) {
+                    foundPieces.push(piece);
+                }
+            }
+        }
+        if (foundPieces.length === 0) {
+            console.log(coords + ' debug');
+        }
+        return foundPieces;
+    }
+    static formatSingle(point, reverted) {
+        if (reverted) {
+            const sourceX = 104 - point.col;
+            return (String.fromCharCode(sourceX) +
+                (point.row + 1));
+        }
+        else {
+            const incrementX = 97;
+            return (String.fromCharCode(point.col + incrementX) +
+                (Math.abs(point.row - 7) + 1));
+        }
+    }
+}
+
+class DefaultPiecesLoader {
+    static loadDefaultPieces(board) {
+        board.pieces = [];
+        // piony czarne
+        for (let i = 0; i < 8; ++i) {
+            board.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN, board));
+        }
+        board.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK, board));
+        board.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, board));
+        board.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP, board));
+        board.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN, board));
+        board.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING, board));
+        board.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP, board));
+        board.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, board));
+        board.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK, board));
+        // piony biale
+        for (let i = 0; i < 8; ++i) {
+            board.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN, board));
+        }
+        board.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK, board));
+        board.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, board));
+        board.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP, board));
+        board.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN, board));
+        board.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING, board));
+        board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, board));
+        board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, board));
+        board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, board));
+        board.calculateFEN();
+    }
+}
+
+class DefaultPgnProcessor {
+    process(notation, engineFacade) {
+        if (notation) {
+            engineFacade.board.reverted = false;
+            engineFacade.board.pieces = [];
+            engineFacade.reset();
+            DefaultPiecesLoader.loadDefaultPieces(engineFacade.board);
+            let moves = this.extractMoves(notation);
+            let counter = -1;
+            for (let move of moves) {
+                ++counter;
+                move = move.replace(/[+#]/g, '');
+                let promotionIndex = '';
+                if (move.includes('=')) {
+                    promotionIndex = this.resolvePromotion(move.substring(move.length - 1));
+                    move = move.substring(0, move.length - 2);
+                }
+                let color = (counter === 0 || counter % 2 === 0)
+                    ? Color.WHITE
+                    : Color.BLACK;
+                if (/^[a-z]\d$/g.test(move)) { // zwykly ruch na wolne pole e4
+                    let piece = MoveUtils.findPieceByPossibleMovesContaining(move, engineFacade.board, color).find(piece => piece instanceof Pawn);
+                    if (piece) {
+                        engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move + promotionIndex);
+                    }
+                    else {
+                    }
+                }
+                else {
+                    if (/^[A-Z][a-h]\d$/g.test(move)) { // jezeli ma wielka litere, czyli trzeba odszukac ktora figura Nf3
+                        let pieces = MoveUtils.findPieceByPossibleMovesContaining(move.substring(1), engineFacade.board, color);
+                        let piece = pieces.find(piece => this.resolvePieceByFirstChar(move.charAt(0), piece));
+                        if (piece) {
+                            engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(1) + promotionIndex);
+                        }
+                        else {
+                        }
+                    }
+                    else {
+                        if ('O-O' === move) {
+                            engineFacade.move(color === Color.WHITE ? 'e1g1' : 'e8g8');
+                        }
+                        else {
+                            if (/^[a-z]x[a-z]\d$/g.test(move)) { //exd5
+                                let pieces = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).filter(piece => piece instanceof Pawn);
+                                let piece;
+                                if (pieces.length > 1) {
+                                    piece = this.resolveByCol(pieces, move.substring(0, 1));
+                                }
+                                else {
+                                    piece = pieces[0];
+                                }
+                                if (piece) {
+                                    engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                }
+                                else {
+                                }
+                            }
+                            else {
+                                if (/^[A-Z]x[a-z]\d$/g.test(move)) {
+                                    let piece = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).find(piece => this.resolvePieceByFirstChar(move.substring(0, 1), piece));
+                                    if (piece) {
+                                        engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                    }
+                                    else {
+                                    }
+                                }
+                                else {
+                                    if (move === 'O-O-O') {
+                                        engineFacade.move(color === Color.WHITE ? 'e1c1' : 'e8c8');
+                                    }
+                                    else {
+                                        if (/^[A-Z]\dx[a-z]\d$/g.test(move)) { //Ngxe4 sytuacja 2 skoczkow pion bicie
+                                            let pieces = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).filter(piece => this.resolvePieceByFirstChar(move.charAt(0), piece));
+                                            let piece = this.resolveByRow(pieces, move.substring(1, 2));
+                                            if (piece) {
+                                                engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                            }
+                                        }
+                                        else {
+                                            if (/^[A-Z][a-z][a-z]\d$/g.test(move)) { // dwie wieze bez bicia Rac1 pion
+                                                let pieces = MoveUtils.findPieceByPossibleMovesContaining(move.substring(2, 4), engineFacade.board, color).filter(piece => this.resolvePieceByFirstChar(move.charAt(0), piece));
+                                                let piece = this.resolveByCol(pieces, move.substring(1, 2));
+                                                if (piece) {
+                                                    engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(2, 4) + promotionIndex);
+                                                }
+                                            }
+                                            else {
+                                                if (/^[A-Z][a-z]x[a-z]\d$/g.test(move)) {
+                                                    let pieces = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).filter(piece => this.resolvePieceByFirstChar(move.charAt(0), piece));
+                                                    let piece = this.resolveByCol(pieces, move.substring(1, 2));
+                                                    if (piece) {
+                                                        engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    extractMoves(notation) {
+        return notation.substring(notation.lastIndexOf(']') + 1)
+            .replace(/[0-9]+\./g, '')
+            .replace(/\s+/g, ' ')
+            .replace(/{[^}]*}/g, '')
+            .trim()
+            .split(' ')
+            .filter(s => s);
+    }
+    movePiece(piece, board, move) {
+        let indexes = MoveUtils.translateCoordsToIndex(move, board.reverted);
+        piece.point.col = indexes.xAxis;
+        piece.point.row = indexes.yAxis;
+    }
+    hasUpperCase(move) {
+        return /[A-Z]/.test(move);
+    }
+    resolvePieceByFirstChar(move, piece) {
+        let piecesFirstChar = '';
+        if (piece instanceof King) {
+            piecesFirstChar = 'K';
+        }
+        else {
+            if (piece instanceof Queen) {
+                piecesFirstChar = 'Q';
+            }
+            else {
+                if (piece instanceof Rook) {
+                    piecesFirstChar = 'R';
+                }
+                else {
+                    if (piece instanceof Bishop) {
+                        piecesFirstChar = 'B';
+                    }
+                    else {
+                        if (piece instanceof Knight) {
+                            piecesFirstChar = 'N';
+                        }
+                        else {
+                            if (piece instanceof Pawn) {
+                                piecesFirstChar = 'P';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return move === piecesFirstChar;
+    }
+    isShortCastle(move) {
+        return move === 'O-O';
+    }
+    removePiece(coords, board) {
+        let indexes = MoveUtils.translateCoordsToIndex(coords, board.reverted);
+        board.pieces = board.pieces.filter(e => !e.point.isEqual(new Point(indexes.yAxis, indexes.xAxis)));
+    }
+    isLongCastle(move) {
+        return move === 'O-O-O';
+    }
+    resolveByCol(pieces, char) {
+        let firstPieceFormat = MoveUtils.formatSingle(pieces[0].point, false);
+        let secondPieceFormat = MoveUtils.formatSingle(pieces[1].point, false);
+        return firstPieceFormat.substring(0, 1) === char
+            ? pieces[0]
+            : pieces[1];
+    }
+    resolveByRow(pieces, char) {
+        let firstPieceFormat = MoveUtils.formatSingle(pieces[0].point, false);
+        let secondPieceFormat = MoveUtils.formatSingle(pieces[1].point, false);
+        return firstPieceFormat.substring(1, 2) === char
+            ? pieces[0]
+            : pieces[1];
+    }
+    replacePromotion(move) {
+        return move
+            .replace('=Q', '1')
+            .replace('=R', '2')
+            .replace('=B', '3')
+            .replace('=K', '4');
+    }
+    resolvePromotion(promotionChar) {
+        switch (promotionChar) {
+            case 'Q':
+                return '1';
+            case 'R':
+                return '2';
+            case 'B':
+                return '3';
+            case 'N':
+                return '4';
+        }
+        return '';
+    }
+}
+
+class NotationProcessorFactory {
+    static getProcessor(type) {
+        switch (type) {
+            case NotationType.FEN:
+                return new DefaultFenProcessor();
+            case NotationType.PGN:
+                return new DefaultPgnProcessor();
+        }
+    }
+    static getDefaultProcessor() {
+        return new DefaultFenProcessor();
+    }
+}
+var NotationType;
+(function (NotationType) {
+    NotationType[NotationType["FEN"] = 1] = "FEN";
+    NotationType[NotationType["PGN"] = 2] = "PGN";
+})(NotationType || (NotationType = {}));
+
+class DrawPoint {
+    constructor(x, y, color) {
+        this.x = x + 0.5;
+        this.y = y + 0.5;
+        this.color = color;
+    }
+    isEqual(that) {
+        return that && that.x === this.x && this.y === that.y;
+    }
+}
+
+class ClickUtils {
+    static getClickPoint(event, top, height, left, width) {
+        return new Point(Math.floor((event.y - top) / (height / 8)), Math.floor((event.x - left) / (width / 8)));
+    }
+    static getDrawingPoint(tileSize, colorStrategy, x, y, ctrl, alt, shift, xAxis, yAxis) {
+        const squareSize = tileSize / 8;
+        const xx = Math.floor((x - xAxis) /
+            squareSize);
+        const yy = Math.floor((y - yAxis) /
+            squareSize);
+        let color = colorStrategy.resolve(ctrl, shift, alt);
+        return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
+    }
+}
+
+class HistoryMove {
+    constructor(move, piece, color, captured) {
+        this.move = move;
+        this.piece = piece;
+        this.color = color;
+        this.x = captured;
+    }
+}
+
+class HistoryMoveProvider {
+    constructor() {
+        this.historyMovesSubject$ = new BehaviorSubject([]);
+    }
+    get historyMoves() {
+        return this.historyMovesSubject$.value;
+    }
+    set historyMoves(states) {
+        this.historyMovesSubject$.next(states);
+    }
+    addMove(historyMove) {
+        this.historyMoves = [...this.historyMoves, historyMove];
+    }
+    pop() {
+        const lastHistoryMove = this.getLastMove();
+        this.historyMoves = this.historyMoves.filter((state) => state !== lastHistoryMove);
+        return lastHistoryMove;
+    }
+    getAll() {
+        return this.historyMoves;
+    }
+    clear() {
+        this.historyMoves = [];
+    }
+    getLastMove() {
+        return this.historyMoves[this.getLastMoveIndex()];
+    }
+    getLastMoveIndex() {
+        return this.historyMoves.length - 1;
     }
 }
 
@@ -1558,6 +1620,32 @@ class PieceIconInputManager {
     }
 }
 
+class CoordsProvider {
+    constructor() {
+        this.defaultXCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        this.defaultYCoords = [8, 7, 6, 5, 4, 3, 2, 1];
+        this.currentXCoords = [...this.defaultXCoords];
+        this.currentYCoords = [...this.defaultYCoords];
+    }
+    get xCoords() {
+        return this.currentXCoords;
+    }
+    get yCoords() {
+        return this.currentYCoords;
+    }
+    reverse() {
+        this.currentXCoords = this.currentXCoords.reverse();
+        this.currentYCoords = this.currentYCoords.reverse();
+    }
+    reset() {
+        this.init();
+    }
+    init() {
+        this.currentXCoords = [...this.defaultXCoords];
+        this.currentYCoords = [...this.defaultYCoords];
+    }
+}
+
 class DefaultDragEndProcessor {
     dragEnded(event) {
         event.source.reset();
@@ -1598,6 +1686,243 @@ class DragStartStrategy {
     }
     setDragStartProcessor(processor) {
         this.dragStartProcessor = processor;
+    }
+}
+
+class DefaultColorProcessor {
+    resolve(ctrl, shift, alt) {
+        let color = 'green';
+        if (ctrl || shift) {
+            color = 'red';
+        }
+        if (alt) {
+            color = 'blue';
+        }
+        if ((shift || ctrl) && alt) {
+            color = 'orange';
+        }
+        return color;
+    }
+}
+
+class ColorStrategy {
+    constructor() {
+        this.colorProcessor = new DefaultColorProcessor();
+    }
+    resolve(ctrl, shift, alt) {
+        return this.colorProcessor.resolve(ctrl, shift, alt);
+    }
+    setColorProcessor(colorProcessor) {
+        this.colorProcessor = colorProcessor;
+    }
+}
+
+class DrawProvider {
+    constructor() {
+        this.arrowsSubject$ = new BehaviorSubject([]);
+        this.circlesSubject$ = new BehaviorSubject([]);
+        this.arrows$ = this.arrowsSubject$.asObservable();
+        this.circles$ = this.circlesSubject$.asObservable();
+    }
+    get circles() {
+        return this.circlesSubject$.value;
+    }
+    set circles(circles) {
+        this.circlesSubject$.next(circles);
+    }
+    get arrows() {
+        return this.arrowsSubject$.value;
+    }
+    set arrows(arrows) {
+        this.arrowsSubject$.next(arrows);
+    }
+    addCircle(circle) {
+        this.circles = [...this.circles, circle];
+    }
+    reomveCircle(removeCircle) {
+        this.circles = this.circles.filter((circle) => !circle.isEqual(removeCircle));
+    }
+    addArrow(arrow) {
+        this.arrows = [...this.arrows, arrow];
+    }
+    removeArrow(removeArrow) {
+        this.arrows = this.arrows.filter((arrow) => !arrow.isEqual(removeArrow));
+    }
+    containsCircle(checkCircle) {
+        return this.circles.some((circle) => circle.isEqual(checkCircle));
+    }
+    containsArrow(checkArrow) {
+        return this.arrows.some((arrow) => arrow.isEqual(checkArrow));
+    }
+    clear() {
+        this.arrows = [];
+        this.circles = [];
+    }
+}
+
+class AbstractEngineFacade {
+    constructor(board) {
+        this.dragStartStrategy = new DragStartStrategy();
+        this.dragEndStrategy = new DragEndStrategy();
+        this.colorStrategy = new ColorStrategy();
+        this.coords = new CoordsProvider();
+        this.heightAndWidth = Constants.DEFAULT_SIZE;
+        this.freeMode = false;
+        this.drawProvider = new DrawProvider();
+        this.pieceIconManager = new PieceIconInputManager();
+        this.moveHistoryProvider = new HistoryMoveProvider();
+        this.board = board;
+    }
+    checkIfPawnFirstMove(piece) {
+        if (piece instanceof Pawn) {
+            piece.isMovedAlready = true;
+        }
+    }
+    checkIfRookMoved(piece) {
+        if (piece instanceof Rook) {
+            piece.isMovedAlready = true;
+        }
+    }
+    checkIfKingMoved(piece) {
+        if (piece instanceof King) {
+            piece.isMovedAlready = true;
+        }
+    }
+    getMoveHistory() {
+        return this.moveHistoryProvider.getAll();
+    }
+}
+
+class BoardLoader {
+    constructor(engineFacade, notationProcessor) {
+        this.engineFacade = engineFacade;
+        if (notationProcessor) {
+            this.notationProcessor = notationProcessor;
+        }
+        else {
+            this.notationProcessor = NotationProcessorFactory.getDefaultProcessor();
+        }
+    }
+    addPieces() {
+        DefaultPiecesLoader.loadDefaultPieces(this.engineFacade.board);
+    }
+    loadFEN(fen) {
+        this.notationProcessor.process(fen, this.engineFacade);
+    }
+    loadPGN(pgn) {
+        this.notationProcessor.process(pgn, this.engineFacade);
+    }
+    setEngineFacade(engineFacade) {
+        this.engineFacade = engineFacade;
+    }
+    setNotationProcessor(notationProcessor) {
+        this.notationProcessor = notationProcessor;
+    }
+}
+
+class BoardState {
+    constructor(board) {
+        this.board = board;
+    }
+}
+
+class BoardStateProvider {
+    constructor() {
+        this.statesSubject$ = new BehaviorSubject([]);
+    }
+    get states() {
+        return this.statesSubject$.value;
+    }
+    set states(states) {
+        this.statesSubject$.next(states);
+    }
+    addMove(state) {
+        this.states = [...this.states, state];
+    }
+    getStates() {
+        return this.states;
+    }
+    pop() {
+        const lastState = this.getLastState();
+        this.states = this.states.filter((state) => state !== lastState);
+        return lastState;
+    }
+    isEmpty() {
+        return this.states.length === 0;
+    }
+    clear() {
+        this.states = [];
+    }
+    getLastState() {
+        return this.states[this.getLastStateIndex()];
+    }
+    getLastStateIndex() {
+        return this.states.length - 1;
+    }
+}
+
+class Arrow {
+    isEqual(arrow) {
+        return arrow && this.start.isEqual(arrow.start) && this.end.isEqual(arrow.end);
+    }
+}
+
+class Circle {
+    isEqual(circle) {
+        return circle && this.drawPoint.isEqual(circle.drawPoint);
+    }
+}
+
+class PieceAbstractDecorator {
+    constructor(piece) {
+        this.piece = piece;
+    }
+}
+
+class AvailableMoveDecorator extends PieceAbstractDecorator {
+    constructor(piece, pointClicked, color, board) {
+        super(piece);
+        this.pointClicked = pointClicked;
+        this.color = color;
+        this.board = board;
+    }
+    getPossibleCaptures() {
+        return this.piece
+            .getPossibleCaptures()
+            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
+    }
+    getPossibleMoves() {
+        return this.piece
+            .getPossibleMoves()
+            .filter((point) => !MoveUtils.willMoveCauseCheck(this.color, this.pointClicked.row, this.pointClicked.col, point.row, point.col, this.board));
+    }
+}
+
+class PiecePromotionResolver {
+    static resolvePromotionChoice(board, piece, index) {
+        const isWhite = piece.color === Color.WHITE;
+        switch (index) {
+            case 1:
+                board.pieces.push(new Queen(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_QUEEN
+                    : UnicodeConstants.BLACK_QUEEN, board));
+                break;
+            case 2:
+                board.pieces.push(new Rook(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_ROOK
+                    : UnicodeConstants.BLACK_ROOK, board));
+                break;
+            case 3:
+                board.pieces.push(new Bishop(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_BISHOP
+                    : UnicodeConstants.BLACK_BISHOP, board));
+                break;
+            case 4:
+                board.pieces.push(new Knight(piece.point, piece.color, isWhite
+                    ? UnicodeConstants.WHITE_KNIGHT
+                    : UnicodeConstants.BLACK_KNIGHT, board));
+                break;
+        }
     }
 }
 
@@ -1646,24 +1971,15 @@ class PieceFactory {
     }
 }
 
-class EngineFacade {
+class EngineFacade extends AbstractEngineFacade {
     constructor(board, moveChange) {
+        super(board);
         this._selected = false;
-        this._freeMode = false;
         this.disabling = false;
-        this.heightAndWidth = Constants.DEFAULT_SIZE;
-        this.coords = new CoordsProvider();
-        this.dragStartStrategy = new DragStartStrategy();
-        this.dragEndStrategy = new DragEndStrategy();
-        this.colorStrategy = new ColorStrategy();
-        this._board = board;
         this.moveChange = moveChange;
-        this.boardLoader = new BoardLoader(this.board);
+        this.boardLoader = new BoardLoader(this);
         this.boardLoader.addPieces();
-        this.drawProvider = new DrawProvider();
-        this.pieceIconManager = new PieceIconInputManager();
         this.boardStateProvider = new BoardStateProvider();
-        this.moveHistoryProvider = new HistoryMoveProvider();
     }
     reset() {
         this.boardStateProvider.clear();
@@ -1681,14 +1997,10 @@ class EngineFacade {
                 lastBoard.reverse();
             }
             this.board = lastBoard;
-            this.boardLoader.setBoard(this.board);
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
             this.moveHistoryProvider.pop();
         }
-    }
-    getMoveHistory() {
-        return this.moveHistoryProvider.getAll();
     }
     saveMoveClone() {
         const clone = this.board.clone();
@@ -1699,23 +2011,23 @@ class EngineFacade {
     }
     move(coords) {
         if (coords) {
-            const sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this._board.reverted);
-            const destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this._board.reverted);
-            const srcPiece = this._board.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
+            const sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this.board.reverted);
+            const destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this.board.reverted);
+            const srcPiece = this.board.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
             if (srcPiece) {
-                if ((this._board.currentWhitePlayer &&
+                if ((this.board.currentWhitePlayer &&
                     srcPiece.color === Color.BLACK) ||
-                    (!this._board.currentWhitePlayer &&
+                    (!this.board.currentWhitePlayer &&
                         srcPiece.color === Color.WHITE)) {
                     return;
                 }
                 this.prepareActivePiece(srcPiece, srcPiece.point);
-                if (this._board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
-                    this._board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                if (this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
+                    this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
                     this.saveClone();
                     this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis), coords.length === 5 ? +coords.substring(4, 5) : 0);
-                    this._board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
-                    this._board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
+                    this.board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
+                    this.board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
                     this.disableSelection();
                 }
                 else {
@@ -1725,27 +2037,27 @@ class EngineFacade {
         }
     }
     prepareActivePiece(pieceClicked, pointClicked) {
-        this._board.activePiece = pieceClicked;
+        this.board.activePiece = pieceClicked;
         this._selected = true;
-        this._board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleCaptures();
-        this._board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleMoves();
+        this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
+        this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
     }
     onPieceClicked(pieceClicked, pointClicked) {
-        if ((this._board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
-            (!this._board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+        if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+            (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
             return;
         }
         this.prepareActivePiece(pieceClicked, pointClicked);
     }
     handleClickEvent(pointClicked, isMouseDown) {
         let moving = false;
-        if ((this._board.isPointInPossibleMoves(pointClicked) ||
-            this._board.isPointInPossibleCaptures(pointClicked)) || this._freeMode) {
+        if ((this.board.isPointInPossibleMoves(pointClicked) ||
+            this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
             this.saveClone();
-            this._board.lastMoveSrc = new Point(this._board.activePiece.point.row, this._board.activePiece.point.col);
-            this._board.lastMoveDest = pointClicked;
-            this.movePiece(this._board.activePiece, pointClicked);
-            if (!this._board.activePiece.point.isEqual(this._board.lastMoveSrc)) {
+            this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
+            this.board.lastMoveDest = pointClicked.clone();
+            this.movePiece(this.board.activePiece, pointClicked);
+            if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
                 moving = true;
             }
         }
@@ -1753,7 +2065,7 @@ class EngineFacade {
             this.disableSelection();
         }
         this.disableSelection();
-        const pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+        const pieceClicked = this.board.getPieceByPoint(pointClicked.row, pointClicked.col);
         if (pieceClicked && !moving) {
             this.onFreeMode(pieceClicked);
             this.onPieceClicked(pieceClicked, pointClicked);
@@ -1765,19 +2077,19 @@ class EngineFacade {
             return;
         }
         this.drawProvider.clear();
-        if (this._board.activePiece &&
-            pointClicked.isEqual(this._board.activePiece.point)) {
+        if (this.board.activePiece &&
+            pointClicked.isEqual(this.board.activePiece.point)) {
             this.disabling = true;
             return;
         }
-        const pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
-        if (this._freeMode) {
+        const pieceClicked = this.board.getPieceByPoint(pointClicked.row, pointClicked.col);
+        if (this.freeMode) {
             if (pieceClicked) {
                 if (event.ctrlKey) {
                     this.board.pieces = this.board.pieces.filter(e => e !== pieceClicked);
                     return;
                 }
-                this._board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+                this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
             }
         }
         if (this.isPieceDisabled(pieceClicked)) {
@@ -1802,14 +2114,14 @@ class EngineFacade {
         if (this.dragDisabled) {
             return;
         }
-        if (this._board.activePiece &&
-            pointClicked.isEqual(this._board.activePiece.point) &&
+        if (this.board.activePiece &&
+            pointClicked.isEqual(this.board.activePiece.point) &&
             this.disabling) {
             this.disableSelection();
             this.disabling = false;
             return;
         }
-        const pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+        const pieceClicked = this.board.getPieceByPoint(pointClicked.row, pointClicked.col);
         if (this.isPieceDisabled(pieceClicked)) {
             return;
         }
@@ -1819,38 +2131,38 @@ class EngineFacade {
         }
     }
     saveClone() {
-        const clone = this._board.clone();
-        if (this._board.reverted) {
+        const clone = this.board.clone();
+        if (this.board.reverted) {
             clone.reverse();
         }
         this.boardStateProvider.addMove(new BoardState(clone));
     }
     movePiece(toMovePiece, newPoint, promotionIndex) {
-        const destPiece = this._board.pieces.find((piece) => piece.point.col === newPoint.col &&
+        const destPiece = this.board.pieces.find((piece) => piece.point.col === newPoint.col &&
             piece.point.row === newPoint.row);
         if (destPiece && toMovePiece.color !== destPiece.color) {
-            this._board.pieces = this._board.pieces.filter((piece) => piece !== destPiece);
+            this.board.pieces = this.board.pieces.filter((piece) => piece !== destPiece);
         }
         else {
             if (destPiece && toMovePiece.color === destPiece.color) {
                 return;
             }
         }
-        const move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this._board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
+        const move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
         this.moveHistoryProvider.addMove(move);
         if (toMovePiece instanceof King) {
             const squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
             if (squaresMoved > 1) {
                 if (newPoint.col < 3) {
-                    const leftRook = this._board.getPieceByField(toMovePiece.point.row, 0);
-                    if (!this._freeMode) {
-                        leftRook.point.col = this._board.reverted ? 2 : 3;
+                    const leftRook = this.board.getPieceByField(toMovePiece.point.row, 0);
+                    if (!this.freeMode) {
+                        leftRook.point.col = this.board.reverted ? 2 : 3;
                     }
                 }
                 else {
-                    const rightRook = this._board.getPieceByField(toMovePiece.point.row, 7);
-                    if (!this._freeMode) {
-                        rightRook.point.col = this._board.reverted ? 4 : 5;
+                    const rightRook = this.board.getPieceByField(toMovePiece.point.row, 7);
+                    if (!this.freeMode) {
+                        rightRook.point.col = this.board.reverted ? 4 : 5;
                     }
                 }
             }
@@ -1859,9 +2171,13 @@ class EngineFacade {
             this.board.checkIfPawnTakesEnPassant(newPoint);
             this.board.checkIfPawnEnpassanted(toMovePiece, newPoint);
         }
+        else {
+            this.board.enPassantPoint = null;
+            this.board.enPassantPiece = null;
+        }
         toMovePiece.point = newPoint;
         this.increaseFullMoveCount();
-        this._board.currentWhitePlayer = !this._board.currentWhitePlayer;
+        this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
         if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
             this.afterMoveActions();
         }
@@ -1884,40 +2200,25 @@ class EngineFacade {
             return true;
         }
     }
-    checkIfPawnFirstMove(piece) {
-        if (piece instanceof Pawn) {
-            piece.isMovedAlready = true;
-        }
-    }
-    checkIfRookMoved(piece) {
-        if (piece instanceof Rook) {
-            piece.isMovedAlready = true;
-        }
-    }
-    checkIfKingMoved(piece) {
-        if (piece instanceof King) {
-            piece.isMovedAlready = true;
-        }
-    }
     afterMoveActions(promotionIndex) {
-        this.checkIfPawnFirstMove(this._board.activePiece);
-        this.checkIfRookMoved(this._board.activePiece);
-        this.checkIfKingMoved(this._board.activePiece);
-        this._board.blackKingChecked = this._board.isKingInCheck(Color.BLACK, this._board.pieces);
-        this._board.whiteKingChecked = this._board.isKingInCheck(Color.WHITE, this._board.pieces);
-        const check = this._board.blackKingChecked || this._board.whiteKingChecked;
+        this.checkIfPawnFirstMove(this.board.activePiece);
+        this.checkIfRookMoved(this.board.activePiece);
+        this.checkIfKingMoved(this.board.activePiece);
+        this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
+        this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
+        const check = this.board.blackKingChecked || this.board.whiteKingChecked;
         const checkmate = this.checkForPossibleMoves(Color.BLACK) ||
             this.checkForPossibleMoves(Color.WHITE);
         const stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
         this.disabling = false;
-        this._board.calculateFEN();
+        this.board.calculateFEN();
         const lastMove = this.moveHistoryProvider.getLastMove();
         if (lastMove && promotionIndex) {
             lastMove.move += promotionIndex;
         }
         this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check,
             checkmate,
-            stalemate, fen: this._board.fen, freeMode: this._freeMode }));
+            stalemate, fen: this.board.fen, freeMode: this.freeMode }));
     }
     checkForPat(color) {
         if (color === Color.WHITE && !this.board.whiteKingChecked) {
@@ -1947,9 +2248,9 @@ class EngineFacade {
     }
     disableSelection() {
         this._selected = false;
-        this._board.possibleCaptures = [];
-        this._board.activePiece = null;
-        this._board.possibleMoves = [];
+        this.board.possibleCaptures = [];
+        this.board.activePiece = null;
+        this.board.possibleMoves = [];
     }
     /**
      * Processes logic to allow freeMode based logic processing
@@ -2003,24 +2304,6 @@ class EngineFacade {
         if (!this.board.currentWhitePlayer) {
             ++this.board.fullMoveCount;
         }
-    }
-    get board() {
-        return this._board;
-    }
-    set board(value) {
-        this._board = value;
-    }
-    get selected() {
-        return this._selected;
-    }
-    set selected(value) {
-        this._selected = value;
-    }
-    get freeMode() {
-        return this._freeMode;
-    }
-    set freeMode(value) {
-        this._freeMode = value;
     }
     addPiece(pieceTypeInput, colorInput, coords) {
         if (this.freeMode && coords && pieceTypeInput > 0 && colorInput > 0) {
@@ -2100,6 +2383,7 @@ class Board {
         this.possibleCaptures = [];
         this.pieces.forEach((piece) => this.reversePoint(piece.point));
         this.reversePoint(this.lastMoveSrc);
+        this.reversePoint(this.lastMoveDest);
         if (this.enPassantPoint && this.enPassantPiece) {
             this.reversePoint(this.enPassantPoint);
         }
@@ -2260,6 +2544,7 @@ class Board {
     }
     checkIfPawnTakesEnPassant(newPoint) {
         if (newPoint.isEqual(this.enPassantPoint)) {
+            console.log('usuwam');
             this.pieces = this.pieces.filter((piece) => piece !== this.enPassantPiece);
             this.enPassantPoint = null;
             this.enPassantPiece = null;
@@ -2293,172 +2578,13 @@ class NgxChessBoardService {
         this.componentMethodCallSource.next();
     }
 }
-NgxChessBoardService.ɵfac = function NgxChessBoardService_Factory(t) { return new (t || NgxChessBoardService)(); };
-NgxChessBoardService.ɵprov = ɵɵdefineInjectable({ token: NgxChessBoardService, factory: NgxChessBoardService.ɵfac, providedIn: 'root' });
-/*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardService, [{
-        type: Injectable,
-        args: [{
+NgxChessBoardService.ɵprov = ɵɵdefineInjectable({ factory: function NgxChessBoardService_Factory() { return new NgxChessBoardService(); }, token: NgxChessBoardService, providedIn: "root" });
+NgxChessBoardService.decorators = [
+    { type: Injectable, args: [{
                 providedIn: 'root',
-            }]
-    }], null, null); })();
+            },] }
+];
 
-const _c0 = ["myModal"];
-class PiecePromotionModalComponent {
-    constructor() {
-        this.opened = false;
-    }
-    open(closeCallback) {
-        this.opened = true;
-        this.onCloseCallback = closeCallback;
-        this.modal.nativeElement.style.display = 'block';
-    }
-    changeSelection(index) {
-        this.modal.nativeElement.style.display = 'none';
-        this.opened = false;
-        this.onCloseCallback(index);
-    }
-}
-PiecePromotionModalComponent.ɵfac = function PiecePromotionModalComponent_Factory(t) { return new (t || PiecePromotionModalComponent)(); };
-PiecePromotionModalComponent.ɵcmp = ɵɵdefineComponent({ type: PiecePromotionModalComponent, selectors: [["app-piece-promotion-modal"]], viewQuery: function PiecePromotionModalComponent_Query(rf, ctx) { if (rf & 1) {
-        ɵɵviewQuery(_c0, true);
-    } if (rf & 2) {
-        var _t;
-        ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.modal = _t.first);
-    } }, decls: 13, vars: 0, consts: [[1, "container"], ["myModal", ""], [1, "wrapper"], [1, "content"], [1, "piece-wrapper"], [1, "piece", 3, "click"]], template: function PiecePromotionModalComponent_Template(rf, ctx) { if (rf & 1) {
-        ɵɵelementStart(0, "div", 0, 1);
-        ɵɵelementStart(2, "div", 2);
-        ɵɵelementStart(3, "div", 3);
-        ɵɵelementStart(4, "div", 4);
-        ɵɵelementStart(5, "div", 5);
-        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_5_listener() { return ctx.changeSelection(1); });
-        ɵɵtext(6, "\u265B");
-        ɵɵelementEnd();
-        ɵɵelementStart(7, "div", 5);
-        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_7_listener() { return ctx.changeSelection(2); });
-        ɵɵtext(8, "\u265C");
-        ɵɵelementEnd();
-        ɵɵelementStart(9, "div", 5);
-        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_9_listener() { return ctx.changeSelection(3); });
-        ɵɵtext(10, "\u265D");
-        ɵɵelementEnd();
-        ɵɵelementStart(11, "div", 5);
-        ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_11_listener() { return ctx.changeSelection(4); });
-        ɵɵtext(12, "\u265E");
-        ɵɵelementEnd();
-        ɵɵelementEnd();
-        ɵɵelementEnd();
-        ɵɵelementEnd();
-        ɵɵelementEnd();
-    } }, styles: [".container[_ngcontent-%COMP%]{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{height:100%;width:100%}.content[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{position:relative}.content[_ngcontent-%COMP%]{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece[_ngcontent-%COMP%]{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece[_ngcontent-%COMP%]:hover{background-color:#ccc;border-radius:5px}.piece-wrapper[_ngcontent-%COMP%]{height:80%;width:100%}#close-button[_ngcontent-%COMP%]{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected[_ngcontent-%COMP%]{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"] });
-/*@__PURE__*/ (function () { ɵsetClassMetadata(PiecePromotionModalComponent, [{
-        type: Component,
-        args: [{
-                selector: 'app-piece-promotion-modal',
-                templateUrl: './piece-promotion-modal.component.html',
-                styleUrls: ['./piece-promotion-modal.component.scss']
-            }]
-    }], null, { modal: [{
-            type: ViewChild,
-            args: ['myModal', { static: false }]
-        }] }); })();
-
-const _c0$1 = ["boardRef"];
-const _c1 = ["modal"];
-function NgxChessBoardComponent_div_3_div_1_span_1_Template(rf, ctx) { if (rf & 1) {
-    ɵɵelementStart(0, "span", 15);
-    ɵɵtext(1);
-    ɵɵelementEnd();
-} if (rf & 2) {
-    const i_r7 = ɵɵnextContext(2).index;
-    const ctx_r11 = ɵɵnextContext();
-    ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
-    ɵɵadvance(1);
-    ɵɵtextInterpolate1(" ", ctx_r11.engineFacade.coords.yCoords[i_r7], " ");
-} }
-function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) { if (rf & 1) {
-    ɵɵelementStart(0, "span", 16);
-    ɵɵtext(1);
-    ɵɵelementEnd();
-} if (rf & 2) {
-    const j_r10 = ɵɵnextContext().index;
-    const ctx_r12 = ɵɵnextContext(2);
-    ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
-    ɵɵadvance(1);
-    ɵɵtextInterpolate1(" ", ctx_r12.engineFacade.coords.xCoords[j_r10], " ");
-} }
-function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) { if (rf & 1) {
-    const _r18 = ɵɵgetCurrentView();
-    ɵɵelementStart(0, "div", 17);
-    ɵɵelementStart(1, "div", 18);
-    ɵɵlistener("cdkDragEnded", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragEnded_1_listener($event) { ɵɵrestoreView(_r18); const ctx_r17 = ɵɵnextContext(3); return ctx_r17.dragEnded($event); })("cdkDragStarted", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragStarted_1_listener($event) { ɵɵrestoreView(_r18); const ctx_r19 = ɵɵnextContext(3); return ctx_r19.dragStart($event); });
-    ɵɵelementEnd();
-    ɵɵelementEnd();
-} if (rf & 2) {
-    const j_r10 = ɵɵnextContext().index;
-    const i_r7 = ɵɵnextContext().index;
-    const ctx_r13 = ɵɵnextContext();
-    ɵɵadvance(1);
-    ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
-    ɵɵproperty("cdkDragDisabled", ctx_r13.engineFacade.dragDisabled)("innerHTML", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10).constant.icon : "", ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10)));
-} }
-function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) { if (rf & 1) {
-    ɵɵelementStart(0, "div", 11);
-    ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_span_1_Template, 2, 5, "span", 12);
-    ɵɵtemplate(2, NgxChessBoardComponent_div_3_div_1_span_2_Template, 2, 5, "span", 13);
-    ɵɵtemplate(3, NgxChessBoardComponent_div_3_div_1_div_3_Template, 2, 6, "div", 14);
-    ɵɵelementEnd();
-} if (rf & 2) {
-    const j_r10 = ctx.index;
-    const i_r7 = ɵɵnextContext().index;
-    const ctx_r8 = ɵɵnextContext();
-    ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
-    ɵɵclassProp("current-selection", ctx_r8.engineFacade.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.engineFacade.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.engineFacade.board.isKingChecked(ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.engineFacade.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.engineFacade.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.engineFacade.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.engineFacade.board.isXYInSourceMove(i_r7, j_r10));
-    ɵɵadvance(1);
-    ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
-    ɵɵadvance(1);
-    ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
-    ɵɵadvance(1);
-    ɵɵproperty("ngIf", ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10));
-} }
-function NgxChessBoardComponent_div_3_Template(rf, ctx) { if (rf & 1) {
-    ɵɵelementStart(0, "div", 9);
-    ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_Template, 4, 19, "div", 10);
-    ɵɵelementEnd();
-} if (rf & 2) {
-    const row_r6 = ctx.$implicit;
-    ɵɵadvance(1);
-    ɵɵproperty("ngForOf", row_r6);
-} }
-function NgxChessBoardComponent__svg_defs_5_Template(rf, ctx) { if (rf & 1) {
-    ɵɵnamespaceSVG();
-    ɵɵelementStart(0, "defs");
-    ɵɵelementStart(1, "marker", 19);
-    ɵɵelement(2, "path", 20);
-    ɵɵelementEnd();
-    ɵɵelementEnd();
-} if (rf & 2) {
-    const color_r23 = ctx.$implicit;
-    ɵɵadvance(1);
-    ɵɵproperty("id", color_r23 + "Arrow");
-    ɵɵadvance(1);
-    ɵɵstyleProp("fill", color_r23);
-} }
-function NgxChessBoardComponent__svg_line_6_Template(rf, ctx) { if (rf & 1) {
-    ɵɵnamespaceSVG();
-    ɵɵelement(0, "line", 21);
-} if (rf & 2) {
-    const arrow_r24 = ctx.$implicit;
-    ɵɵattribute("marker-end", "url(#" + arrow_r24.end.color + "Arrow)")("stroke", arrow_r24.end.color)("x1", arrow_r24.start.x)("x2", arrow_r24.end.x)("y1", arrow_r24.start.y)("y2", arrow_r24.end.y);
-} }
-function NgxChessBoardComponent__svg_circle_8_Template(rf, ctx) { if (rf & 1) {
-    ɵɵnamespaceSVG();
-    ɵɵelement(0, "circle", 22);
-} if (rf & 2) {
-    const circle_r25 = ctx.$implicit;
-    const ctx_r4 = ɵɵnextContext();
-    ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.engineFacade.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
-} }
-const _c2 = function () { return ["red", "green", "blue", "orange"]; };
 class NgxChessBoardComponent {
     constructor(ngxChessBoardService) {
         this.ngxChessBoardService = ngxChessBoardService;
@@ -2522,10 +2648,10 @@ class NgxChessBoardComponent {
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.engineFacade.reset();
         });
-        this.calculatePieceSize();
     }
     ngAfterViewInit() {
         this.engineFacade.modal = this.modal;
+        this.calculatePieceSize();
     }
     onMouseUp(event) {
         this.engineFacade.onMouseUp(event, this.getClickPoint(event), this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().top);
@@ -2537,18 +2663,32 @@ class NgxChessBoardComponent {
     }
     updateBoard(board) {
         this.engineFacade.board = board;
-        this.boardLoader.setBoard(this.engineFacade.board);
+        this.boardLoader.setEngineFacade(this.engineFacade);
         this.engineFacade.board.possibleCaptures = [];
         this.engineFacade.board.possibleMoves = [];
     }
     setFEN(fen) {
         try {
+            this.engineFacade.boardLoader.setNotationProcessor(NotationProcessorFactory.getProcessor(NotationType.FEN));
             this.engineFacade.boardLoader.loadFEN(fen);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
             this.engineFacade.coords.reset();
         }
         catch (exception) {
+            this.engineFacade.boardLoader.addPieces();
+        }
+    }
+    setPGN(pgn) {
+        try {
+            this.engineFacade.boardLoader.setNotationProcessor(NotationProcessorFactory.getProcessor(NotationType.PGN));
+            this.engineFacade.boardLoader.loadPGN(pgn);
+            this.engineFacade.board.possibleCaptures = [];
+            this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.coords.reset();
+        }
+        catch (exception) {
+            console.log(exception);
             this.engineFacade.boardLoader.addPieces();
         }
     }
@@ -2589,97 +2729,60 @@ class NgxChessBoardComponent {
         this.engineFacade.addPiece(pieceTypeInput, colorInput, coords);
     }
 }
-NgxChessBoardComponent.ɵfac = function NgxChessBoardComponent_Factory(t) { return new (t || NgxChessBoardComponent)(ɵɵdirectiveInject(NgxChessBoardService)); };
-NgxChessBoardComponent.ɵcmp = ɵɵdefineComponent({ type: NgxChessBoardComponent, selectors: [["ngx-chess-board"]], viewQuery: function NgxChessBoardComponent_Query(rf, ctx) { if (rf & 1) {
-        ɵɵviewQuery(_c0$1, true);
-        ɵɵviewQuery(_c1, true);
-    } if (rf & 2) {
-        var _t;
-        ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.boardRef = _t.first);
-        ɵɵqueryRefresh(_t = ɵɵloadQuery()) && (ctx.modal = _t.first);
-    } }, hostBindings: function NgxChessBoardComponent_HostBindings(rf, ctx) { if (rf & 1) {
-        ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
-    } }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", size: "size", freeMode: "freeMode", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", pieceIcons: "pieceIcons", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) { if (rf & 1) {
-        const _r26 = ɵɵgetCurrentView();
-        ɵɵelementStart(0, "div", 0, 1);
-        ɵɵlistener("pointerdown", function NgxChessBoardComponent_Template_div_pointerdown_0_listener($event) { ɵɵrestoreView(_r26); const _r5 = ɵɵreference(11); return !_r5.opened && ctx.onMouseDown($event); })("pointerup", function NgxChessBoardComponent_Template_div_pointerup_0_listener($event) { ɵɵrestoreView(_r26); const _r5 = ɵɵreference(11); return !_r5.opened && ctx.onMouseUp($event); });
-        ɵɵelementStart(2, "div", 2);
-        ɵɵtemplate(3, NgxChessBoardComponent_div_3_Template, 2, 1, "div", 3);
-        ɵɵelementEnd();
-        ɵɵnamespaceSVG();
-        ɵɵelementStart(4, "svg", 4);
-        ɵɵtemplate(5, NgxChessBoardComponent__svg_defs_5_Template, 3, 3, "defs", 5);
-        ɵɵtemplate(6, NgxChessBoardComponent__svg_line_6_Template, 1, 6, "line", 6);
-        ɵɵpipe(7, "async");
-        ɵɵtemplate(8, NgxChessBoardComponent__svg_circle_8_Template, 1, 4, "circle", 7);
-        ɵɵpipe(9, "async");
-        ɵɵelementEnd();
-        ɵɵnamespaceHTML();
-        ɵɵelement(10, "app-piece-promotion-modal", null, 8);
-        ɵɵelementEnd();
-    } if (rf & 2) {
-        ɵɵstyleProp("height", ctx.engineFacade.heightAndWidth, "px")("width", ctx.engineFacade.heightAndWidth, "px");
-        ɵɵadvance(3);
-        ɵɵproperty("ngForOf", ctx.engineFacade.board.board);
-        ɵɵadvance(1);
-        ɵɵattribute("height", ctx.engineFacade.heightAndWidth)("width", ctx.engineFacade.heightAndWidth);
-        ɵɵadvance(1);
-        ɵɵproperty("ngForOf", ɵɵpureFunction0(14, _c2));
-        ɵɵadvance(1);
-        ɵɵproperty("ngForOf", ɵɵpipeBind1(7, 10, ctx.engineFacade.drawProvider.arrows$));
-        ɵɵadvance(2);
-        ɵɵproperty("ngForOf", ɵɵpipeBind1(9, 12, ctx.engineFacade.drawProvider.circles$));
-    } }, directives: [NgForOf, PiecePromotionModalComponent, NgIf, CdkDrag, NgClass, NgStyle], pipes: [AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
-/*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardComponent, [{
-        type: Component,
-        args: [{
+NgxChessBoardComponent.decorators = [
+    { type: Component, args: [{
                 selector: 'ngx-chess-board',
-                templateUrl: './ngx-chess-board.component.html',
-                styleUrls: ['./ngx-chess-board.component.scss'],
-            }]
-    }], function () { return [{ type: NgxChessBoardService }]; }, { darkTileColor: [{
-            type: Input
-        }], lightTileColor: [{
-            type: Input
-        }], showCoords: [{
-            type: Input
-        }], moveChange: [{
-            type: Output
-        }], checkmate: [{
-            type: Output
-        }], stalemate: [{
-            type: Output
-        }], boardRef: [{
-            type: ViewChild,
-            args: ['boardRef']
-        }], modal: [{
-            type: ViewChild,
-            args: ['modal']
-        }], size: [{
-            type: Input,
-            args: ['size']
-        }], freeMode: [{
-            type: Input,
-            args: ['freeMode']
-        }], dragDisabled: [{
-            type: Input,
-            args: ['dragDisabled']
-        }], drawDisabled: [{
-            type: Input,
-            args: ['drawDisabled']
-        }], pieceIcons: [{
-            type: Input,
-            args: ['pieceIcons']
-        }], lightDisabled: [{
-            type: Input,
-            args: ['lightDisabled']
-        }], darkDisabled: [{
-            type: Input,
-            args: ['darkDisabled']
-        }], onRightClick: [{
-            type: HostListener,
-            args: ['contextmenu', ['$event']]
-        }] }); })();
+                template: "<div\r\n    id=\"board\"\r\n    [style.height.px]=\"engineFacade.heightAndWidth\"\r\n    [style.width.px]=\"engineFacade.heightAndWidth\"\r\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\r\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\r\n    #boardRef\r\n>\r\n    <div id=\"drag\">\r\n        <div\r\n            class=\"board-row\"\r\n            *ngFor=\"let row of engineFacade.board.board; let i = index\"\r\n        >\r\n            <div\r\n                class=\"board-col\"\r\n                [class.current-selection]=\"engineFacade.board.isXYInActiveMove(i,j)\"\r\n                [class.dest-move]=\"engineFacade.board.isXYInDestMove(i,j)\"\r\n                [class.king-check]=\" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))\"\r\n                [class.point-circle]=\"engineFacade.board.isXYInPointSelection(i, j)\"\r\n                [class.possible-capture]=\"engineFacade.board.isXYInPossibleCaptures(i, j)\"\r\n                [class.possible-point]=\"engineFacade.board.isXYInPossibleMoves(i, j)\"\r\n                [class.source-move]=\"engineFacade.board.isXYInSourceMove(i, j)\"\r\n                [style.background-color]=\"((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor\"\r\n                *ngFor=\"let col of row; let j = index\"\r\n            >\r\n                <span\r\n                    class=\"yCoord\"\r\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && j === 7\"\r\n                >\r\n                    {{engineFacade.coords.yCoords[i]}}\r\n                </span>\r\n                <span\r\n                    class=\"xCoord\"\r\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && i === 7\"\r\n                >\r\n                    {{engineFacade.coords.xCoords[j]}}\r\n                </span>\r\n                <div\r\n                    *ngIf=\"engineFacade.board.getPieceByPoint(i, j) as piece\"\r\n                    style=\"height:100%; width:100%\"\r\n                >\r\n                    <div\r\n                        [cdkDragDisabled]=\"engineFacade.dragDisabled\"\r\n                        [innerHTML]=\"engineFacade.pieceIconManager.isDefaultIcons() ? engineFacade.board.getPieceByPoint(i,j).constant.icon : ''\"\r\n                        [ngClass]=\"'piece'\"\r\n                        [style.font-size]=\"pieceSize + 'px'\"\r\n                        [ngStyle]=\"engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(engineFacade.board.getPieceByPoint(i,j))\"\r\n                        (cdkDragEnded)=\"dragEnded($event)\"\r\n                        (cdkDragStarted)=\"dragStart($event)\"\r\n                        cdkDrag\r\n                    >\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <svg\r\n        [attr.height]=\"engineFacade.heightAndWidth\"\r\n        [attr.width]=\"engineFacade.heightAndWidth\"\r\n        style=\"position:absolute; top:0; pointer-events: none\"\r\n    >\r\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\r\n            <marker\r\n                [id]=\"color + 'Arrow'\"\r\n                markerHeight=\"13\"\r\n                markerWidth=\"13\"\r\n                orient=\"auto\"\r\n                refX=\"9\"\r\n                refY=\"6\"\r\n            >\r\n                <path\r\n                    [style.fill]=\"color\"\r\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\r\n                ></path>\r\n            </marker>\r\n        </defs>\r\n        <line\r\n            class=\"arrow\"\r\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\r\n            [attr.stroke]=\"arrow.end.color\"\r\n            [attr.x1]=\"arrow.start.x\"\r\n            [attr.x2]=\"arrow.end.x\"\r\n            [attr.y1]=\"arrow.start.y\"\r\n            [attr.y2]=\"arrow.end.y\"\r\n            *ngFor=\"let arrow of engineFacade.drawProvider.arrows$ | async\"\r\n        ></line>\r\n        <circle\r\n            [attr.cx]=\"circle.drawPoint.x\"\r\n            [attr.cy]=\"circle.drawPoint.y\"\r\n            [attr.r]=\"engineFacade.heightAndWidth / 18\"\r\n            [attr.stroke]=\"circle.drawPoint.color\"\r\n            *ngFor=\"let circle of engineFacade.drawProvider.circles$ | async\"\r\n            fill-opacity=\"0.0\"\r\n            stroke-width=\"2\"\r\n        ></circle>\r\n    </svg>\r\n    <app-piece-promotion-modal #modal></app-piece-promotion-modal>\r\n</div>\r\n",
+                styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move{background-color:rgba(146,111,26,.79)!important}.dest-move{background-color:#b28e1a!important}.current-selection{background-color:#72620b!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}:host{display:inline-block!important}"]
+            },] }
+];
+NgxChessBoardComponent.ctorParameters = () => [
+    { type: NgxChessBoardService }
+];
+NgxChessBoardComponent.propDecorators = {
+    darkTileColor: [{ type: Input }],
+    lightTileColor: [{ type: Input }],
+    showCoords: [{ type: Input }],
+    moveChange: [{ type: Output }],
+    checkmate: [{ type: Output }],
+    stalemate: [{ type: Output }],
+    boardRef: [{ type: ViewChild, args: ['boardRef',] }],
+    modal: [{ type: ViewChild, args: ['modal',] }],
+    size: [{ type: Input, args: ['size',] }],
+    freeMode: [{ type: Input, args: ['freeMode',] }],
+    dragDisabled: [{ type: Input, args: ['dragDisabled',] }],
+    drawDisabled: [{ type: Input, args: ['drawDisabled',] }],
+    pieceIcons: [{ type: Input, args: ['pieceIcons',] }],
+    lightDisabled: [{ type: Input, args: ['lightDisabled',] }],
+    darkDisabled: [{ type: Input, args: ['darkDisabled',] }],
+    onRightClick: [{ type: HostListener, args: ['contextmenu', ['$event'],] }]
+};
+
+class PiecePromotionModalComponent {
+    constructor() {
+        this.opened = false;
+    }
+    open(closeCallback) {
+        this.opened = true;
+        this.onCloseCallback = closeCallback;
+        this.modal.nativeElement.style.display = 'block';
+    }
+    changeSelection(index) {
+        this.modal.nativeElement.style.display = 'none';
+        this.opened = false;
+        this.onCloseCallback(index);
+    }
+}
+PiecePromotionModalComponent.decorators = [
+    { type: Component, args: [{
+                selector: 'app-piece-promotion-modal',
+                template: "<div #myModal class=\"container\">\r\n    <div class=\"wrapper\">\r\n        <div class=\"content\">\r\n            <div class=\"piece-wrapper\">\r\n                <div class=\"piece\" (click)=\"changeSelection(1)\">&#x265B;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(2)\">&#x265C;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(3)\">&#x265D;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(4)\">&#x265E;</div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n",
+                styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container,.wrapper{height:100%;width:100%}.content,.wrapper{position:relative}.content{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece:hover{background-color:#ccc;border-radius:5px}.piece-wrapper{height:80%;width:100%}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"]
+            },] }
+];
+PiecePromotionModalComponent.propDecorators = {
+    modal: [{ type: ViewChild, args: ['myModal', { static: false },] }]
+};
 
 class NgxChessBoardModule {
     static forRoot() {
@@ -2689,17 +2792,13 @@ class NgxChessBoardModule {
         };
     }
 }
-NgxChessBoardModule.ɵmod = ɵɵdefineNgModule({ type: NgxChessBoardModule });
-NgxChessBoardModule.ɵinj = ɵɵdefineInjector({ factory: function NgxChessBoardModule_Factory(t) { return new (t || NgxChessBoardModule)(); }, imports: [[CommonModule, DragDropModule]] });
-(function () { (typeof ngJitMode === "undefined" || ngJitMode) && ɵɵsetNgModuleScope(NgxChessBoardModule, { declarations: [NgxChessBoardComponent, PiecePromotionModalComponent], imports: [CommonModule, DragDropModule], exports: [NgxChessBoardComponent] }); })();
-/*@__PURE__*/ (function () { ɵsetClassMetadata(NgxChessBoardModule, [{
-        type: NgModule,
-        args: [{
+NgxChessBoardModule.decorators = [
+    { type: NgModule, args: [{
                 declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
                 imports: [CommonModule, DragDropModule],
                 exports: [NgxChessBoardComponent],
-            }]
-    }], null, null); })();
+            },] }
+];
 
 /*
  * Public API Surface of ngx-chess-board

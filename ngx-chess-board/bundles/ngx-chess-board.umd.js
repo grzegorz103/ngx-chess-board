@@ -2,61 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/cdk/drag-drop'), require('@angular/common'), require('@angular/core'), require('rxjs'), require('lodash')) :
     typeof define === 'function' && define.amd ? define('ngx-chess-board', ['exports', '@angular/cdk/drag-drop', '@angular/common', '@angular/core', 'rxjs', 'lodash'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global['ngx-chess-board'] = {}, global.ng.cdk.dragDrop, global.ng.common, global.ng.core, global.rxjs, global.lodash));
-}(this, (function (exports, i4, i2, i0, rxjs, lodash) { 'use strict';
-
-    var Point = /** @class */ (function () {
-        function Point(row, col) {
-            this.row = row;
-            this.col = col;
-        }
-        Point.prototype.isEqual = function (that) {
-            return that && this.row === that.row && this.col === that.col;
-        };
-        Point.prototype.hasCoordsEqual = function (row, col) {
-            return row && col && this.row === row && this.col === col;
-        };
-        return Point;
-    }());
-
-    var DrawPoint = /** @class */ (function () {
-        function DrawPoint(x, y, color) {
-            this.x = x + 0.5;
-            this.y = y + 0.5;
-            this.color = color;
-        }
-        DrawPoint.prototype.isEqual = function (that) {
-            return that && that.x === this.x && this.y === that.y;
-        };
-        return DrawPoint;
-    }());
-
-    var ClickUtils = /** @class */ (function () {
-        function ClickUtils() {
-        }
-        ClickUtils.getClickPoint = function (event, top, height, left, width) {
-            return new Point(Math.floor((event.y - top) / (height / 8)), Math.floor((event.x - left) / (width / 8)));
-        };
-        ClickUtils.getDrawingPoint = function (tileSize, colorStrategy, x, y, ctrl, alt, shift, xAxis, yAxis) {
-            var squareSize = tileSize / 8;
-            var xx = Math.floor((x - xAxis) /
-                squareSize);
-            var yy = Math.floor((y - yAxis) /
-                squareSize);
-            var color = colorStrategy.resolve(ctrl, shift, alt);
-            return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
-        };
-        return ClickUtils;
-    }());
-
-    var HistoryMove = /** @class */ (function () {
-        function HistoryMove(move, piece, color, captured) {
-            this.move = move;
-            this.piece = piece;
-            this.color = color;
-            this.x = captured;
-        }
-        return HistoryMove;
-    }());
+}(this, (function (exports, dragDrop, common, i0, rxjs, lodash) { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -375,6 +321,23 @@
             this.board = board;
         }
         return Piece;
+    }());
+
+    var Point = /** @class */ (function () {
+        function Point(row, col) {
+            this.row = row;
+            this.col = col;
+        }
+        Point.prototype.isEqual = function (that) {
+            return that && this.row === that.row && this.col === that.col;
+        };
+        Point.prototype.hasCoordsEqual = function (row, col) {
+            return row && col && this.row === row && this.col === col;
+        };
+        Point.prototype.clone = function () {
+            return new Point(this.row, this.col);
+        };
+        return Point;
     }());
 
     var Rook = /** @class */ (function (_super) {
@@ -1351,43 +1314,14 @@
         BLACK_BISHOP: { name: 'Bishop', icon: '&#x265D' },
     };
 
-    var BoardLoader = /** @class */ (function () {
-        function BoardLoader(board) {
-            this.board = board;
+    var DefaultFenProcessor = /** @class */ (function () {
+        function DefaultFenProcessor() {
         }
-        BoardLoader.prototype.addPieces = function () {
-            this.board.pieces = [];
-            // piony czarne
-            for (var i = 0; i < 8; ++i) {
-                this.board.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board));
-            }
-            this.board.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
-            this.board.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
-            this.board.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
-            this.board.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.board));
-            this.board.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
-            this.board.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
-            this.board.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
-            this.board.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
-            // piony biale
-            for (var i = 0; i < 8; ++i) {
-                this.board.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board));
-            }
-            this.board.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
-            this.board.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
-            this.board.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
-            this.board.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.board));
-            this.board.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
-            this.board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
-            this.board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
-            this.board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
-            this.board.calculateFEN();
-        };
-        BoardLoader.prototype.loadFEN = function (fen) {
-            console.log(fen);
-            if (fen) {
-                this.board.reverted = false;
-                this.board.pieces = [];
+        DefaultFenProcessor.prototype.process = function (notation, engineFacade) {
+            var fen = notation;
+            if (notation) {
+                engineFacade.board.reverted = false;
+                engineFacade.board.pieces = [];
                 var split = fen.split('/');
                 for (var i = 0; i < 8; ++i) {
                     var pointer = 0;
@@ -1399,51 +1333,51 @@
                         else {
                             switch (chunk) {
                                 case 'r':
-                                    this.board.pieces.push(new Rook(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_ROOK, this.board));
+                                    engineFacade.board.pieces.push(new Rook(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_ROOK, engineFacade.board));
                                     break;
                                 case 'n':
-                                    this.board.pieces.push(new Knight(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, this.board));
+                                    engineFacade.board.pieces.push(new Knight(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, engineFacade.board));
                                     break;
                                 case 'b':
-                                    this.board.pieces.push(new Bishop(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_BISHOP, this.board));
+                                    engineFacade.board.pieces.push(new Bishop(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_BISHOP, engineFacade.board));
                                     break;
                                 case 'q':
-                                    this.board.pieces.push(new Queen(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_QUEEN, this.board));
+                                    engineFacade.board.pieces.push(new Queen(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_QUEEN, engineFacade.board));
                                     break;
                                 case 'k':
-                                    this.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, this.board));
+                                    engineFacade.board.pieces.push(new King(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_KING, engineFacade.board));
                                     break;
                                 case 'p': {
-                                    var pawn = new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, this.board);
+                                    var pawn = new Pawn(new Point(i, pointer), Color.BLACK, UnicodeConstants.BLACK_PAWN, engineFacade.board);
                                     if ((pawn.color === Color.BLACK && pawn.point.row !== 1) ||
                                         (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
                                         pawn.isMovedAlready = true;
                                     }
-                                    this.board.pieces.push(pawn);
+                                    engineFacade.board.pieces.push(pawn);
                                     break;
                                 }
                                 case 'R':
-                                    this.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, this.board));
+                                    engineFacade.board.pieces.push(new Rook(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_ROOK, engineFacade.board));
                                     break;
                                 case 'N':
-                                    this.board.pieces.push(new Knight(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, this.board));
+                                    engineFacade.board.pieces.push(new Knight(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, engineFacade.board));
                                     break;
                                 case 'B':
-                                    this.board.pieces.push(new Bishop(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_BISHOP, this.board));
+                                    engineFacade.board.pieces.push(new Bishop(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_BISHOP, engineFacade.board));
                                     break;
                                 case 'Q':
-                                    this.board.pieces.push(new Queen(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_QUEEN, this.board));
+                                    engineFacade.board.pieces.push(new Queen(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_QUEEN, engineFacade.board));
                                     break;
                                 case 'K':
-                                    this.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, this.board));
+                                    engineFacade.board.pieces.push(new King(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_KING, engineFacade.board));
                                     break;
                                 case 'P': {
-                                    var pawn = new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, this.board);
+                                    var pawn = new Pawn(new Point(i, pointer), Color.WHITE, UnicodeConstants.WHITE_PAWN, engineFacade.board);
                                     if ((pawn.color === Color.BLACK && pawn.point.row !== 1) ||
                                         (pawn.color === Color.WHITE && pawn.point.row !== 6)) {
                                         pawn.isMovedAlready = true;
                                     }
-                                    this.board.pieces.push(pawn);
+                                    engineFacade.board.pieces.push(pawn);
                                     break;
                                 }
                             }
@@ -1451,44 +1385,42 @@
                         }
                     }
                 }
-                this.setCurrentPlayer(fen);
-                this.setCastles(fen);
+                this.setCurrentPlayer(engineFacade.board, fen);
+                this.setCastles(engineFacade.board, fen);
                 this.setEnPassant(fen);
                 this.setFullMoveCount(fen);
+                engineFacade.board.fen = fen;
             }
             else {
                 throw Error('Incorrect FEN provided');
             }
         };
-        BoardLoader.prototype.setBoard = function (board) {
-            this.board = board;
-        };
-        BoardLoader.prototype.setCurrentPlayer = function (fen) {
+        DefaultFenProcessor.prototype.setCurrentPlayer = function (board, fen) {
             if (fen) {
                 var split = fen.split(' ');
-                this.board.currentWhitePlayer = split[1] === 'w';
+                board.currentWhitePlayer = split[1] === 'w';
             }
         };
-        BoardLoader.prototype.setCastles = function (fen) {
+        DefaultFenProcessor.prototype.setCastles = function (board, fen) {
             if (fen) {
                 var split = fen.split(' ');
                 var castleChunk = split[2];
                 if (!castleChunk.includes('K')) {
-                    this.setRookAlreadyMoved(Color.WHITE, 7);
+                    this.setRookAlreadyMoved(board, Color.WHITE, 7);
                 }
                 if (!castleChunk.includes('Q')) {
-                    this.setRookAlreadyMoved(Color.WHITE, 0);
+                    this.setRookAlreadyMoved(board, Color.WHITE, 0);
                 }
                 if (!castleChunk.includes('k')) {
-                    this.setRookAlreadyMoved(Color.BLACK, 7);
+                    this.setRookAlreadyMoved(board, Color.BLACK, 7);
                 }
                 if (!castleChunk.includes('q')) {
-                    this.setRookAlreadyMoved(Color.BLACK, 0);
+                    this.setRookAlreadyMoved(board, Color.BLACK, 0);
                 }
             }
         };
-        BoardLoader.prototype.setFullMoveCount = function (fen) { };
-        BoardLoader.prototype.setEnPassant = function (fen) {
+        DefaultFenProcessor.prototype.setFullMoveCount = function (fen) { };
+        DefaultFenProcessor.prototype.setEnPassant = function (fen) {
             if (fen) {
                 var split = fen.split(' ');
                 var enPassantPoint = split[3];
@@ -1498,234 +1430,13 @@
                 // if()
             }
         };
-        BoardLoader.prototype.setRookAlreadyMoved = function (color, col) {
-            var rook = this.board.pieces.find(function (piece) { return piece.color === color && piece instanceof Rook && piece.point.col === col; });
+        DefaultFenProcessor.prototype.setRookAlreadyMoved = function (board, color, col) {
+            var rook = board.pieces.find(function (piece) { return piece.color === color && piece instanceof Rook && piece.point.col === col; });
             if (rook) {
                 rook.isMovedAlready = true;
             }
         };
-        return BoardLoader;
-    }());
-
-    var BoardState = /** @class */ (function () {
-        function BoardState(board) {
-            this.board = board;
-        }
-        return BoardState;
-    }());
-
-    var BoardStateProvider = /** @class */ (function () {
-        function BoardStateProvider() {
-            this.statesSubject$ = new rxjs.BehaviorSubject([]);
-        }
-        Object.defineProperty(BoardStateProvider.prototype, "states", {
-            get: function () {
-                return this.statesSubject$.value;
-            },
-            set: function (states) {
-                this.statesSubject$.next(states);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        BoardStateProvider.prototype.addMove = function (state) {
-            this.states = __spread(this.states, [state]);
-        };
-        BoardStateProvider.prototype.getStates = function () {
-            return this.states;
-        };
-        BoardStateProvider.prototype.pop = function () {
-            var lastState = this.getLastState();
-            this.states = this.states.filter(function (state) { return state !== lastState; });
-            return lastState;
-        };
-        BoardStateProvider.prototype.isEmpty = function () {
-            return this.states.length === 0;
-        };
-        BoardStateProvider.prototype.clear = function () {
-            this.states = [];
-        };
-        BoardStateProvider.prototype.getLastState = function () {
-            return this.states[this.getLastStateIndex()];
-        };
-        BoardStateProvider.prototype.getLastStateIndex = function () {
-            return this.states.length - 1;
-        };
-        return BoardStateProvider;
-    }());
-
-    var CoordsProvider = /** @class */ (function () {
-        function CoordsProvider() {
-            this.defaultXCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-            this.defaultYCoords = [8, 7, 6, 5, 4, 3, 2, 1];
-            this.currentXCoords = __spread(this.defaultXCoords);
-            this.currentYCoords = __spread(this.defaultYCoords);
-        }
-        Object.defineProperty(CoordsProvider.prototype, "xCoords", {
-            get: function () {
-                return this.currentXCoords;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(CoordsProvider.prototype, "yCoords", {
-            get: function () {
-                return this.currentYCoords;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        CoordsProvider.prototype.reverse = function () {
-            this.currentXCoords = this.currentXCoords.reverse();
-            this.currentYCoords = this.currentYCoords.reverse();
-        };
-        CoordsProvider.prototype.reset = function () {
-            this.init();
-        };
-        CoordsProvider.prototype.init = function () {
-            this.currentXCoords = __spread(this.defaultXCoords);
-            this.currentYCoords = __spread(this.defaultYCoords);
-        };
-        return CoordsProvider;
-    }());
-
-    var Arrow = /** @class */ (function () {
-        function Arrow() {
-        }
-        Arrow.prototype.isEqual = function (arrow) {
-            return arrow && this.start.isEqual(arrow.start) && this.end.isEqual(arrow.end);
-        };
-        return Arrow;
-    }());
-
-    var Circle = /** @class */ (function () {
-        function Circle() {
-        }
-        Circle.prototype.isEqual = function (circle) {
-            return circle && this.drawPoint.isEqual(circle.drawPoint);
-        };
-        return Circle;
-    }());
-
-    var DefaultColorProcessor = /** @class */ (function () {
-        function DefaultColorProcessor() {
-        }
-        DefaultColorProcessor.prototype.resolve = function (ctrl, shift, alt) {
-            var color = 'green';
-            if (ctrl || shift) {
-                color = 'red';
-            }
-            if (alt) {
-                color = 'blue';
-            }
-            if ((shift || ctrl) && alt) {
-                color = 'orange';
-            }
-            return color;
-        };
-        return DefaultColorProcessor;
-    }());
-
-    var ColorStrategy = /** @class */ (function () {
-        function ColorStrategy() {
-            this.colorProcessor = new DefaultColorProcessor();
-        }
-        ColorStrategy.prototype.resolve = function (ctrl, shift, alt) {
-            return this.colorProcessor.resolve(ctrl, shift, alt);
-        };
-        ColorStrategy.prototype.setColorProcessor = function (colorProcessor) {
-            this.colorProcessor = colorProcessor;
-        };
-        return ColorStrategy;
-    }());
-
-    var DrawProvider = /** @class */ (function () {
-        function DrawProvider() {
-            this.arrowsSubject$ = new rxjs.BehaviorSubject([]);
-            this.circlesSubject$ = new rxjs.BehaviorSubject([]);
-            this.arrows$ = this.arrowsSubject$.asObservable();
-            this.circles$ = this.circlesSubject$.asObservable();
-        }
-        Object.defineProperty(DrawProvider.prototype, "circles", {
-            get: function () {
-                return this.circlesSubject$.value;
-            },
-            set: function (circles) {
-                this.circlesSubject$.next(circles);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(DrawProvider.prototype, "arrows", {
-            get: function () {
-                return this.arrowsSubject$.value;
-            },
-            set: function (arrows) {
-                this.arrowsSubject$.next(arrows);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        DrawProvider.prototype.addCircle = function (circle) {
-            this.circles = __spread(this.circles, [circle]);
-        };
-        DrawProvider.prototype.reomveCircle = function (removeCircle) {
-            this.circles = this.circles.filter(function (circle) { return !circle.isEqual(removeCircle); });
-        };
-        DrawProvider.prototype.addArrow = function (arrow) {
-            this.arrows = __spread(this.arrows, [arrow]);
-        };
-        DrawProvider.prototype.removeArrow = function (removeArrow) {
-            this.arrows = this.arrows.filter(function (arrow) { return !arrow.isEqual(removeArrow); });
-        };
-        DrawProvider.prototype.containsCircle = function (checkCircle) {
-            return this.circles.some(function (circle) { return circle.isEqual(checkCircle); });
-        };
-        DrawProvider.prototype.containsArrow = function (checkArrow) {
-            return this.arrows.some(function (arrow) { return arrow.isEqual(checkArrow); });
-        };
-        DrawProvider.prototype.clear = function () {
-            this.arrows = [];
-            this.circles = [];
-        };
-        return DrawProvider;
-    }());
-
-    var HistoryMoveProvider = /** @class */ (function () {
-        function HistoryMoveProvider() {
-            this.historyMovesSubject$ = new rxjs.BehaviorSubject([]);
-        }
-        Object.defineProperty(HistoryMoveProvider.prototype, "historyMoves", {
-            get: function () {
-                return this.historyMovesSubject$.value;
-            },
-            set: function (states) {
-                this.historyMovesSubject$.next(states);
-            },
-            enumerable: false,
-            configurable: true
-        });
-        HistoryMoveProvider.prototype.addMove = function (historyMove) {
-            this.historyMoves = __spread(this.historyMoves, [historyMove]);
-        };
-        HistoryMoveProvider.prototype.pop = function () {
-            var lastHistoryMove = this.getLastMove();
-            this.historyMoves = this.historyMoves.filter(function (state) { return state !== lastHistoryMove; });
-            return lastHistoryMove;
-        };
-        HistoryMoveProvider.prototype.getAll = function () {
-            return this.historyMoves;
-        };
-        HistoryMoveProvider.prototype.clear = function () {
-            this.historyMoves = [];
-        };
-        HistoryMoveProvider.prototype.getLastMove = function () {
-            return this.historyMoves[this.getLastMoveIndex()];
-        };
-        HistoryMoveProvider.prototype.getLastMoveIndex = function () {
-            return this.historyMoves.length - 1;
-        };
-        return HistoryMoveProvider;
+        return DefaultFenProcessor;
     }());
 
     var MoveTranslation = /** @class */ (function () {
@@ -1820,69 +1531,446 @@
             }
             return new MoveTranslation(xAxis, yAxis, reverted);
         };
+        MoveUtils.findPieceByPossibleMovesContaining = function (coords, board, color) {
+            var e_1, _a, e_2, _b;
+            var indexes = this.translateCoordsToIndex(coords, board.reverted);
+            var destPoint = new Point(indexes.yAxis, indexes.xAxis);
+            var foundPieces = [];
+            try {
+                for (var _c = __values(board.pieces.filter(function (piece) { return piece.color === color; })), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    var piece = _d.value;
+                    try {
+                        for (var _e = (e_2 = void 0, __values(piece.getPossibleMoves())), _f = _e.next(); !_f.done; _f = _e.next()) {
+                            var point = _f.value;
+                            if (!MoveUtils.willMoveCauseCheck(piece.color, piece.point.row, piece.point.col, indexes.yAxis, indexes.xAxis, board) && point.isEqual(destPoint)) {
+                                foundPieces.push(piece);
+                            }
+                        }
+                    }
+                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                    finally {
+                        try {
+                            if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                        }
+                        finally { if (e_2) throw e_2.error; }
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            if (foundPieces.length === 0) {
+                console.log(coords + ' debug');
+            }
+            return foundPieces;
+        };
+        MoveUtils.findPieceByPossibleCapturesContaining = function (coords, board, color) {
+            var e_3, _a, e_4, _b;
+            var indexes = this.translateCoordsToIndex(coords, board.reverted);
+            var destPoint = new Point(indexes.yAxis, indexes.xAxis);
+            var foundPieces = [];
+            try {
+                for (var _c = __values(board.pieces.filter(function (piece) { return piece.color === color; })), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    var piece = _d.value;
+                    try {
+                        for (var _e = (e_4 = void 0, __values(piece.getPossibleCaptures())), _f = _e.next(); !_f.done; _f = _e.next()) {
+                            var point = _f.value;
+                            if (!MoveUtils.willMoveCauseCheck(piece.color, piece.point.row, piece.point.col, indexes.yAxis, indexes.xAxis, board) && point.isEqual(destPoint)) {
+                                foundPieces.push(piece);
+                            }
+                        }
+                    }
+                    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                    finally {
+                        try {
+                            if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                        }
+                        finally { if (e_4) throw e_4.error; }
+                    }
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+            if (foundPieces.length === 0) {
+                console.log(coords + ' debug');
+            }
+            return foundPieces;
+        };
+        MoveUtils.formatSingle = function (point, reverted) {
+            if (reverted) {
+                var sourceX = 104 - point.col;
+                return (String.fromCharCode(sourceX) +
+                    (point.row + 1));
+            }
+            else {
+                var incrementX = 97;
+                return (String.fromCharCode(point.col + incrementX) +
+                    (Math.abs(point.row - 7) + 1));
+            }
+        };
         return MoveUtils;
     }());
 
-    var PieceAbstractDecorator = /** @class */ (function () {
-        function PieceAbstractDecorator(piece) {
-            this.piece = piece;
+    var DefaultPiecesLoader = /** @class */ (function () {
+        function DefaultPiecesLoader() {
         }
-        return PieceAbstractDecorator;
+        DefaultPiecesLoader.loadDefaultPieces = function (board) {
+            board.pieces = [];
+            // piony czarne
+            for (var i = 0; i < 8; ++i) {
+                board.pieces.push(new Pawn(new Point(1, i), Color.BLACK, UnicodeConstants.BLACK_PAWN, board));
+            }
+            board.pieces.push(new Rook(new Point(0, 0), Color.BLACK, UnicodeConstants.BLACK_ROOK, board));
+            board.pieces.push(new Knight(new Point(0, 1), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, board));
+            board.pieces.push(new Bishop(new Point(0, 2), Color.BLACK, UnicodeConstants.BLACK_BISHOP, board));
+            board.pieces.push(new Queen(new Point(0, 3), Color.BLACK, UnicodeConstants.BLACK_QUEEN, board));
+            board.pieces.push(new King(new Point(0, 4), Color.BLACK, UnicodeConstants.BLACK_KING, board));
+            board.pieces.push(new Bishop(new Point(0, 5), Color.BLACK, UnicodeConstants.BLACK_BISHOP, board));
+            board.pieces.push(new Knight(new Point(0, 6), Color.BLACK, UnicodeConstants.BLACK_KNIGHT, board));
+            board.pieces.push(new Rook(new Point(0, 7), Color.BLACK, UnicodeConstants.BLACK_ROOK, board));
+            // piony biale
+            for (var i = 0; i < 8; ++i) {
+                board.pieces.push(new Pawn(new Point(6, i), Color.WHITE, UnicodeConstants.WHITE_PAWN, board));
+            }
+            board.pieces.push(new Rook(new Point(7, 0), Color.WHITE, UnicodeConstants.WHITE_ROOK, board));
+            board.pieces.push(new Knight(new Point(7, 1), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, board));
+            board.pieces.push(new Bishop(new Point(7, 2), Color.WHITE, UnicodeConstants.WHITE_BISHOP, board));
+            board.pieces.push(new Queen(new Point(7, 3), Color.WHITE, UnicodeConstants.WHITE_QUEEN, board));
+            board.pieces.push(new King(new Point(7, 4), Color.WHITE, UnicodeConstants.WHITE_KING, board));
+            board.pieces.push(new Bishop(new Point(7, 5), Color.WHITE, UnicodeConstants.WHITE_BISHOP, board));
+            board.pieces.push(new Knight(new Point(7, 6), Color.WHITE, UnicodeConstants.WHITE_KNIGHT, board));
+            board.pieces.push(new Rook(new Point(7, 7), Color.WHITE, UnicodeConstants.WHITE_ROOK, board));
+            board.calculateFEN();
+        };
+        return DefaultPiecesLoader;
     }());
 
-    var AvailableMoveDecorator = /** @class */ (function (_super) {
-        __extends(AvailableMoveDecorator, _super);
-        function AvailableMoveDecorator(piece, pointClicked, color, board) {
-            var _this = _super.call(this, piece) || this;
-            _this.pointClicked = pointClicked;
-            _this.color = color;
-            _this.board = board;
-            return _this;
+    var DefaultPgnProcessor = /** @class */ (function () {
+        function DefaultPgnProcessor() {
         }
-        AvailableMoveDecorator.prototype.getPossibleCaptures = function () {
+        DefaultPgnProcessor.prototype.process = function (notation, engineFacade) {
+            var e_1, _a;
             var _this = this;
-            return this.piece
-                .getPossibleCaptures()
-                .filter(function (point) { return !MoveUtils.willMoveCauseCheck(_this.color, _this.pointClicked.row, _this.pointClicked.col, point.row, point.col, _this.board); });
-        };
-        AvailableMoveDecorator.prototype.getPossibleMoves = function () {
-            var _this = this;
-            return this.piece
-                .getPossibleMoves()
-                .filter(function (point) { return !MoveUtils.willMoveCauseCheck(_this.color, _this.pointClicked.row, _this.pointClicked.col, point.row, point.col, _this.board); });
-        };
-        return AvailableMoveDecorator;
-    }(PieceAbstractDecorator));
-
-    var PiecePromotionResolver = /** @class */ (function () {
-        function PiecePromotionResolver() {
-        }
-        PiecePromotionResolver.resolvePromotionChoice = function (board, piece, index) {
-            var isWhite = piece.color === Color.WHITE;
-            switch (index) {
-                case 1:
-                    board.pieces.push(new Queen(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_QUEEN
-                        : UnicodeConstants.BLACK_QUEEN, board));
-                    break;
-                case 2:
-                    board.pieces.push(new Rook(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_ROOK
-                        : UnicodeConstants.BLACK_ROOK, board));
-                    break;
-                case 3:
-                    board.pieces.push(new Bishop(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_BISHOP
-                        : UnicodeConstants.BLACK_BISHOP, board));
-                    break;
-                case 4:
-                    board.pieces.push(new Knight(piece.point, piece.color, isWhite
-                        ? UnicodeConstants.WHITE_KNIGHT
-                        : UnicodeConstants.BLACK_KNIGHT, board));
-                    break;
+            if (notation) {
+                engineFacade.board.reverted = false;
+                engineFacade.board.pieces = [];
+                engineFacade.reset();
+                DefaultPiecesLoader.loadDefaultPieces(engineFacade.board);
+                var moves = this.extractMoves(notation);
+                var counter = -1;
+                var _loop_1 = function (move) {
+                    ++counter;
+                    move = move.replace(/[+#]/g, '');
+                    var promotionIndex = '';
+                    if (move.includes('=')) {
+                        promotionIndex = this_1.resolvePromotion(move.substring(move.length - 1));
+                        move = move.substring(0, move.length - 2);
+                    }
+                    var color = (counter === 0 || counter % 2 === 0)
+                        ? Color.WHITE
+                        : Color.BLACK;
+                    if (/^[a-z]\d$/g.test(move)) { // zwykly ruch na wolne pole e4
+                        var piece = MoveUtils.findPieceByPossibleMovesContaining(move, engineFacade.board, color).find(function (piece) { return piece instanceof Pawn; });
+                        if (piece) {
+                            engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move + promotionIndex);
+                        }
+                        else {
+                        }
+                    }
+                    else {
+                        if (/^[A-Z][a-h]\d$/g.test(move)) { // jezeli ma wielka litere, czyli trzeba odszukac ktora figura Nf3
+                            var pieces = MoveUtils.findPieceByPossibleMovesContaining(move.substring(1), engineFacade.board, color);
+                            var piece = pieces.find(function (piece) { return _this.resolvePieceByFirstChar(move.charAt(0), piece); });
+                            if (piece) {
+                                engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(1) + promotionIndex);
+                            }
+                            else {
+                            }
+                        }
+                        else {
+                            if ('O-O' === move) {
+                                engineFacade.move(color === Color.WHITE ? 'e1g1' : 'e8g8');
+                            }
+                            else {
+                                if (/^[a-z]x[a-z]\d$/g.test(move)) { //exd5
+                                    var pieces = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).filter(function (piece) { return piece instanceof Pawn; });
+                                    var piece = void 0;
+                                    if (pieces.length > 1) {
+                                        piece = this_1.resolveByCol(pieces, move.substring(0, 1));
+                                    }
+                                    else {
+                                        piece = pieces[0];
+                                    }
+                                    if (piece) {
+                                        engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                    }
+                                    else {
+                                    }
+                                }
+                                else {
+                                    if (/^[A-Z]x[a-z]\d$/g.test(move)) {
+                                        var piece = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).find(function (piece) { return _this.resolvePieceByFirstChar(move.substring(0, 1), piece); });
+                                        if (piece) {
+                                            engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                        }
+                                        else {
+                                        }
+                                    }
+                                    else {
+                                        if (move === 'O-O-O') {
+                                            engineFacade.move(color === Color.WHITE ? 'e1c1' : 'e8c8');
+                                        }
+                                        else {
+                                            if (/^[A-Z]\dx[a-z]\d$/g.test(move)) { //Ngxe4 sytuacja 2 skoczkow pion bicie
+                                                var pieces = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).filter(function (piece) { return _this.resolvePieceByFirstChar(move.charAt(0), piece); });
+                                                var piece = this_1.resolveByRow(pieces, move.substring(1, 2));
+                                                if (piece) {
+                                                    engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                                }
+                                            }
+                                            else {
+                                                if (/^[A-Z][a-z][a-z]\d$/g.test(move)) { // dwie wieze bez bicia Rac1 pion
+                                                    var pieces = MoveUtils.findPieceByPossibleMovesContaining(move.substring(2, 4), engineFacade.board, color).filter(function (piece) { return _this.resolvePieceByFirstChar(move.charAt(0), piece); });
+                                                    var piece = this_1.resolveByCol(pieces, move.substring(1, 2));
+                                                    if (piece) {
+                                                        engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(2, 4) + promotionIndex);
+                                                    }
+                                                }
+                                                else {
+                                                    if (/^[A-Z][a-z]x[a-z]\d$/g.test(move)) {
+                                                        var pieces = MoveUtils.findPieceByPossibleCapturesContaining(move.substring(move.indexOf('x') + 1), engineFacade.board, color).filter(function (piece) { return _this.resolvePieceByFirstChar(move.charAt(0), piece); });
+                                                        var piece = this_1.resolveByCol(pieces, move.substring(1, 2));
+                                                        if (piece) {
+                                                            engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                var this_1 = this;
+                try {
+                    for (var moves_1 = __values(moves), moves_1_1 = moves_1.next(); !moves_1_1.done; moves_1_1 = moves_1.next()) {
+                        var move = moves_1_1.value;
+                        _loop_1(move);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (moves_1_1 && !moves_1_1.done && (_a = moves_1.return)) _a.call(moves_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
             }
         };
-        return PiecePromotionResolver;
+        DefaultPgnProcessor.prototype.extractMoves = function (notation) {
+            return notation.substring(notation.lastIndexOf(']') + 1)
+                .replace(/[0-9]+\./g, '')
+                .replace(/\s+/g, ' ')
+                .replace(/{[^}]*}/g, '')
+                .trim()
+                .split(' ')
+                .filter(function (s) { return s; });
+        };
+        DefaultPgnProcessor.prototype.movePiece = function (piece, board, move) {
+            var indexes = MoveUtils.translateCoordsToIndex(move, board.reverted);
+            piece.point.col = indexes.xAxis;
+            piece.point.row = indexes.yAxis;
+        };
+        DefaultPgnProcessor.prototype.hasUpperCase = function (move) {
+            return /[A-Z]/.test(move);
+        };
+        DefaultPgnProcessor.prototype.resolvePieceByFirstChar = function (move, piece) {
+            var piecesFirstChar = '';
+            if (piece instanceof King) {
+                piecesFirstChar = 'K';
+            }
+            else {
+                if (piece instanceof Queen) {
+                    piecesFirstChar = 'Q';
+                }
+                else {
+                    if (piece instanceof Rook) {
+                        piecesFirstChar = 'R';
+                    }
+                    else {
+                        if (piece instanceof Bishop) {
+                            piecesFirstChar = 'B';
+                        }
+                        else {
+                            if (piece instanceof Knight) {
+                                piecesFirstChar = 'N';
+                            }
+                            else {
+                                if (piece instanceof Pawn) {
+                                    piecesFirstChar = 'P';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return move === piecesFirstChar;
+        };
+        DefaultPgnProcessor.prototype.isShortCastle = function (move) {
+            return move === 'O-O';
+        };
+        DefaultPgnProcessor.prototype.removePiece = function (coords, board) {
+            var indexes = MoveUtils.translateCoordsToIndex(coords, board.reverted);
+            board.pieces = board.pieces.filter(function (e) { return !e.point.isEqual(new Point(indexes.yAxis, indexes.xAxis)); });
+        };
+        DefaultPgnProcessor.prototype.isLongCastle = function (move) {
+            return move === 'O-O-O';
+        };
+        DefaultPgnProcessor.prototype.resolveByCol = function (pieces, char) {
+            var firstPieceFormat = MoveUtils.formatSingle(pieces[0].point, false);
+            var secondPieceFormat = MoveUtils.formatSingle(pieces[1].point, false);
+            return firstPieceFormat.substring(0, 1) === char
+                ? pieces[0]
+                : pieces[1];
+        };
+        DefaultPgnProcessor.prototype.resolveByRow = function (pieces, char) {
+            var firstPieceFormat = MoveUtils.formatSingle(pieces[0].point, false);
+            var secondPieceFormat = MoveUtils.formatSingle(pieces[1].point, false);
+            return firstPieceFormat.substring(1, 2) === char
+                ? pieces[0]
+                : pieces[1];
+        };
+        DefaultPgnProcessor.prototype.replacePromotion = function (move) {
+            return move
+                .replace('=Q', '1')
+                .replace('=R', '2')
+                .replace('=B', '3')
+                .replace('=K', '4');
+        };
+        DefaultPgnProcessor.prototype.resolvePromotion = function (promotionChar) {
+            switch (promotionChar) {
+                case 'Q':
+                    return '1';
+                case 'R':
+                    return '2';
+                case 'B':
+                    return '3';
+                case 'N':
+                    return '4';
+            }
+            return '';
+        };
+        return DefaultPgnProcessor;
+    }());
+
+    var NotationProcessorFactory = /** @class */ (function () {
+        function NotationProcessorFactory() {
+        }
+        NotationProcessorFactory.getProcessor = function (type) {
+            switch (type) {
+                case NotationType.FEN:
+                    return new DefaultFenProcessor();
+                case NotationType.PGN:
+                    return new DefaultPgnProcessor();
+            }
+        };
+        NotationProcessorFactory.getDefaultProcessor = function () {
+            return new DefaultFenProcessor();
+        };
+        return NotationProcessorFactory;
+    }());
+    var NotationType;
+    (function (NotationType) {
+        NotationType[NotationType["FEN"] = 1] = "FEN";
+        NotationType[NotationType["PGN"] = 2] = "PGN";
+    })(NotationType || (NotationType = {}));
+
+    var DrawPoint = /** @class */ (function () {
+        function DrawPoint(x, y, color) {
+            this.x = x + 0.5;
+            this.y = y + 0.5;
+            this.color = color;
+        }
+        DrawPoint.prototype.isEqual = function (that) {
+            return that && that.x === this.x && this.y === that.y;
+        };
+        return DrawPoint;
+    }());
+
+    var ClickUtils = /** @class */ (function () {
+        function ClickUtils() {
+        }
+        ClickUtils.getClickPoint = function (event, top, height, left, width) {
+            return new Point(Math.floor((event.y - top) / (height / 8)), Math.floor((event.x - left) / (width / 8)));
+        };
+        ClickUtils.getDrawingPoint = function (tileSize, colorStrategy, x, y, ctrl, alt, shift, xAxis, yAxis) {
+            var squareSize = tileSize / 8;
+            var xx = Math.floor((x - xAxis) /
+                squareSize);
+            var yy = Math.floor((y - yAxis) /
+                squareSize);
+            var color = colorStrategy.resolve(ctrl, shift, alt);
+            return new DrawPoint(Math.floor(xx * squareSize + squareSize / 2), Math.floor(yy * squareSize + squareSize / 2), color);
+        };
+        return ClickUtils;
+    }());
+
+    var HistoryMove = /** @class */ (function () {
+        function HistoryMove(move, piece, color, captured) {
+            this.move = move;
+            this.piece = piece;
+            this.color = color;
+            this.x = captured;
+        }
+        return HistoryMove;
+    }());
+
+    var HistoryMoveProvider = /** @class */ (function () {
+        function HistoryMoveProvider() {
+            this.historyMovesSubject$ = new rxjs.BehaviorSubject([]);
+        }
+        Object.defineProperty(HistoryMoveProvider.prototype, "historyMoves", {
+            get: function () {
+                return this.historyMovesSubject$.value;
+            },
+            set: function (states) {
+                this.historyMovesSubject$.next(states);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        HistoryMoveProvider.prototype.addMove = function (historyMove) {
+            this.historyMoves = __spread(this.historyMoves, [historyMove]);
+        };
+        HistoryMoveProvider.prototype.pop = function () {
+            var lastHistoryMove = this.getLastMove();
+            this.historyMoves = this.historyMoves.filter(function (state) { return state !== lastHistoryMove; });
+            return lastHistoryMove;
+        };
+        HistoryMoveProvider.prototype.getAll = function () {
+            return this.historyMoves;
+        };
+        HistoryMoveProvider.prototype.clear = function () {
+            this.historyMoves = [];
+        };
+        HistoryMoveProvider.prototype.getLastMove = function () {
+            return this.historyMoves[this.getLastMoveIndex()];
+        };
+        HistoryMoveProvider.prototype.getLastMoveIndex = function () {
+            return this.historyMoves.length - 1;
+        };
+        return HistoryMoveProvider;
     }());
 
     var Constants = /** @class */ (function () {
@@ -1959,6 +2047,41 @@
         return PieceIconInputManager;
     }());
 
+    var CoordsProvider = /** @class */ (function () {
+        function CoordsProvider() {
+            this.defaultXCoords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            this.defaultYCoords = [8, 7, 6, 5, 4, 3, 2, 1];
+            this.currentXCoords = __spread(this.defaultXCoords);
+            this.currentYCoords = __spread(this.defaultYCoords);
+        }
+        Object.defineProperty(CoordsProvider.prototype, "xCoords", {
+            get: function () {
+                return this.currentXCoords;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(CoordsProvider.prototype, "yCoords", {
+            get: function () {
+                return this.currentYCoords;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        CoordsProvider.prototype.reverse = function () {
+            this.currentXCoords = this.currentXCoords.reverse();
+            this.currentYCoords = this.currentYCoords.reverse();
+        };
+        CoordsProvider.prototype.reset = function () {
+            this.init();
+        };
+        CoordsProvider.prototype.init = function () {
+            this.currentXCoords = __spread(this.defaultXCoords);
+            this.currentYCoords = __spread(this.defaultYCoords);
+        };
+        return CoordsProvider;
+    }());
+
     var DefaultDragEndProcessor = /** @class */ (function () {
         function DefaultDragEndProcessor() {
         }
@@ -2010,6 +2133,279 @@
         return DragStartStrategy;
     }());
 
+    var DefaultColorProcessor = /** @class */ (function () {
+        function DefaultColorProcessor() {
+        }
+        DefaultColorProcessor.prototype.resolve = function (ctrl, shift, alt) {
+            var color = 'green';
+            if (ctrl || shift) {
+                color = 'red';
+            }
+            if (alt) {
+                color = 'blue';
+            }
+            if ((shift || ctrl) && alt) {
+                color = 'orange';
+            }
+            return color;
+        };
+        return DefaultColorProcessor;
+    }());
+
+    var ColorStrategy = /** @class */ (function () {
+        function ColorStrategy() {
+            this.colorProcessor = new DefaultColorProcessor();
+        }
+        ColorStrategy.prototype.resolve = function (ctrl, shift, alt) {
+            return this.colorProcessor.resolve(ctrl, shift, alt);
+        };
+        ColorStrategy.prototype.setColorProcessor = function (colorProcessor) {
+            this.colorProcessor = colorProcessor;
+        };
+        return ColorStrategy;
+    }());
+
+    var DrawProvider = /** @class */ (function () {
+        function DrawProvider() {
+            this.arrowsSubject$ = new rxjs.BehaviorSubject([]);
+            this.circlesSubject$ = new rxjs.BehaviorSubject([]);
+            this.arrows$ = this.arrowsSubject$.asObservable();
+            this.circles$ = this.circlesSubject$.asObservable();
+        }
+        Object.defineProperty(DrawProvider.prototype, "circles", {
+            get: function () {
+                return this.circlesSubject$.value;
+            },
+            set: function (circles) {
+                this.circlesSubject$.next(circles);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DrawProvider.prototype, "arrows", {
+            get: function () {
+                return this.arrowsSubject$.value;
+            },
+            set: function (arrows) {
+                this.arrowsSubject$.next(arrows);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        DrawProvider.prototype.addCircle = function (circle) {
+            this.circles = __spread(this.circles, [circle]);
+        };
+        DrawProvider.prototype.reomveCircle = function (removeCircle) {
+            this.circles = this.circles.filter(function (circle) { return !circle.isEqual(removeCircle); });
+        };
+        DrawProvider.prototype.addArrow = function (arrow) {
+            this.arrows = __spread(this.arrows, [arrow]);
+        };
+        DrawProvider.prototype.removeArrow = function (removeArrow) {
+            this.arrows = this.arrows.filter(function (arrow) { return !arrow.isEqual(removeArrow); });
+        };
+        DrawProvider.prototype.containsCircle = function (checkCircle) {
+            return this.circles.some(function (circle) { return circle.isEqual(checkCircle); });
+        };
+        DrawProvider.prototype.containsArrow = function (checkArrow) {
+            return this.arrows.some(function (arrow) { return arrow.isEqual(checkArrow); });
+        };
+        DrawProvider.prototype.clear = function () {
+            this.arrows = [];
+            this.circles = [];
+        };
+        return DrawProvider;
+    }());
+
+    var AbstractEngineFacade = /** @class */ (function () {
+        function AbstractEngineFacade(board) {
+            this.dragStartStrategy = new DragStartStrategy();
+            this.dragEndStrategy = new DragEndStrategy();
+            this.colorStrategy = new ColorStrategy();
+            this.coords = new CoordsProvider();
+            this.heightAndWidth = Constants.DEFAULT_SIZE;
+            this.freeMode = false;
+            this.drawProvider = new DrawProvider();
+            this.pieceIconManager = new PieceIconInputManager();
+            this.moveHistoryProvider = new HistoryMoveProvider();
+            this.board = board;
+        }
+        AbstractEngineFacade.prototype.checkIfPawnFirstMove = function (piece) {
+            if (piece instanceof Pawn) {
+                piece.isMovedAlready = true;
+            }
+        };
+        AbstractEngineFacade.prototype.checkIfRookMoved = function (piece) {
+            if (piece instanceof Rook) {
+                piece.isMovedAlready = true;
+            }
+        };
+        AbstractEngineFacade.prototype.checkIfKingMoved = function (piece) {
+            if (piece instanceof King) {
+                piece.isMovedAlready = true;
+            }
+        };
+        AbstractEngineFacade.prototype.getMoveHistory = function () {
+            return this.moveHistoryProvider.getAll();
+        };
+        return AbstractEngineFacade;
+    }());
+
+    var BoardLoader = /** @class */ (function () {
+        function BoardLoader(engineFacade, notationProcessor) {
+            this.engineFacade = engineFacade;
+            if (notationProcessor) {
+                this.notationProcessor = notationProcessor;
+            }
+            else {
+                this.notationProcessor = NotationProcessorFactory.getDefaultProcessor();
+            }
+        }
+        BoardLoader.prototype.addPieces = function () {
+            DefaultPiecesLoader.loadDefaultPieces(this.engineFacade.board);
+        };
+        BoardLoader.prototype.loadFEN = function (fen) {
+            this.notationProcessor.process(fen, this.engineFacade);
+        };
+        BoardLoader.prototype.loadPGN = function (pgn) {
+            this.notationProcessor.process(pgn, this.engineFacade);
+        };
+        BoardLoader.prototype.setEngineFacade = function (engineFacade) {
+            this.engineFacade = engineFacade;
+        };
+        BoardLoader.prototype.setNotationProcessor = function (notationProcessor) {
+            this.notationProcessor = notationProcessor;
+        };
+        return BoardLoader;
+    }());
+
+    var BoardState = /** @class */ (function () {
+        function BoardState(board) {
+            this.board = board;
+        }
+        return BoardState;
+    }());
+
+    var BoardStateProvider = /** @class */ (function () {
+        function BoardStateProvider() {
+            this.statesSubject$ = new rxjs.BehaviorSubject([]);
+        }
+        Object.defineProperty(BoardStateProvider.prototype, "states", {
+            get: function () {
+                return this.statesSubject$.value;
+            },
+            set: function (states) {
+                this.statesSubject$.next(states);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        BoardStateProvider.prototype.addMove = function (state) {
+            this.states = __spread(this.states, [state]);
+        };
+        BoardStateProvider.prototype.getStates = function () {
+            return this.states;
+        };
+        BoardStateProvider.prototype.pop = function () {
+            var lastState = this.getLastState();
+            this.states = this.states.filter(function (state) { return state !== lastState; });
+            return lastState;
+        };
+        BoardStateProvider.prototype.isEmpty = function () {
+            return this.states.length === 0;
+        };
+        BoardStateProvider.prototype.clear = function () {
+            this.states = [];
+        };
+        BoardStateProvider.prototype.getLastState = function () {
+            return this.states[this.getLastStateIndex()];
+        };
+        BoardStateProvider.prototype.getLastStateIndex = function () {
+            return this.states.length - 1;
+        };
+        return BoardStateProvider;
+    }());
+
+    var Arrow = /** @class */ (function () {
+        function Arrow() {
+        }
+        Arrow.prototype.isEqual = function (arrow) {
+            return arrow && this.start.isEqual(arrow.start) && this.end.isEqual(arrow.end);
+        };
+        return Arrow;
+    }());
+
+    var Circle = /** @class */ (function () {
+        function Circle() {
+        }
+        Circle.prototype.isEqual = function (circle) {
+            return circle && this.drawPoint.isEqual(circle.drawPoint);
+        };
+        return Circle;
+    }());
+
+    var PieceAbstractDecorator = /** @class */ (function () {
+        function PieceAbstractDecorator(piece) {
+            this.piece = piece;
+        }
+        return PieceAbstractDecorator;
+    }());
+
+    var AvailableMoveDecorator = /** @class */ (function (_super) {
+        __extends(AvailableMoveDecorator, _super);
+        function AvailableMoveDecorator(piece, pointClicked, color, board) {
+            var _this = _super.call(this, piece) || this;
+            _this.pointClicked = pointClicked;
+            _this.color = color;
+            _this.board = board;
+            return _this;
+        }
+        AvailableMoveDecorator.prototype.getPossibleCaptures = function () {
+            var _this = this;
+            return this.piece
+                .getPossibleCaptures()
+                .filter(function (point) { return !MoveUtils.willMoveCauseCheck(_this.color, _this.pointClicked.row, _this.pointClicked.col, point.row, point.col, _this.board); });
+        };
+        AvailableMoveDecorator.prototype.getPossibleMoves = function () {
+            var _this = this;
+            return this.piece
+                .getPossibleMoves()
+                .filter(function (point) { return !MoveUtils.willMoveCauseCheck(_this.color, _this.pointClicked.row, _this.pointClicked.col, point.row, point.col, _this.board); });
+        };
+        return AvailableMoveDecorator;
+    }(PieceAbstractDecorator));
+
+    var PiecePromotionResolver = /** @class */ (function () {
+        function PiecePromotionResolver() {
+        }
+        PiecePromotionResolver.resolvePromotionChoice = function (board, piece, index) {
+            var isWhite = piece.color === Color.WHITE;
+            switch (index) {
+                case 1:
+                    board.pieces.push(new Queen(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_QUEEN
+                        : UnicodeConstants.BLACK_QUEEN, board));
+                    break;
+                case 2:
+                    board.pieces.push(new Rook(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_ROOK
+                        : UnicodeConstants.BLACK_ROOK, board));
+                    break;
+                case 3:
+                    board.pieces.push(new Bishop(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_BISHOP
+                        : UnicodeConstants.BLACK_BISHOP, board));
+                    break;
+                case 4:
+                    board.pieces.push(new Knight(piece.point, piece.color, isWhite
+                        ? UnicodeConstants.WHITE_KNIGHT
+                        : UnicodeConstants.BLACK_KNIGHT, board));
+                    break;
+            }
+        };
+        return PiecePromotionResolver;
+    }());
+
     var PieceTypeInput;
     (function (PieceTypeInput) {
         PieceTypeInput[PieceTypeInput["KING"] = 1] = "KING";
@@ -2058,24 +2454,17 @@
         return PieceFactory;
     }());
 
-    var EngineFacade = /** @class */ (function () {
+    var EngineFacade = /** @class */ (function (_super) {
+        __extends(EngineFacade, _super);
         function EngineFacade(board, moveChange) {
-            this._selected = false;
-            this._freeMode = false;
-            this.disabling = false;
-            this.heightAndWidth = Constants.DEFAULT_SIZE;
-            this.coords = new CoordsProvider();
-            this.dragStartStrategy = new DragStartStrategy();
-            this.dragEndStrategy = new DragEndStrategy();
-            this.colorStrategy = new ColorStrategy();
-            this._board = board;
-            this.moveChange = moveChange;
-            this.boardLoader = new BoardLoader(this.board);
-            this.boardLoader.addPieces();
-            this.drawProvider = new DrawProvider();
-            this.pieceIconManager = new PieceIconInputManager();
-            this.boardStateProvider = new BoardStateProvider();
-            this.moveHistoryProvider = new HistoryMoveProvider();
+            var _this = _super.call(this, board) || this;
+            _this._selected = false;
+            _this.disabling = false;
+            _this.moveChange = moveChange;
+            _this.boardLoader = new BoardLoader(_this);
+            _this.boardLoader.addPieces();
+            _this.boardStateProvider = new BoardStateProvider();
+            return _this;
         }
         EngineFacade.prototype.reset = function () {
             this.boardStateProvider.clear();
@@ -2093,14 +2482,10 @@
                     lastBoard.reverse();
                 }
                 this.board = lastBoard;
-                this.boardLoader.setBoard(this.board);
                 this.board.possibleCaptures = [];
                 this.board.possibleMoves = [];
                 this.moveHistoryProvider.pop();
             }
-        };
-        EngineFacade.prototype.getMoveHistory = function () {
-            return this.moveHistoryProvider.getAll();
         };
         EngineFacade.prototype.saveMoveClone = function () {
             var clone = this.board.clone();
@@ -2111,23 +2496,23 @@
         };
         EngineFacade.prototype.move = function (coords) {
             if (coords) {
-                var sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this._board.reverted);
-                var destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this._board.reverted);
-                var srcPiece = this._board.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
+                var sourceIndexes = MoveUtils.translateCoordsToIndex(coords.substring(0, 2), this.board.reverted);
+                var destIndexes = MoveUtils.translateCoordsToIndex(coords.substring(2, 4), this.board.reverted);
+                var srcPiece = this.board.getPieceByPoint(sourceIndexes.yAxis, sourceIndexes.xAxis);
                 if (srcPiece) {
-                    if ((this._board.currentWhitePlayer &&
+                    if ((this.board.currentWhitePlayer &&
                         srcPiece.color === Color.BLACK) ||
-                        (!this._board.currentWhitePlayer &&
+                        (!this.board.currentWhitePlayer &&
                             srcPiece.color === Color.WHITE)) {
                         return;
                     }
                     this.prepareActivePiece(srcPiece, srcPiece.point);
-                    if (this._board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
-                        this._board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
+                    if (this.board.isPointInPossibleMoves(new Point(destIndexes.yAxis, destIndexes.xAxis)) ||
+                        this.board.isPointInPossibleCaptures(new Point(destIndexes.yAxis, destIndexes.xAxis))) {
                         this.saveClone();
                         this.movePiece(srcPiece, new Point(destIndexes.yAxis, destIndexes.xAxis), coords.length === 5 ? +coords.substring(4, 5) : 0);
-                        this._board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
-                        this._board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
+                        this.board.lastMoveSrc = new Point(sourceIndexes.yAxis, sourceIndexes.xAxis);
+                        this.board.lastMoveDest = new Point(destIndexes.yAxis, destIndexes.xAxis);
                         this.disableSelection();
                     }
                     else {
@@ -2137,27 +2522,27 @@
             }
         };
         EngineFacade.prototype.prepareActivePiece = function (pieceClicked, pointClicked) {
-            this._board.activePiece = pieceClicked;
+            this.board.activePiece = pieceClicked;
             this._selected = true;
-            this._board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleCaptures();
-            this._board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this._board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this._board).getPossibleMoves();
+            this.board.possibleCaptures = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleCaptures();
+            this.board.possibleMoves = new AvailableMoveDecorator(pieceClicked, pointClicked, this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK, this.board).getPossibleMoves();
         };
         EngineFacade.prototype.onPieceClicked = function (pieceClicked, pointClicked) {
-            if ((this._board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
-                (!this._board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
+            if ((this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
+                (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)) {
                 return;
             }
             this.prepareActivePiece(pieceClicked, pointClicked);
         };
         EngineFacade.prototype.handleClickEvent = function (pointClicked, isMouseDown) {
             var moving = false;
-            if ((this._board.isPointInPossibleMoves(pointClicked) ||
-                this._board.isPointInPossibleCaptures(pointClicked)) || this._freeMode) {
+            if ((this.board.isPointInPossibleMoves(pointClicked) ||
+                this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
                 this.saveClone();
-                this._board.lastMoveSrc = new Point(this._board.activePiece.point.row, this._board.activePiece.point.col);
-                this._board.lastMoveDest = pointClicked;
-                this.movePiece(this._board.activePiece, pointClicked);
-                if (!this._board.activePiece.point.isEqual(this._board.lastMoveSrc)) {
+                this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
+                this.board.lastMoveDest = pointClicked.clone();
+                this.movePiece(this.board.activePiece, pointClicked);
+                if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
                     moving = true;
                 }
             }
@@ -2165,7 +2550,7 @@
                 this.disableSelection();
             }
             this.disableSelection();
-            var pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+            var pieceClicked = this.board.getPieceByPoint(pointClicked.row, pointClicked.col);
             if (pieceClicked && !moving) {
                 this.onFreeMode(pieceClicked);
                 this.onPieceClicked(pieceClicked, pointClicked);
@@ -2177,19 +2562,19 @@
                 return;
             }
             this.drawProvider.clear();
-            if (this._board.activePiece &&
-                pointClicked.isEqual(this._board.activePiece.point)) {
+            if (this.board.activePiece &&
+                pointClicked.isEqual(this.board.activePiece.point)) {
                 this.disabling = true;
                 return;
             }
-            var pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
-            if (this._freeMode) {
+            var pieceClicked = this.board.getPieceByPoint(pointClicked.row, pointClicked.col);
+            if (this.freeMode) {
                 if (pieceClicked) {
                     if (event.ctrlKey) {
                         this.board.pieces = this.board.pieces.filter(function (e) { return e !== pieceClicked; });
                         return;
                     }
-                    this._board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
+                    this.board.currentWhitePlayer = (pieceClicked.color === Color.WHITE);
                 }
             }
             if (this.isPieceDisabled(pieceClicked)) {
@@ -2214,14 +2599,14 @@
             if (this.dragDisabled) {
                 return;
             }
-            if (this._board.activePiece &&
-                pointClicked.isEqual(this._board.activePiece.point) &&
+            if (this.board.activePiece &&
+                pointClicked.isEqual(this.board.activePiece.point) &&
                 this.disabling) {
                 this.disableSelection();
                 this.disabling = false;
                 return;
             }
-            var pieceClicked = this._board.getPieceByPoint(pointClicked.row, pointClicked.col);
+            var pieceClicked = this.board.getPieceByPoint(pointClicked.row, pointClicked.col);
             if (this.isPieceDisabled(pieceClicked)) {
                 return;
             }
@@ -2231,38 +2616,38 @@
             }
         };
         EngineFacade.prototype.saveClone = function () {
-            var clone = this._board.clone();
-            if (this._board.reverted) {
+            var clone = this.board.clone();
+            if (this.board.reverted) {
                 clone.reverse();
             }
             this.boardStateProvider.addMove(new BoardState(clone));
         };
         EngineFacade.prototype.movePiece = function (toMovePiece, newPoint, promotionIndex) {
-            var destPiece = this._board.pieces.find(function (piece) { return piece.point.col === newPoint.col &&
+            var destPiece = this.board.pieces.find(function (piece) { return piece.point.col === newPoint.col &&
                 piece.point.row === newPoint.row; });
             if (destPiece && toMovePiece.color !== destPiece.color) {
-                this._board.pieces = this._board.pieces.filter(function (piece) { return piece !== destPiece; });
+                this.board.pieces = this.board.pieces.filter(function (piece) { return piece !== destPiece; });
             }
             else {
                 if (destPiece && toMovePiece.color === destPiece.color) {
                     return;
                 }
             }
-            var move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this._board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
+            var move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
             this.moveHistoryProvider.addMove(move);
             if (toMovePiece instanceof King) {
                 var squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
                 if (squaresMoved > 1) {
                     if (newPoint.col < 3) {
-                        var leftRook = this._board.getPieceByField(toMovePiece.point.row, 0);
-                        if (!this._freeMode) {
-                            leftRook.point.col = this._board.reverted ? 2 : 3;
+                        var leftRook = this.board.getPieceByField(toMovePiece.point.row, 0);
+                        if (!this.freeMode) {
+                            leftRook.point.col = this.board.reverted ? 2 : 3;
                         }
                     }
                     else {
-                        var rightRook = this._board.getPieceByField(toMovePiece.point.row, 7);
-                        if (!this._freeMode) {
-                            rightRook.point.col = this._board.reverted ? 4 : 5;
+                        var rightRook = this.board.getPieceByField(toMovePiece.point.row, 7);
+                        if (!this.freeMode) {
+                            rightRook.point.col = this.board.reverted ? 4 : 5;
                         }
                     }
                 }
@@ -2271,9 +2656,13 @@
                 this.board.checkIfPawnTakesEnPassant(newPoint);
                 this.board.checkIfPawnEnpassanted(toMovePiece, newPoint);
             }
+            else {
+                this.board.enPassantPoint = null;
+                this.board.enPassantPiece = null;
+            }
             toMovePiece.point = newPoint;
             this.increaseFullMoveCount();
-            this._board.currentWhitePlayer = !this._board.currentWhitePlayer;
+            this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
             if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
                 this.afterMoveActions();
             }
@@ -2296,40 +2685,25 @@
                 return true;
             }
         };
-        EngineFacade.prototype.checkIfPawnFirstMove = function (piece) {
-            if (piece instanceof Pawn) {
-                piece.isMovedAlready = true;
-            }
-        };
-        EngineFacade.prototype.checkIfRookMoved = function (piece) {
-            if (piece instanceof Rook) {
-                piece.isMovedAlready = true;
-            }
-        };
-        EngineFacade.prototype.checkIfKingMoved = function (piece) {
-            if (piece instanceof King) {
-                piece.isMovedAlready = true;
-            }
-        };
         EngineFacade.prototype.afterMoveActions = function (promotionIndex) {
-            this.checkIfPawnFirstMove(this._board.activePiece);
-            this.checkIfRookMoved(this._board.activePiece);
-            this.checkIfKingMoved(this._board.activePiece);
-            this._board.blackKingChecked = this._board.isKingInCheck(Color.BLACK, this._board.pieces);
-            this._board.whiteKingChecked = this._board.isKingInCheck(Color.WHITE, this._board.pieces);
-            var check = this._board.blackKingChecked || this._board.whiteKingChecked;
+            this.checkIfPawnFirstMove(this.board.activePiece);
+            this.checkIfRookMoved(this.board.activePiece);
+            this.checkIfKingMoved(this.board.activePiece);
+            this.board.blackKingChecked = this.board.isKingInCheck(Color.BLACK, this.board.pieces);
+            this.board.whiteKingChecked = this.board.isKingInCheck(Color.WHITE, this.board.pieces);
+            var check = this.board.blackKingChecked || this.board.whiteKingChecked;
             var checkmate = this.checkForPossibleMoves(Color.BLACK) ||
                 this.checkForPossibleMoves(Color.WHITE);
             var stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
             this.disabling = false;
-            this._board.calculateFEN();
+            this.board.calculateFEN();
             var lastMove = this.moveHistoryProvider.getLastMove();
             if (lastMove && promotionIndex) {
                 lastMove.move += promotionIndex;
             }
             this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check: check,
                 checkmate: checkmate,
-                stalemate: stalemate, fen: this._board.fen, freeMode: this._freeMode }));
+                stalemate: stalemate, fen: this.board.fen, freeMode: this.freeMode }));
         };
         EngineFacade.prototype.checkForPat = function (color) {
             if (color === Color.WHITE && !this.board.whiteKingChecked) {
@@ -2361,9 +2735,9 @@
         };
         EngineFacade.prototype.disableSelection = function () {
             this._selected = false;
-            this._board.possibleCaptures = [];
-            this._board.activePiece = null;
-            this._board.possibleMoves = [];
+            this.board.possibleCaptures = [];
+            this.board.activePiece = null;
+            this.board.possibleMoves = [];
         };
         /**
          * Processes logic to allow freeMode based logic processing
@@ -2418,36 +2792,6 @@
                 ++this.board.fullMoveCount;
             }
         };
-        Object.defineProperty(EngineFacade.prototype, "board", {
-            get: function () {
-                return this._board;
-            },
-            set: function (value) {
-                this._board = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(EngineFacade.prototype, "selected", {
-            get: function () {
-                return this._selected;
-            },
-            set: function (value) {
-                this._selected = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(EngineFacade.prototype, "freeMode", {
-            get: function () {
-                return this._freeMode;
-            },
-            set: function (value) {
-                this._freeMode = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
         EngineFacade.prototype.addPiece = function (pieceTypeInput, colorInput, coords) {
             if (this.freeMode && coords && pieceTypeInput > 0 && colorInput > 0) {
                 var indexes = MoveUtils.translateCoordsToIndex(coords, this.board.reverted);
@@ -2462,7 +2806,7 @@
             }
         };
         return EngineFacade;
-    }());
+    }(AbstractEngineFacade));
 
     var Board = /** @class */ (function () {
         function Board() {
@@ -2528,6 +2872,7 @@
             this.possibleCaptures = [];
             this.pieces.forEach(function (piece) { return _this.reversePoint(piece.point); });
             this.reversePoint(this.lastMoveSrc);
+            this.reversePoint(this.lastMoveDest);
             if (this.enPassantPoint && this.enPassantPiece) {
                 this.reversePoint(this.enPassantPoint);
             }
@@ -2696,6 +3041,7 @@
         Board.prototype.checkIfPawnTakesEnPassant = function (newPoint) {
             var _this = this;
             if (newPoint.isEqual(this.enPassantPoint)) {
+                console.log('usuwam');
                 this.pieces = this.pieces.filter(function (piece) { return piece !== _this.enPassantPiece; });
                 this.enPassantPoint = null;
                 this.enPassantPiece = null;
@@ -2731,206 +3077,13 @@
         };
         return NgxChessBoardService;
     }());
-    NgxChessBoardService.ɵfac = function NgxChessBoardService_Factory(t) { return new (t || NgxChessBoardService)(); };
-    NgxChessBoardService.ɵprov = i0.ɵɵdefineInjectable({ token: NgxChessBoardService, factory: NgxChessBoardService.ɵfac, providedIn: 'root' });
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(NgxChessBoardService, [{
-                type: i0.Injectable,
-                args: [{
-                        providedIn: 'root',
-                    }]
-            }], null, null);
-    })();
+    NgxChessBoardService.ɵprov = i0.ɵɵdefineInjectable({ factory: function NgxChessBoardService_Factory() { return new NgxChessBoardService(); }, token: NgxChessBoardService, providedIn: "root" });
+    NgxChessBoardService.decorators = [
+        { type: i0.Injectable, args: [{
+                    providedIn: 'root',
+                },] }
+    ];
 
-    var _c0 = ["myModal"];
-    var PiecePromotionModalComponent = /** @class */ (function () {
-        function PiecePromotionModalComponent() {
-            this.opened = false;
-        }
-        PiecePromotionModalComponent.prototype.open = function (closeCallback) {
-            this.opened = true;
-            this.onCloseCallback = closeCallback;
-            this.modal.nativeElement.style.display = 'block';
-        };
-        PiecePromotionModalComponent.prototype.changeSelection = function (index) {
-            this.modal.nativeElement.style.display = 'none';
-            this.opened = false;
-            this.onCloseCallback(index);
-        };
-        return PiecePromotionModalComponent;
-    }());
-    PiecePromotionModalComponent.ɵfac = function PiecePromotionModalComponent_Factory(t) { return new (t || PiecePromotionModalComponent)(); };
-    PiecePromotionModalComponent.ɵcmp = i0.ɵɵdefineComponent({ type: PiecePromotionModalComponent, selectors: [["app-piece-promotion-modal"]], viewQuery: function PiecePromotionModalComponent_Query(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵviewQuery(_c0, true);
-            }
-            if (rf & 2) {
-                var _t;
-                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.modal = _t.first);
-            }
-        }, decls: 13, vars: 0, consts: [[1, "container"], ["myModal", ""], [1, "wrapper"], [1, "content"], [1, "piece-wrapper"], [1, "piece", 3, "click"]], template: function PiecePromotionModalComponent_Template(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵelementStart(0, "div", 0, 1);
-                i0.ɵɵelementStart(2, "div", 2);
-                i0.ɵɵelementStart(3, "div", 3);
-                i0.ɵɵelementStart(4, "div", 4);
-                i0.ɵɵelementStart(5, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_5_listener() { return ctx.changeSelection(1); });
-                i0.ɵɵtext(6, "\u265B");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementStart(7, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_7_listener() { return ctx.changeSelection(2); });
-                i0.ɵɵtext(8, "\u265C");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementStart(9, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_9_listener() { return ctx.changeSelection(3); });
-                i0.ɵɵtext(10, "\u265D");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementStart(11, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_11_listener() { return ctx.changeSelection(4); });
-                i0.ɵɵtext(12, "\u265E");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-            }
-        }, styles: [".container[_ngcontent-%COMP%]{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{height:100%;width:100%}.content[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{position:relative}.content[_ngcontent-%COMP%]{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece[_ngcontent-%COMP%]{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece[_ngcontent-%COMP%]:hover{background-color:#ccc;border-radius:5px}.piece-wrapper[_ngcontent-%COMP%]{height:80%;width:100%}#close-button[_ngcontent-%COMP%]{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected[_ngcontent-%COMP%]{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"] });
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(PiecePromotionModalComponent, [{
-                type: i0.Component,
-                args: [{
-                        selector: 'app-piece-promotion-modal',
-                        templateUrl: './piece-promotion-modal.component.html',
-                        styleUrls: ['./piece-promotion-modal.component.scss']
-                    }]
-            }], null, { modal: [{
-                    type: i0.ViewChild,
-                    args: ['myModal', { static: false }]
-                }] });
-    })();
-
-    var _c0$1 = ["boardRef"];
-    var _c1 = ["modal"];
-    function NgxChessBoardComponent_div_3_div_1_span_1_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "span", 15);
-            i0.ɵɵtext(1);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var i_r7 = i0.ɵɵnextContext(2).index;
-            var ctx_r11 = i0.ɵɵnextContext();
-            i0.ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
-            i0.ɵɵadvance(1);
-            i0.ɵɵtextInterpolate1(" ", ctx_r11.engineFacade.coords.yCoords[i_r7], " ");
-        }
-    }
-    function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "span", 16);
-            i0.ɵɵtext(1);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var j_r10 = i0.ɵɵnextContext().index;
-            var ctx_r12 = i0.ɵɵnextContext(2);
-            i0.ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
-            i0.ɵɵadvance(1);
-            i0.ɵɵtextInterpolate1(" ", ctx_r12.engineFacade.coords.xCoords[j_r10], " ");
-        }
-    }
-    function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) {
-        if (rf & 1) {
-            var _r18_1 = i0.ɵɵgetCurrentView();
-            i0.ɵɵelementStart(0, "div", 17);
-            i0.ɵɵelementStart(1, "div", 18);
-            i0.ɵɵlistener("cdkDragEnded", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragEnded_1_listener($event) { i0.ɵɵrestoreView(_r18_1); var ctx_r17 = i0.ɵɵnextContext(3); return ctx_r17.dragEnded($event); })("cdkDragStarted", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragStarted_1_listener($event) { i0.ɵɵrestoreView(_r18_1); var ctx_r19 = i0.ɵɵnextContext(3); return ctx_r19.dragStart($event); });
-            i0.ɵɵelementEnd();
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var j_r10 = i0.ɵɵnextContext().index;
-            var i_r7 = i0.ɵɵnextContext().index;
-            var ctx_r13 = i0.ɵɵnextContext();
-            i0.ɵɵadvance(1);
-            i0.ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
-            i0.ɵɵproperty("cdkDragDisabled", ctx_r13.engineFacade.dragDisabled)("innerHTML", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10).constant.icon : "", i0.ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10)));
-        }
-    }
-    function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "div", 11);
-            i0.ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_span_1_Template, 2, 5, "span", 12);
-            i0.ɵɵtemplate(2, NgxChessBoardComponent_div_3_div_1_span_2_Template, 2, 5, "span", 13);
-            i0.ɵɵtemplate(3, NgxChessBoardComponent_div_3_div_1_div_3_Template, 2, 6, "div", 14);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var j_r10 = ctx.index;
-            var i_r7 = i0.ɵɵnextContext().index;
-            var ctx_r8 = i0.ɵɵnextContext();
-            i0.ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
-            i0.ɵɵclassProp("current-selection", ctx_r8.engineFacade.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.engineFacade.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.engineFacade.board.isKingChecked(ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.engineFacade.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.engineFacade.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.engineFacade.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.engineFacade.board.isXYInSourceMove(i_r7, j_r10));
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10));
-        }
-    }
-    function NgxChessBoardComponent_div_3_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "div", 9);
-            i0.ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_Template, 4, 19, "div", 10);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var row_r6 = ctx.$implicit;
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngForOf", row_r6);
-        }
-    }
-    function NgxChessBoardComponent__svg_defs_5_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵnamespaceSVG();
-            i0.ɵɵelementStart(0, "defs");
-            i0.ɵɵelementStart(1, "marker", 19);
-            i0.ɵɵelement(2, "path", 20);
-            i0.ɵɵelementEnd();
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var color_r23 = ctx.$implicit;
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("id", color_r23 + "Arrow");
-            i0.ɵɵadvance(1);
-            i0.ɵɵstyleProp("fill", color_r23);
-        }
-    }
-    function NgxChessBoardComponent__svg_line_6_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵnamespaceSVG();
-            i0.ɵɵelement(0, "line", 21);
-        }
-        if (rf & 2) {
-            var arrow_r24 = ctx.$implicit;
-            i0.ɵɵattribute("marker-end", "url(#" + arrow_r24.end.color + "Arrow)")("stroke", arrow_r24.end.color)("x1", arrow_r24.start.x)("x2", arrow_r24.end.x)("y1", arrow_r24.start.y)("y2", arrow_r24.end.y);
-        }
-    }
-    function NgxChessBoardComponent__svg_circle_8_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵnamespaceSVG();
-            i0.ɵɵelement(0, "circle", 22);
-        }
-        if (rf & 2) {
-            var circle_r25 = ctx.$implicit;
-            var ctx_r4 = i0.ɵɵnextContext();
-            i0.ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.engineFacade.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
-        }
-    }
-    var _c2 = function () { return ["red", "green", "blue", "orange"]; };
     var NgxChessBoardComponent = /** @class */ (function () {
         function NgxChessBoardComponent(ngxChessBoardService) {
             this.ngxChessBoardService = ngxChessBoardService;
@@ -3023,10 +3176,10 @@
             this.ngxChessBoardService.componentMethodCalled$.subscribe(function () {
                 _this.engineFacade.reset();
             });
-            this.calculatePieceSize();
         };
         NgxChessBoardComponent.prototype.ngAfterViewInit = function () {
             this.engineFacade.modal = this.modal;
+            this.calculatePieceSize();
         };
         NgxChessBoardComponent.prototype.onMouseUp = function (event) {
             this.engineFacade.onMouseUp(event, this.getClickPoint(event), this.boardRef.nativeElement.getBoundingClientRect().left, this.boardRef.nativeElement.getBoundingClientRect().top);
@@ -3038,18 +3191,32 @@
         };
         NgxChessBoardComponent.prototype.updateBoard = function (board) {
             this.engineFacade.board = board;
-            this.boardLoader.setBoard(this.engineFacade.board);
+            this.boardLoader.setEngineFacade(this.engineFacade);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
         };
         NgxChessBoardComponent.prototype.setFEN = function (fen) {
             try {
+                this.engineFacade.boardLoader.setNotationProcessor(NotationProcessorFactory.getProcessor(NotationType.FEN));
                 this.engineFacade.boardLoader.loadFEN(fen);
                 this.engineFacade.board.possibleCaptures = [];
                 this.engineFacade.board.possibleMoves = [];
                 this.engineFacade.coords.reset();
             }
             catch (exception) {
+                this.engineFacade.boardLoader.addPieces();
+            }
+        };
+        NgxChessBoardComponent.prototype.setPGN = function (pgn) {
+            try {
+                this.engineFacade.boardLoader.setNotationProcessor(NotationProcessorFactory.getProcessor(NotationType.PGN));
+                this.engineFacade.boardLoader.loadPGN(pgn);
+                this.engineFacade.board.possibleCaptures = [];
+                this.engineFacade.board.possibleMoves = [];
+                this.engineFacade.coords.reset();
+            }
+            catch (exception) {
+                console.log(exception);
                 this.engineFacade.boardLoader.addPieces();
             }
         };
@@ -3091,107 +3258,61 @@
         };
         return NgxChessBoardComponent;
     }());
-    NgxChessBoardComponent.ɵfac = function NgxChessBoardComponent_Factory(t) { return new (t || NgxChessBoardComponent)(i0.ɵɵdirectiveInject(NgxChessBoardService)); };
-    NgxChessBoardComponent.ɵcmp = i0.ɵɵdefineComponent({ type: NgxChessBoardComponent, selectors: [["ngx-chess-board"]], viewQuery: function NgxChessBoardComponent_Query(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵviewQuery(_c0$1, true);
-                i0.ɵɵviewQuery(_c1, true);
-            }
-            if (rf & 2) {
-                var _t;
-                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.boardRef = _t.first);
-                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.modal = _t.first);
-            }
-        }, hostBindings: function NgxChessBoardComponent_HostBindings(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
-            }
-        }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", size: "size", freeMode: "freeMode", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", pieceIcons: "pieceIcons", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [i0.ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) {
-            if (rf & 1) {
-                var _r26_1 = i0.ɵɵgetCurrentView();
-                i0.ɵɵelementStart(0, "div", 0, 1);
-                i0.ɵɵlistener("pointerdown", function NgxChessBoardComponent_Template_div_pointerdown_0_listener($event) { i0.ɵɵrestoreView(_r26_1); var _r5 = i0.ɵɵreference(11); return !_r5.opened && ctx.onMouseDown($event); })("pointerup", function NgxChessBoardComponent_Template_div_pointerup_0_listener($event) { i0.ɵɵrestoreView(_r26_1); var _r5 = i0.ɵɵreference(11); return !_r5.opened && ctx.onMouseUp($event); });
-                i0.ɵɵelementStart(2, "div", 2);
-                i0.ɵɵtemplate(3, NgxChessBoardComponent_div_3_Template, 2, 1, "div", 3);
-                i0.ɵɵelementEnd();
-                i0.ɵɵnamespaceSVG();
-                i0.ɵɵelementStart(4, "svg", 4);
-                i0.ɵɵtemplate(5, NgxChessBoardComponent__svg_defs_5_Template, 3, 3, "defs", 5);
-                i0.ɵɵtemplate(6, NgxChessBoardComponent__svg_line_6_Template, 1, 6, "line", 6);
-                i0.ɵɵpipe(7, "async");
-                i0.ɵɵtemplate(8, NgxChessBoardComponent__svg_circle_8_Template, 1, 4, "circle", 7);
-                i0.ɵɵpipe(9, "async");
-                i0.ɵɵelementEnd();
-                i0.ɵɵnamespaceHTML();
-                i0.ɵɵelement(10, "app-piece-promotion-modal", null, 8);
-                i0.ɵɵelementEnd();
-            }
-            if (rf & 2) {
-                i0.ɵɵstyleProp("height", ctx.engineFacade.heightAndWidth, "px")("width", ctx.engineFacade.heightAndWidth, "px");
-                i0.ɵɵadvance(3);
-                i0.ɵɵproperty("ngForOf", ctx.engineFacade.board.board);
-                i0.ɵɵadvance(1);
-                i0.ɵɵattribute("height", ctx.engineFacade.heightAndWidth)("width", ctx.engineFacade.heightAndWidth);
-                i0.ɵɵadvance(1);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpureFunction0(14, _c2));
-                i0.ɵɵadvance(1);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(7, 10, ctx.engineFacade.drawProvider.arrows$));
-                i0.ɵɵadvance(2);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(9, 12, ctx.engineFacade.drawProvider.circles$));
-            }
-        }, directives: [i2.NgForOf, PiecePromotionModalComponent, i2.NgIf, i4.CdkDrag, i2.NgClass, i2.NgStyle], pipes: [i2.AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(NgxChessBoardComponent, [{
-                type: i0.Component,
-                args: [{
-                        selector: 'ngx-chess-board',
-                        templateUrl: './ngx-chess-board.component.html',
-                        styleUrls: ['./ngx-chess-board.component.scss'],
-                    }]
-            }], function () { return [{ type: NgxChessBoardService }]; }, { darkTileColor: [{
-                    type: i0.Input
-                }], lightTileColor: [{
-                    type: i0.Input
-                }], showCoords: [{
-                    type: i0.Input
-                }], moveChange: [{
-                    type: i0.Output
-                }], checkmate: [{
-                    type: i0.Output
-                }], stalemate: [{
-                    type: i0.Output
-                }], boardRef: [{
-                    type: i0.ViewChild,
-                    args: ['boardRef']
-                }], modal: [{
-                    type: i0.ViewChild,
-                    args: ['modal']
-                }], size: [{
-                    type: i0.Input,
-                    args: ['size']
-                }], freeMode: [{
-                    type: i0.Input,
-                    args: ['freeMode']
-                }], dragDisabled: [{
-                    type: i0.Input,
-                    args: ['dragDisabled']
-                }], drawDisabled: [{
-                    type: i0.Input,
-                    args: ['drawDisabled']
-                }], pieceIcons: [{
-                    type: i0.Input,
-                    args: ['pieceIcons']
-                }], lightDisabled: [{
-                    type: i0.Input,
-                    args: ['lightDisabled']
-                }], darkDisabled: [{
-                    type: i0.Input,
-                    args: ['darkDisabled']
-                }], onRightClick: [{
-                    type: i0.HostListener,
-                    args: ['contextmenu', ['$event']]
-                }] });
-    })();
+    NgxChessBoardComponent.decorators = [
+        { type: i0.Component, args: [{
+                    selector: 'ngx-chess-board',
+                    template: "<div\r\n    id=\"board\"\r\n    [style.height.px]=\"engineFacade.heightAndWidth\"\r\n    [style.width.px]=\"engineFacade.heightAndWidth\"\r\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\r\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\r\n    #boardRef\r\n>\r\n    <div id=\"drag\">\r\n        <div\r\n            class=\"board-row\"\r\n            *ngFor=\"let row of engineFacade.board.board; let i = index\"\r\n        >\r\n            <div\r\n                class=\"board-col\"\r\n                [class.current-selection]=\"engineFacade.board.isXYInActiveMove(i,j)\"\r\n                [class.dest-move]=\"engineFacade.board.isXYInDestMove(i,j)\"\r\n                [class.king-check]=\" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))\"\r\n                [class.point-circle]=\"engineFacade.board.isXYInPointSelection(i, j)\"\r\n                [class.possible-capture]=\"engineFacade.board.isXYInPossibleCaptures(i, j)\"\r\n                [class.possible-point]=\"engineFacade.board.isXYInPossibleMoves(i, j)\"\r\n                [class.source-move]=\"engineFacade.board.isXYInSourceMove(i, j)\"\r\n                [style.background-color]=\"((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor\"\r\n                *ngFor=\"let col of row; let j = index\"\r\n            >\r\n                <span\r\n                    class=\"yCoord\"\r\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && j === 7\"\r\n                >\r\n                    {{engineFacade.coords.yCoords[i]}}\r\n                </span>\r\n                <span\r\n                    class=\"xCoord\"\r\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && i === 7\"\r\n                >\r\n                    {{engineFacade.coords.xCoords[j]}}\r\n                </span>\r\n                <div\r\n                    *ngIf=\"engineFacade.board.getPieceByPoint(i, j) as piece\"\r\n                    style=\"height:100%; width:100%\"\r\n                >\r\n                    <div\r\n                        [cdkDragDisabled]=\"engineFacade.dragDisabled\"\r\n                        [innerHTML]=\"engineFacade.pieceIconManager.isDefaultIcons() ? engineFacade.board.getPieceByPoint(i,j).constant.icon : ''\"\r\n                        [ngClass]=\"'piece'\"\r\n                        [style.font-size]=\"pieceSize + 'px'\"\r\n                        [ngStyle]=\"engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(engineFacade.board.getPieceByPoint(i,j))\"\r\n                        (cdkDragEnded)=\"dragEnded($event)\"\r\n                        (cdkDragStarted)=\"dragStart($event)\"\r\n                        cdkDrag\r\n                    >\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <svg\r\n        [attr.height]=\"engineFacade.heightAndWidth\"\r\n        [attr.width]=\"engineFacade.heightAndWidth\"\r\n        style=\"position:absolute; top:0; pointer-events: none\"\r\n    >\r\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\r\n            <marker\r\n                [id]=\"color + 'Arrow'\"\r\n                markerHeight=\"13\"\r\n                markerWidth=\"13\"\r\n                orient=\"auto\"\r\n                refX=\"9\"\r\n                refY=\"6\"\r\n            >\r\n                <path\r\n                    [style.fill]=\"color\"\r\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\r\n                ></path>\r\n            </marker>\r\n        </defs>\r\n        <line\r\n            class=\"arrow\"\r\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\r\n            [attr.stroke]=\"arrow.end.color\"\r\n            [attr.x1]=\"arrow.start.x\"\r\n            [attr.x2]=\"arrow.end.x\"\r\n            [attr.y1]=\"arrow.start.y\"\r\n            [attr.y2]=\"arrow.end.y\"\r\n            *ngFor=\"let arrow of engineFacade.drawProvider.arrows$ | async\"\r\n        ></line>\r\n        <circle\r\n            [attr.cx]=\"circle.drawPoint.x\"\r\n            [attr.cy]=\"circle.drawPoint.y\"\r\n            [attr.r]=\"engineFacade.heightAndWidth / 18\"\r\n            [attr.stroke]=\"circle.drawPoint.color\"\r\n            *ngFor=\"let circle of engineFacade.drawProvider.circles$ | async\"\r\n            fill-opacity=\"0.0\"\r\n            stroke-width=\"2\"\r\n        ></circle>\r\n    </svg>\r\n    <app-piece-promotion-modal #modal></app-piece-promotion-modal>\r\n</div>\r\n",
+                    styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move{background-color:rgba(146,111,26,.79)!important}.dest-move{background-color:#b28e1a!important}.current-selection{background-color:#72620b!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}:host{display:inline-block!important}"]
+                },] }
+    ];
+    NgxChessBoardComponent.ctorParameters = function () { return [
+        { type: NgxChessBoardService }
+    ]; };
+    NgxChessBoardComponent.propDecorators = {
+        darkTileColor: [{ type: i0.Input }],
+        lightTileColor: [{ type: i0.Input }],
+        showCoords: [{ type: i0.Input }],
+        moveChange: [{ type: i0.Output }],
+        checkmate: [{ type: i0.Output }],
+        stalemate: [{ type: i0.Output }],
+        boardRef: [{ type: i0.ViewChild, args: ['boardRef',] }],
+        modal: [{ type: i0.ViewChild, args: ['modal',] }],
+        size: [{ type: i0.Input, args: ['size',] }],
+        freeMode: [{ type: i0.Input, args: ['freeMode',] }],
+        dragDisabled: [{ type: i0.Input, args: ['dragDisabled',] }],
+        drawDisabled: [{ type: i0.Input, args: ['drawDisabled',] }],
+        pieceIcons: [{ type: i0.Input, args: ['pieceIcons',] }],
+        lightDisabled: [{ type: i0.Input, args: ['lightDisabled',] }],
+        darkDisabled: [{ type: i0.Input, args: ['darkDisabled',] }],
+        onRightClick: [{ type: i0.HostListener, args: ['contextmenu', ['$event'],] }]
+    };
+
+    var PiecePromotionModalComponent = /** @class */ (function () {
+        function PiecePromotionModalComponent() {
+            this.opened = false;
+        }
+        PiecePromotionModalComponent.prototype.open = function (closeCallback) {
+            this.opened = true;
+            this.onCloseCallback = closeCallback;
+            this.modal.nativeElement.style.display = 'block';
+        };
+        PiecePromotionModalComponent.prototype.changeSelection = function (index) {
+            this.modal.nativeElement.style.display = 'none';
+            this.opened = false;
+            this.onCloseCallback(index);
+        };
+        return PiecePromotionModalComponent;
+    }());
+    PiecePromotionModalComponent.decorators = [
+        { type: i0.Component, args: [{
+                    selector: 'app-piece-promotion-modal',
+                    template: "<div #myModal class=\"container\">\r\n    <div class=\"wrapper\">\r\n        <div class=\"content\">\r\n            <div class=\"piece-wrapper\">\r\n                <div class=\"piece\" (click)=\"changeSelection(1)\">&#x265B;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(2)\">&#x265C;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(3)\">&#x265D;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(4)\">&#x265E;</div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n",
+                    styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container,.wrapper{height:100%;width:100%}.content,.wrapper{position:relative}.content{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece:hover{background-color:#ccc;border-radius:5px}.piece-wrapper{height:80%;width:100%}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"]
+                },] }
+    ];
+    PiecePromotionModalComponent.propDecorators = {
+        modal: [{ type: i0.ViewChild, args: ['myModal', { static: false },] }]
+    };
 
     var NgxChessBoardModule = /** @class */ (function () {
         function NgxChessBoardModule() {
@@ -3204,19 +3325,13 @@
         };
         return NgxChessBoardModule;
     }());
-    NgxChessBoardModule.ɵmod = i0.ɵɵdefineNgModule({ type: NgxChessBoardModule });
-    NgxChessBoardModule.ɵinj = i0.ɵɵdefineInjector({ factory: function NgxChessBoardModule_Factory(t) { return new (t || NgxChessBoardModule)(); }, imports: [[i2.CommonModule, i4.DragDropModule]] });
-    (function () { (typeof ngJitMode === "undefined" || ngJitMode) && i0.ɵɵsetNgModuleScope(NgxChessBoardModule, { declarations: [NgxChessBoardComponent, PiecePromotionModalComponent], imports: [i2.CommonModule, i4.DragDropModule], exports: [NgxChessBoardComponent] }); })();
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(NgxChessBoardModule, [{
-                type: i0.NgModule,
-                args: [{
-                        declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
-                        imports: [i2.CommonModule, i4.DragDropModule],
-                        exports: [NgxChessBoardComponent],
-                    }]
-            }], null, null);
-    })();
+    NgxChessBoardModule.decorators = [
+        { type: i0.NgModule, args: [{
+                    declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
+                    imports: [common.CommonModule, dragDrop.DragDropModule],
+                    exports: [NgxChessBoardComponent],
+                },] }
+    ];
 
     /*
      * Public API Surface of ngx-chess-board
