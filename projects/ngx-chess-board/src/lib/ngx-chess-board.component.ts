@@ -137,6 +137,11 @@ export class NgxChessBoardComponent
         this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
             this.engineFacade.reset();
         });
+
+    }
+
+    ngAfterViewInit(): void {
+        this.engineFacade.modal = this.modal;
         this.calculatePieceSize();        this.setPGN('[Event "F/S Return Match"]\n' +
             '[Site "Belgrade"]\n' +
             '[Date "1992.11.04"]\n' +
@@ -145,14 +150,8 @@ export class NgxChessBoardComponent
             '[Black "Spassky, Boris V."]\n' +
             '[Result "1/2-1/2"]\n' +
             '\n' +
-            '1. Nf3 Nf6 2. d4 c5 3. e3 b5 4. Bc4 a6 ' +
-        '5. O-O e6 6. d5 Bd6 7. b3 O-O'+
-            '');
-    }
-
-    ngAfterViewInit(): void {
-        this.engineFacade.modal = this.modal;
-
+            '1. c3 f5 2. Na3 e6 3. d3 d6 4. Nf3 c6 5. e4 b6 6. Be2 b5 7. Bd2 b4 8. Qc2 d5 9. Ng5 f4 10. f3 c5 11. Kf2 a6 12. Rhe1'
+        );
     }
 
     onMouseUp(event: MouseEvent) {
@@ -172,7 +171,7 @@ export class NgxChessBoardComponent
 
     updateBoard(board: Board) {
         this.engineFacade.board = board;
-        this.boardLoader.setBoard(this.engineFacade.board);
+        this.boardLoader.setEngineFacade(this.engineFacade);
         this.engineFacade.board.possibleCaptures = [];
         this.engineFacade.board.possibleMoves = [];
     }

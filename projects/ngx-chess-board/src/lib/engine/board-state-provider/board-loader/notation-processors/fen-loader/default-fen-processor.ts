@@ -8,15 +8,16 @@ import { Point } from '../../../../../models/pieces/point';
 import { Queen } from '../../../../../models/pieces/queen';
 import { Rook } from '../../../../../models/pieces/rook';
 import { UnicodeConstants } from '../../../../../utils/unicode-constants';
+import { AbstractEngineFacade } from '../../../../abstract-engine-facade';
 import { NotationProcessor } from '../notation-processor';
 
 export class DefaultFenProcessor implements NotationProcessor {
 
-    public process(notation: string, board: Board): void {
+    public process(notation: string, engineFacade: AbstractEngineFacade): void {
         let fen = notation;
         if (notation) {
-            board.reverted = false;
-            board.pieces = [];
+            engineFacade.board.reverted = false;
+            engineFacade.board.pieces = [];
             const split = fen.split('/');
             for (let i = 0; i < 8; ++i) {
                 let pointer = 0;
@@ -27,53 +28,53 @@ export class DefaultFenProcessor implements NotationProcessor {
                     } else {
                         switch (chunk) {
                             case 'r':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Rook(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_ROOK,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
                             case 'n':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Knight(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_KNIGHT,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
 
                                 break;
                             case 'b':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Bishop(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_BISHOP,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
                             case 'q':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Queen(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_QUEEN,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
                             case 'k':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new King(
                                         new Point(i, pointer),
                                         Color.BLACK,
                                         UnicodeConstants.BLACK_KING,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
@@ -82,7 +83,7 @@ export class DefaultFenProcessor implements NotationProcessor {
                                     new Point(i, pointer),
                                     Color.BLACK,
                                     UnicodeConstants.BLACK_PAWN,
-                                    board
+                                    engineFacade.board
                                 );
                                 if (
                                     (pawn.color === Color.BLACK && pawn.point.row !== 1) ||
@@ -90,60 +91,60 @@ export class DefaultFenProcessor implements NotationProcessor {
                                 ) {
                                     pawn.isMovedAlready = true;
                                 }
-                                board.pieces.push(pawn);
+                                engineFacade.board.pieces.push(pawn);
                                 break;
                             }
                             case 'R':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Rook(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_ROOK,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
 
                                 break;
                             case 'N':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Knight(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_KNIGHT,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
 
                             case 'B':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Bishop(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_BISHOP,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
 
                             case 'Q':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new Queen(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_QUEEN,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
 
                             case 'K':
-                                board.pieces.push(
+                                engineFacade.board.pieces.push(
                                     new King(
                                         new Point(i, pointer),
                                         Color.WHITE,
                                         UnicodeConstants.WHITE_KING,
-                                        board
+                                        engineFacade.board
                                     )
                                 );
                                 break;
@@ -153,7 +154,7 @@ export class DefaultFenProcessor implements NotationProcessor {
                                     new Point(i, pointer),
                                     Color.WHITE,
                                     UnicodeConstants.WHITE_PAWN,
-                                    board
+                                    engineFacade.board
                                 );
                                 if (
                                     (pawn.color === Color.BLACK && pawn.point.row !== 1) ||
@@ -161,7 +162,7 @@ export class DefaultFenProcessor implements NotationProcessor {
                                 ) {
                                     pawn.isMovedAlready = true;
                                 }
-                                board.pieces.push(pawn);
+                                engineFacade.board.pieces.push(pawn);
                                 break;
                             }
                         }
@@ -170,11 +171,11 @@ export class DefaultFenProcessor implements NotationProcessor {
                 }
             }
 
-            this.setCurrentPlayer(board, fen);
-            this.setCastles(board, fen);
+            this.setCurrentPlayer(engineFacade.board, fen);
+            this.setCastles(engineFacade.board, fen);
             this.setEnPassant(fen);
             this.setFullMoveCount(fen);
-            board.fen = fen;
+            engineFacade.board.fen = fen;
         } else {
             throw Error('Incorrect FEN provided');
         }

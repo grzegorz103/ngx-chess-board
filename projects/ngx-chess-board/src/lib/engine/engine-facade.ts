@@ -40,7 +40,7 @@ export class EngineFacade extends AbstractEngineFacade {
     ) {
         super(board);
         this.moveChange = moveChange;
-        this.boardLoader = new BoardLoader(this.board);
+        this.boardLoader = new BoardLoader(this);
         this.boardLoader.addPieces();
         this.boardStateProvider = new BoardStateProvider();
     }
@@ -62,7 +62,6 @@ export class EngineFacade extends AbstractEngineFacade {
                 lastBoard.reverse();
             }
             this.board = lastBoard;
-            this.boardLoader.setBoard(this.board);
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
             this.moveHistoryProvider.pop();

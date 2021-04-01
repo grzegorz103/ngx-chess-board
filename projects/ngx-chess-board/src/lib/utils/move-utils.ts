@@ -1,5 +1,6 @@
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
+import { King } from '../models/pieces/king';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
 import { MoveTranslation } from '../models/move-translation';
@@ -92,8 +93,8 @@ export class MoveUtils {
                     piece.color,
                     piece.point.row,
                     piece.point.col,
-                    indexes.xAxis,
                     indexes.yAxis,
+                    indexes.xAxis,
                     board
                 ) && point.isEqual(destPoint)) {
                     foundPieces.push(piece);
@@ -112,16 +113,31 @@ export class MoveUtils {
         let indexes = this.translateCoordsToIndex(coords, board.reverted);
         let destPoint = new Point(indexes.yAxis, indexes.xAxis);
         let foundPieces = [];
-        console.log(destPoint);
         for (let piece of board.pieces.filter(piece => piece.color === color)) {
             for (let point of piece.getPossibleCaptures()) {
-                if ( point.isEqual(destPoint)) {
+                if (point.isEqual(destPoint)) {
                     foundPieces.push(piece);
                 }
             }
         }
 
         return foundPieces;
+    }
+
+    public static formatSingle(point: Point, reverted: boolean): string {
+        if (reverted) {
+            const sourceX = 104 - point.col;
+            return (
+                String.fromCharCode(sourceX) +
+                (point.row + 1)
+            );
+        } else {
+            const incrementX = 97;
+            return (
+                String.fromCharCode(point.col + incrementX) +
+                (Math.abs(point.row - 7) + 1)
+            );
+        }
     }
 
 }

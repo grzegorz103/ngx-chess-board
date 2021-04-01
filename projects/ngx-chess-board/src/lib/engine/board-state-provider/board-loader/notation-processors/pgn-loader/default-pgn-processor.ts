@@ -1,4 +1,3 @@
-import { count } from 'rxjs/operators';
 import { Board } from '../../../../../models/board';
 import { Bishop } from '../../../../../models/pieces/bishop';
 import { Color } from '../../../../../models/pieces/color';
@@ -10,146 +9,136 @@ import { Point } from '../../../../../models/pieces/point';
 import { Queen } from '../../../../../models/pieces/queen';
 import { Rook } from '../../../../../models/pieces/rook';
 import { MoveUtils } from '../../../../../utils/move-utils';
-import { UnicodeConstants } from '../../../../../utils/unicode-constants';
+import { AbstractEngineFacade } from '../../../../abstract-engine-facade';
 import { NotationProcessor } from '../notation-processor';
 
 export class DefaultPgnProcessor implements NotationProcessor {
 
-    public process(notation: string, board: Board): void {
+    public process(notation: string, engineFacade: AbstractEngineFacade): void {
         if (notation) {
             let moves = this.extractMoves(notation);
-            console.log(moves);
             let counter = 0;
             for (let move of moves) {
                 let color = (counter === 0 || counter % 2 === 0)
                     ? Color.WHITE
                     : Color.BLACK;
 
-                if (!move.includes('x') && !this.hasUpperCase(move) && !this.isShortCastle(
-                    move)) { // zwykly ruch na wolne pole
-                    console.log('FIRST');
+                if (/^[a-z]\d$/g.test(move)) { // zwykly ruch na wolne pole e4
                     let piece = MoveUtils.findPieceByPossibleMovesContaining(
                         move,
-                        board,
+                        engineFacade.board,
                         color
                     )[0];
                     if (piece) {
-                        this.movePiece(piece, board, move);
+                        engineFacade.move(MoveUtils.formatSingle(
+                            piece.point,
+                            false
+                        ) + move);
                     } else {
+                        console.log('nie znalazlem ' + move);
                     }
                 } else {
-                    if (this.hasUpperCase(move) && !this.isShortCastle(move) && !move.includes(
-                        'x')) {// jezeli ma wielka litere, czyli trzeba odszukac ktora figura
-                        console.log('SECOND');
+                    if (/^[A-Z][a-z]\d$/g.test(move)) {// jezeli ma wielka litere, czyli trzeba odszukac ktora figura Nf3
                         let pieces = MoveUtils.findPieceByPossibleMovesContaining(
                             move.substring(1),
-                            board,
+                            engineFacade.board,
                             color
                         );
+                        console.log(pieces);
                         let piece = pieces.find(piece => this.resolvePieceByFirstChar(
                             move.charAt(0),
                             piece
                         ));
-                        console.log(piece);
                         if (piece) {
-                            this.movePiece(piece, board, move.substring(1));
+                            engineFacade.move(MoveUtils.formatSingle(
+                                piece.point,
+                                false
+                            ) + move.substring(1));
                         } else {
                         }
                     } else {
-                        if (this.isShortCastle(move) && !move.includes('x')) {
-                            let pieces = MoveUtils.findPieceByPossibleMovesContaining(
-                                color === Color.WHITE ? 'g1' : 'g8',
-                                board,
-                                color
-                            );
-
-                            if (color === Color.WHITE) {
-                                const rook = board.getPieceByField(
-                                    7,
-                                    7
-                                );
-                                const king = board.getPieceByField(
-                                    7,
-                                    4
-                                );
-
-                                rook.point.col = 5;
-                                king.point.col = 6;
-                            } else {
-                                const rook = board.getPieceByField(
-                                    0,
-                                    7
-                                );
-                                const king = board.getPieceByField(
-                                    0,
-                                    4
-                                );
-                                rook.point.col = 5;
-                                king.point.col = 6;
-                            }
+                        if ('O-O' === move) {
+                            engineFacade.move(color === Color.WHITE ? 'e1g1' : 'e8g8');
                         } else {
-                            if (move.includes('x') && !this.hasUpperCase(move)) {
-                                console.log(move + ' moveXXX');
+                            if (/^[a-z]x[a-z]\d$/g.test(move)) { //exd5
                                 let piece = MoveUtils.findPieceByPossibleCapturesContaining(
                                     move.substring(move.indexOf('x') + 1),
-                                    board,
+                                    engineFacade.board,
                                     color
                                 )[0];
-                                console.log(piece);
                                 if (piece) {
-                                    this.removePiece(move.substring(move.indexOf(
-                                        'x') + 1), board);
-                                    this.movePiece(piece, board, move.substring(move.indexOf('x') + 1));
+                                    engineFacade.move(MoveUtils.formatSingle(
+                                        piece.point,
+                                        false
+                                    ) + move.substring(move.indexOf('x') + 1));
                                 } else {
-                                    console.log('not found ' + move);
                                 }
-                            } else if (move.includes('x') && this.hasUpperCase(move)) {
-                                console.log('ostatni' + move);
-                                let piece = MoveUtils.findPieceByPossibleCapturesContaining(
-                                    move.substring(move.indexOf('x') + 1),
-                                    board,
-                                    color
-                                ).find(piece => this.resolvePieceByFirstChar(move[0], piece));
-                                console.log(piece);
-                                if (piece) {
-                                    this.removePiece(move.substring(move.indexOf(
-                                        'x') + 1), board);
-                                    this.movePiece(piece, board, move.substring(move.indexOf('x') + 1));
+                            } else {
+                                if (/^[A-Z]x[a-z]\d$]/g.test(move)) {
+                                    let piece = MoveUtils.findPieceByPossibleCapturesContaining(
+                                        move.substring(move.indexOf('x') + 1),
+                                        engineFacade.board,
+                                        color
+                                    ).find(piece => this.resolvePieceByFirstChar(
+                                        move[0],
+                                        piece
+                                    ));
+                                    if (piece) {
+                                        engineFacade.move(MoveUtils.formatSingle(
+                                            piece.point,
+                                            false
+                                        ) + move.substring(move.indexOf('x') + 1));
+                                    } else {
+                                    }
                                 } else {
-                                    console.log('not found ' + move);
+                                    if (move === 'O-O-O') {
+                                        engineFacade.move(color === Color.WHITE ? 'e1c1' : 'e8c8');
+                                    } else {
+                                        if (/^[A-Z][a-z]x[a-z]\d$/g.test(move)) {  //Ngxe4 sytuacja 2 skoczkow pion
+                                            let pieces = MoveUtils.findPieceByPossibleCapturesContaining(
+                                                move.substring(move.indexOf('x') + 1),
+                                                engineFacade.board,
+                                                color
+                                            );
+
+                                            let piece = this.resolveByCol(
+                                                pieces,
+                                                move.substring(1, 2)
+                                            );
+
+                                            if (piece) {
+                                                engineFacade.move(MoveUtils.formatSingle(
+                                                    piece.point,
+                                                    false
+                                                ) + move.substring(move.indexOf(
+                                                    'x') + 1));
+                                            }
+                                        } else {
+                                            if (/^[A-Z][a-z][a-z]\d$/g.test(move)) { // dwie wieze bez bicia Rac1 pion
+                                                let pieces = MoveUtils.findPieceByPossibleMovesContaining(
+                                                    move.substring(2, 4),
+                                                    engineFacade.board,
+                                                    color
+                                                ).filter(piece => this.resolvePieceByFirstChar(
+                                                    move.charAt(0),
+                                                    piece
+                                                ));
+
+                                                let piece = this.resolveByCol(
+                                                    pieces,
+                                                    move.substring(1, 2)
+                                                );
+
+                                                if (piece) {
+                                                    engineFacade.move(MoveUtils.formatSingle(
+                                                        piece.point,
+                                                        false
+                                                    ) + move.substring(2, 4));
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                            } else if (this.isLongCastle(move)) {
-                                let pieces = MoveUtils.findPieceByPossibleMovesContaining(
-                                    color === Color.WHITE ? 'c1' : 'c8',
-                                    board,
-                                    color
-                                );
-
-                                if (color === Color.WHITE) {
-                                    const rook = board.getPieceByField(
-                                        7,
-                                        0
-                                    );
-                                    const king = board.getPieceByField(
-                                        7,
-                                        4
-                                    );
-
-                                    rook.point.col = 3;
-                                    king.point.col = 2;
-                                } else {
-                                    const rook = board.getPieceByField(
-                                        0,
-                                        0
-                                    );
-                                    const king = board.getPieceByField(
-                                        0,
-                                        4
-                                    );
-                                    rook.point.col = 3;
-                                    king.point.col = 2;
-                                }
-
                             }
                         }
                     }
@@ -169,11 +158,9 @@ export class DefaultPgnProcessor implements NotationProcessor {
     }
 
     protected movePiece(piece: Piece, board: Board, move: string) {
-        console.log(move);
         let indexes = MoveUtils.translateCoordsToIndex(move, board.reverted);
         piece.point.col = indexes.xAxis;
         piece.point.row = indexes.yAxis;
-        console.log(indexes);
     }
 
     hasUpperCase(move: string) {
@@ -223,5 +210,13 @@ export class DefaultPgnProcessor implements NotationProcessor {
 
     private isLongCastle(move: string) {
         return move === 'O-O-O';
+    }
+
+    private resolveByCol(pieces: Piece[], char: string): Piece {
+        let firstPieceFormat = MoveUtils.formatSingle(pieces[0].point, false);
+        let secondPieceFormat = MoveUtils.formatSingle(pieces[1].point, false);
+        return firstPieceFormat.substring(0, 1) === char
+            ? pieces[0]
+            : pieces[1];
     }
 }

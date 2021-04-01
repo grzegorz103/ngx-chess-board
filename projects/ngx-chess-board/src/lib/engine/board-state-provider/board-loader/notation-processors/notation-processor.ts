@@ -1,7 +1,7 @@
-import { Board } from '../../../../models/board';
+import { AbstractEngineFacade } from '../../../abstract-engine-facade';
 
 export interface NotationProcessor {
 
-    process: (notation: string, board: Board) => void;
+    process: (notation: string, engineFacade: AbstractEngineFacade) => void;
 
 }

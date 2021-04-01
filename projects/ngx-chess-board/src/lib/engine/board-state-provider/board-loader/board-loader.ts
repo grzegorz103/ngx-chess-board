@@ -8,17 +8,18 @@ import { Point } from '../../../models/pieces/point';
 import { Queen } from '../../../models/pieces/queen';
 import { Rook } from '../../../models/pieces/rook';
 import { UnicodeConstants } from '../../../utils/unicode-constants';
+import { AbstractEngineFacade } from '../../abstract-engine-facade';
 import { DefaultPiecesLoader } from './default-pieces-loader';
 import { NotationProcessor } from './notation-processors/notation-processor';
 import { NotationProcessorFactory } from './notation-processors/notation-processor-factory';
 
 export class BoardLoader {
 
-    private board: Board;
+    private engineFacade: AbstractEngineFacade;
     private notationProcessor: NotationProcessor;
 
-    constructor(board: Board, notationProcessor?: NotationProcessor) {
-        this.board = board;
+    constructor(engineFacade: AbstractEngineFacade, notationProcessor?: NotationProcessor) {
+        this.engineFacade = engineFacade;
 
         if (notationProcessor) {
             this.notationProcessor = notationProcessor;
@@ -29,19 +30,19 @@ export class BoardLoader {
     }
 
     addPieces() {
-        DefaultPiecesLoader.loadDefaultPieces(this.board);
+        DefaultPiecesLoader.loadDefaultPieces(this.engineFacade.board);
     }
 
     loadFEN(fen: string) {
-        this.notationProcessor.process(fen, this.board);
+        this.notationProcessor.process(fen, this.engineFacade);
     }
 
     loadPGN(pgn: string) {
-        this.notationProcessor.process(pgn, this.board)
+        this.notationProcessor.process(pgn, this.engineFacade)
     }
 
-    setBoard(board: Board) {
-        this.board = board;
+    setEngineFacade(engineFacade: AbstractEngineFacade) {
+        this.engineFacade = engineFacade;
     }
 
     setNotationProcessor(notationProcessor: NotationProcessor) {
