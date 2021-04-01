@@ -1,5 +1,8 @@
 import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
+import { King } from '../models/pieces/king';
+import { Knight } from '../models/pieces/knight';
+import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
 import { MoveTranslation } from '../models/move-translation';
 
@@ -75,4 +78,79 @@ export class MoveUtils {
 
         return new MoveTranslation(xAxis, yAxis, reverted);
     }
+
+    public static findPieceByPossibleMovesContaining(
+        coords: string,
+        board: Board,
+        color: Color
+    ): Piece[] {
+        let indexes = this.translateCoordsToIndex(coords, board.reverted);
+        let destPoint = new Point(indexes.yAxis, indexes.xAxis);
+        let foundPieces = [];
+
+        for (let piece of board.pieces.filter(piece => piece.color === color)) {
+            for (let point of piece.getPossibleMoves()) {
+                if (!MoveUtils.willMoveCauseCheck(
+                    piece.color,
+                    piece.point.row,
+                    piece.point.col,
+                    indexes.yAxis,
+                    indexes.xAxis,
+                    board
+                ) && point.isEqual(destPoint)) {
+                    foundPieces.push(piece);
+                }
+            }
+        }
+        if (foundPieces.length === 0) {
+            console.log(coords + ' debug');
+        }
+        return foundPieces;
+    }
+
+    public static findPieceByPossibleCapturesContaining(
+        coords: string,
+        board: Board,
+        color: Color
+    ): Piece[] {
+        let indexes = this.translateCoordsToIndex(coords, board.reverted);
+        let destPoint = new Point(indexes.yAxis, indexes.xAxis);
+        let foundPieces = [];
+        for (let piece of board.pieces.filter(piece => piece.color === color)) {
+            for (let point of piece.getPossibleCaptures()) {
+                if (!MoveUtils.willMoveCauseCheck(
+                    piece.color,
+                    piece.point.row,
+                    piece.point.col,
+                    indexes.yAxis,
+                    indexes.xAxis,
+                    board
+                ) && point.isEqual(destPoint)) {
+                    foundPieces.push(piece);
+                }
+            }
+        }
+        if (foundPieces.length === 0) {
+            console.log(coords + ' debug');
+        }
+
+        return foundPieces;
+    }
+
+    public static formatSingle(point: Point, reverted: boolean): string {
+        if (reverted) {
+            const sourceX = 104 - point.col;
+            return (
+                String.fromCharCode(sourceX) +
+                (point.row + 1)
+            );
+        } else {
+            const incrementX = 97;
+            return (
+                String.fromCharCode(point.col + incrementX) +
+                (Math.abs(point.row - 7) + 1)
+            );
+        }
+    }
+
 }

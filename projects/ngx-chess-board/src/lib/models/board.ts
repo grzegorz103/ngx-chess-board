@@ -91,6 +91,7 @@ export class Board {
         this.pieces.forEach((piece: Piece) => this.reversePoint(piece.point));
 
         this.reversePoint(this.lastMoveSrc);
+        this.reversePoint(this.lastMoveDest);
 
         if (this.enPassantPoint && this.enPassantPiece) {
             this.reversePoint(this.enPassantPoint);
@@ -279,6 +280,7 @@ export class Board {
 
     public checkIfPawnTakesEnPassant(newPoint: Point) {
         if (newPoint.isEqual(this.enPassantPoint)) {
+            console.log('usuwam');
             this.pieces = this.pieces.filter(
                 (piece) => piece !== this.enPassantPiece
             );

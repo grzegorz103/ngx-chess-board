@@ -49,6 +49,7 @@ export class AppComponent {
     public addPieceCoords: string = 'a4';
     public selectedPiece = '1';
     public selectedColor = '1';
+    public pgn: string = '';
 
     public reset(): void {
         alert('Resetting board');
@@ -140,5 +141,18 @@ export class AppComponent {
             case '2':
                 return ColorInput.DARK;
         }
+    }
+
+    public setPgn() {
+        this.boardManager.setPGN(this.pgn);
+    }
+
+    loadDefaultPgn() {
+        this.pgn = '1. c4 b5 2. cxb5 c6 3. bxc6 Nxc6 4. Qa4 a6\n' +
+            '5. Qxa6 Rb8 6. b3 d5 7. f4 e5 8. fxe5 f6\n' +
+            '9. exf6 gxf6 10. Nf3 f5 11. Ne5 Bb7 12. Qxb7 Na7\n' +
+            '13. Qxb8 Qxb8 14. Kf2 Kd8 15. Nc3 Be7 16. Nc4 Bf6\n' +
+            '17. Nb6 Nb5 18. Nbxd5 f4 19. Ne4 Na7 20. Nexf6';
+        this.setPgn();
     }
 }

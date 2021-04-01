@@ -14,4 +14,8 @@ export class Point {
     hasCoordsEqual(row: number, col: number) {
         return row && col && this.row === row && this.col === col;
     }
+
+    clone() {
+        return new Point(this.row, this.col);
+    }
 }
