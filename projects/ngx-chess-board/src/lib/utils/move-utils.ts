@@ -1,10 +1,14 @@
 import { Board } from '../models/board';
+import { Bishop } from '../models/pieces/bishop';
 import { Color } from '../models/pieces/color';
 import { King } from '../models/pieces/king';
 import { Knight } from '../models/pieces/knight';
+import { Pawn } from '../models/pieces/pawn';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
 import { MoveTranslation } from '../models/move-translation';
+import { Queen } from '../models/pieces/queen';
+import { Rook } from '../models/pieces/rook';
 
 export class MoveUtils {
     public static willMoveCauseCheck(
@@ -151,6 +155,34 @@ export class MoveUtils {
                 (Math.abs(point.row - 7) + 1)
             );
         }
+    }
+
+    public static getFirstLetterPiece(piece: Piece): string {
+        if (piece instanceof Pawn) {
+            return 'P';
+        } else {
+            if (piece instanceof Knight) {
+                return 'N';
+            } else {
+                if (piece instanceof Bishop) {
+                    return 'B';
+                } else {
+                    if (piece instanceof Rook) {
+                        return 'R';
+                    } else {
+                        if (piece instanceof King) {
+                            return 'K';
+                        } else {
+                            if (piece instanceof Queen) {
+                                return 'Q';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return '';
     }
 
 }

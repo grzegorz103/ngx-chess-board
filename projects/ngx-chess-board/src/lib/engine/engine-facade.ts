@@ -18,6 +18,7 @@ import { King } from '../models/pieces/king';
 import { Pawn } from '../models/pieces/pawn';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
+import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
 import { AvailableMoveDecorator } from './piece-decorator/available-move-decorator';
 import { PiecePromotionResolver } from '../piece-promotion/piece-promotion-resolver';
 import { MoveUtils } from '../utils/move-utils';
@@ -33,6 +34,7 @@ export class EngineFacade extends AbstractEngineFacade {
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;
     moveChange: EventEmitter<MoveChange>;
+    pgnProcessor: DefaultPgnProcessor = new DefaultPgnProcessor();
 
     constructor(
         board: Board,
@@ -323,6 +325,13 @@ export class EngineFacade extends AbstractEngineFacade {
             (piece) =>
                 piece.point.col === newPoint.col &&
                 piece.point.row === newPoint.row
+        );
+
+        this.pgnProcessor.process(
+            this.board,
+            toMovePiece,
+            newPoint,
+            destPiece
         );
 
         if (destPiece && toMovePiece.color !== destPiece.color) {
