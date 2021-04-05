@@ -34,61 +34,76 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
             sourcePiece.color
         ).filter(piece => piece.constructor.name === sourcePiece.constructor.name);
 
-        console.log(possibleCaptures);
-        // zwykly ruch pionem
         if (sourcePiece instanceof Pawn && !destPiece && possibleCaptures.length === 0) {
             this.pgn += MoveUtils.formatSingle(destPoint, board.reverted);
         } else {
-            if (sourcePiece instanceof King && (Math.abs(sourcePiece.point.col - destPoint.col) === 2)) {   // O-O
-                this.pgn += 'O-O';
+            if (sourcePiece instanceof Pawn && destPiece) {
+                this.pgn += MoveUtils.formatSingle(
+                    sourcePiece.point,
+                    board.reverted
+                ).substring(0, 1) + 'x' + MoveUtils.formatSingle(
+                    destPoint,
+                    board.reverted
+                );
             } else {
-                if (!(sourcePiece instanceof Pawn) && possibleCaptures.length === 0 && possibleMoves.length < 2) {     // Nf3
-                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatSingle(
-                        destPoint,
-                        board.reverted
-                    );
-                } else {
-                    if (possibleMoves && possibleMoves.length === 2 && possibleCaptures.length === 0) {    // Nbd7
-                        console.log(possibleCaptures);
-                        if (this.isEqualByCol(
-                            possibleMoves[0],
-                            possibleMoves[1]
-                        )) {
-                            this.pgn += MoveUtils.getFirstLetterPiece(
-                                sourcePiece) + sourcePiece.point.row + MoveUtils.formatSingle(
-                                destPoint,
-                                board.reverted
-                            );
-                        } else {
-                            this.pgn += MoveUtils.getFirstLetterPiece(
-                                sourcePiece) + sourcePiece.point.col + MoveUtils.formatSingle(
-                                destPoint,
-                                board.reverted
-                            );
-                        }
+                if (sourcePiece instanceof King && (Math.abs(sourcePiece.point.col - destPoint.col) === 2)) {
+                    if (board.reverted) {
+                        this.pgn += destPoint.col < 2
+                            ? 'O-O'
+                            : 'O-O-O';
                     } else {
-                        if (possibleCaptures.length > 1) {
+                        this.pgn += destPoint.col < 3
+                            ? 'O-O-O'
+                            : 'O-O';
+                    }
+                } else {
+                    if (!(sourcePiece instanceof Pawn) && possibleCaptures.length === 0 && possibleMoves.length < 2) {     // Nf3
+                        this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatSingle(
+                            destPoint,
+                            board.reverted
+                        );
+                    } else {
+                        if (possibleMoves && possibleMoves.length === 2 && possibleCaptures.length === 0) {    // Nbd7
                             if (this.isEqualByCol(
-                                possibleCaptures[0],
-                                possibleCaptures[1]
+                                possibleMoves[0],
+                                possibleMoves[1]
                             )) {
                                 this.pgn += MoveUtils.getFirstLetterPiece(
-                                    sourcePiece) + sourcePiece.point.row + 'x' + MoveUtils.formatSingle(
+                                    sourcePiece) + sourcePiece.point.row + MoveUtils.formatSingle(
                                     destPoint,
                                     board.reverted
                                 );
                             } else {
                                 this.pgn += MoveUtils.getFirstLetterPiece(
-                                    sourcePiece) + sourcePiece.point.col + 'x' + MoveUtils.formatSingle(
+                                    sourcePiece) + sourcePiece.point.col + MoveUtils.formatSingle(
                                     destPoint,
                                     board.reverted
                                 );
                             }
                         } else {
-                            this.pgn += MoveUtils.getFirstLetterPiece(
-                                sourcePiece) + 'x' + MoveUtils.formatSingle(
-                                destPoint, board.reverted
-                            );
+                            if (possibleCaptures.length > 1) {
+                                if (this.isEqualByCol(
+                                    possibleCaptures[0],
+                                    possibleCaptures[1]
+                                )) {
+                                    this.pgn += MoveUtils.getFirstLetterPiece(
+                                        sourcePiece) + sourcePiece.point.row + 'x' + MoveUtils.formatSingle(
+                                        destPoint,
+                                        board.reverted
+                                    );
+                                } else {
+                                    this.pgn += MoveUtils.getFirstLetterPiece(
+                                        sourcePiece) + sourcePiece.point.col + 'x' + MoveUtils.formatSingle(
+                                        destPoint,
+                                        board.reverted
+                                    );
+                                }
+                            } else {
+                                this.pgn += MoveUtils.getFirstLetterPiece(
+                                    sourcePiece) + 'x' + MoveUtils.formatSingle(
+                                    destPoint, board.reverted
+                                );
+                            }
                         }
                     }
                 }
