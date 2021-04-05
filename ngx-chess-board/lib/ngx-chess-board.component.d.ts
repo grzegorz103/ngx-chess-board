@@ -12,6 +12,7 @@ import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
+import * as i0 from "@angular/core";
 export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChessBoardView, AfterViewInit {
     private ngxChessBoardService;
     darkTileColor: string;
@@ -59,4 +60,6 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     reset(): void;
     undo(): void;
     addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string): void;
+    static ɵfac: i0.ɵɵFactoryDef<NgxChessBoardComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDefWithMeta<NgxChessBoardComponent, "ngx-chess-board", never, { "darkTileColor": "darkTileColor"; "lightTileColor": "lightTileColor"; "showCoords": "showCoords"; "size": "size"; "freeMode": "freeMode"; "dragDisabled": "dragDisabled"; "drawDisabled": "drawDisabled"; "pieceIcons": "pieceIcons"; "lightDisabled": "lightDisabled"; "darkDisabled": "darkDisabled"; }, { "moveChange": "moveChange"; "checkmate": "checkmate"; "stalemate": "stalemate"; }, never, never>;
 }
