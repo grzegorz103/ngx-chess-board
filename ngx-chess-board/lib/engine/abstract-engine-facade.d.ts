@@ -12,9 +12,11 @@ import { DragEndStrategy } from './drag/end/drag-end-strategy';
 import { DragStartStrategy } from './drag/start/drag-start-strategy';
 import { ColorStrategy } from './drawing-tools/colors/color-strategy';
 import { DrawProvider } from './drawing-tools/draw-provider';
+import { AbstractPgnProcessor } from './pgn/abstract-pgn-processor';
 export declare abstract class AbstractEngineFacade {
     dragStartStrategy: DragStartStrategy;
     dragEndStrategy: DragEndStrategy;
+    pgnProcessor: AbstractPgnProcessor;
     protected colorStrategy: ColorStrategy;
     coords: CoordsProvider;
     heightAndWidth: number;

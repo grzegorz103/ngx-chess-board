@@ -9,8 +9,7 @@ import { Board } from '../models/board';
 import { Color } from '../models/pieces/color';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
-import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
-import { MoveChange } from './move-change/move-change';
+import { MoveChange } from './outputs/move-change/move-change';
 export declare class EngineFacade extends AbstractEngineFacade {
     _selected: boolean;
     drawPoint: DrawPoint;
@@ -19,7 +18,6 @@ export declare class EngineFacade extends AbstractEngineFacade {
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;
     moveChange: EventEmitter<MoveChange>;
-    pgnProcessor: DefaultPgnProcessor;
     constructor(board: Board, moveChange: EventEmitter<MoveChange>);
     reset(): void;
     undo(): void;

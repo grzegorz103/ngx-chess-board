@@ -6,4 +6,8 @@ export declare abstract class AbstractPgnProcessor {
     protected currentIndex: number;
     abstract process(board: Board, sourcePiece: Piece, destPoint: Point, destPiece?: Piece): void;
     getPGN(): string;
+    processChecks(checkmate: boolean, check: boolean, stalemate: boolean): void;
+    reset(): void;
+    addPromotionChoice(promotion: any): void;
+    removeLast(): void;
 }

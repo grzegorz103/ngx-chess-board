@@ -11,4 +11,6 @@ export declare class MoveUtils {
     static findPieceByPossibleCapturesContaining(coords: string, board: Board, color: Color): Piece[];
     static formatSingle(point: Point, reverted: boolean): string;
     static getFirstLetterPiece(piece: Piece): string;
+    static reverse(board: Board, row: number): number;
+    static formatCol(board: Board, col: number): string;
 }

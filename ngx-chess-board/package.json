@@ -30,11 +30,9 @@
   "esm2015": "esm2015/ngx-chess-board.js",
   "fesm2015": "fesm2015/ngx-chess-board.js",
   "typings": "ngx-chess-board.d.ts",
+  "metadata": "ngx-chess-board.metadata.json",
   "sideEffects": false,
   "dependencies": {
     "tslib": "^2.0.0"
-  },
-  "scripts": {
-    "prepublishOnly": "node --eval \"console.error('ERROR: Trying to publish a package that has been compiled by Ivy. This is not allowed.\\nPlease delete and rebuild the package, without compiling with Ivy, before attempting to publish.\\n')\" && exit 1"
   }
 }

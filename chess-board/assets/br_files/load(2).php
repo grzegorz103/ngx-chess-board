@@ -1,0 +1,1 @@
+#mw-category-media .galleryfilename-truncate,.ns-special .galleryfilename-truncate{white-space:normal;overflow:visible;display:inline}#mw-category-media .galleryfilename-truncate:after,.ns-special .galleryfilename-truncate:after{content:'\A';white-space:pre;white-space:pre-wrap}

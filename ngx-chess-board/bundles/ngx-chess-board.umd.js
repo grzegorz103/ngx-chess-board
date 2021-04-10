@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/cdk/drag-drop'), require('@angular/common'), require('@angular/core'), require('rxjs'), require('lodash')) :
     typeof define === 'function' && define.amd ? define('ngx-chess-board', ['exports', '@angular/cdk/drag-drop', '@angular/common', '@angular/core', 'rxjs', 'lodash'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global['ngx-chess-board'] = {}, global.ng.cdk.dragDrop, global.ng.common, global.ng.core, global.rxjs, global.lodash));
-}(this, (function (exports, i4, i2, i0, rxjs, lodash) { 'use strict';
+}(this, (function (exports, dragDrop, common, i0, rxjs, lodash) { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -1563,9 +1563,6 @@
                 }
                 finally { if (e_1) throw e_1.error; }
             }
-            if (foundPieces.length === 0) {
-                console.log(coords + ' debug');
-            }
             return foundPieces;
         };
         MoveUtils.findPieceByPossibleCapturesContaining = function (coords, board, color) {
@@ -1599,9 +1596,6 @@
                     if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
                 }
                 finally { if (e_3) throw e_3.error; }
-            }
-            if (foundPieces.length === 0) {
-                console.log(coords + ' debug');
             }
             return foundPieces;
         };
@@ -1647,6 +1641,16 @@
                 }
             }
             return '';
+        };
+        MoveUtils.reverse = function (board, row) {
+            return board.reverted
+                ? row + 1
+                : Math.abs(row - 7) + 1;
+        };
+        MoveUtils.formatCol = function (board, col) {
+            return board.reverted
+                ? String.fromCharCode(104 - col)
+                : String.fromCharCode(97 + col);
         };
         return MoveUtils;
     }());
@@ -2248,10 +2252,135 @@
         return DrawProvider;
     }());
 
+    var AbstractPgnProcessor = /** @class */ (function () {
+        function AbstractPgnProcessor() {
+            this.pgn = '';
+            this.currentIndex = 0.5;
+        }
+        AbstractPgnProcessor.prototype.getPGN = function () {
+            return this.pgn;
+        };
+        AbstractPgnProcessor.prototype.processChecks = function (checkmate, check, stalemate) {
+            if (checkmate) {
+                this.pgn += '#';
+            }
+            else {
+                if (check) {
+                    this.pgn += '+';
+                }
+            }
+        };
+        AbstractPgnProcessor.prototype.reset = function () {
+            this.pgn = '';
+            this.currentIndex = 0.5;
+        };
+        AbstractPgnProcessor.prototype.addPromotionChoice = function (promotion) {
+            switch (promotion) {
+                case 1:
+                    this.pgn += '=Q';
+                    break;
+                case 2:
+                    this.pgn += '=R';
+                    break;
+                case 3:
+                    this.pgn += '=B';
+                    break;
+                case 4:
+                    this.pgn += '=N';
+                    break;
+            }
+        };
+        AbstractPgnProcessor.prototype.removeLast = function () {
+            if (this.currentIndex >= 0.5) {
+                this.currentIndex -= 0.5;
+                var regex1 = new RegExp(/\d+\./g);
+                regex1.test(this.pgn);
+                this.pgn = this.pgn.substring(0, regex1.lastIndex).trim();
+            }
+        };
+        return AbstractPgnProcessor;
+    }());
+
+    var DefaultPgnProcessor$1 = /** @class */ (function (_super) {
+        __extends(DefaultPgnProcessor, _super);
+        function DefaultPgnProcessor() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        DefaultPgnProcessor.prototype.process = function (board, sourcePiece, destPoint, destPiece) {
+            this.currentIndex += 0.5;
+            this.pgn += (this.currentIndex % Math.floor(this.currentIndex) === 0) ? (' ' + this.currentIndex + '. ') : ' ';
+            var possibleCaptures = [];
+            var possibleMoves = [];
+            if (destPiece) {
+                possibleCaptures = MoveUtils.findPieceByPossibleCapturesContaining(MoveUtils.formatSingle(destPoint, board.reverted), board, sourcePiece.color).filter(function (piece) { return piece.constructor.name === sourcePiece.constructor.name; });
+            }
+            possibleMoves = MoveUtils.findPieceByPossibleMovesContaining(MoveUtils.formatSingle(destPoint, board.reverted), board, sourcePiece.color).filter(function (piece) { return piece.constructor.name === sourcePiece.constructor.name; });
+            if (sourcePiece instanceof Pawn && !destPiece && possibleCaptures.length === 0) {
+                this.pgn += MoveUtils.formatSingle(destPoint, board.reverted);
+            }
+            else {
+                if (sourcePiece instanceof Pawn && destPiece) {
+                    this.pgn += MoveUtils.formatSingle(sourcePiece.point, board.reverted).substring(0, 1) + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
+                }
+                else {
+                    if (sourcePiece instanceof King && (Math.abs(sourcePiece.point.col - destPoint.col) === 2)) {
+                        if (board.reverted) {
+                            this.pgn += destPoint.col < 2
+                                ? 'O-O'
+                                : 'O-O-O';
+                        }
+                        else {
+                            this.pgn += destPoint.col < 3
+                                ? 'O-O-O'
+                                : 'O-O';
+                        }
+                    }
+                    else {
+                        if (!(sourcePiece instanceof Pawn) && possibleCaptures.length === 0 && possibleMoves.length < 2) { // Nf3
+                            this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatSingle(destPoint, board.reverted);
+                        }
+                        else {
+                            if (possibleMoves && possibleMoves.length === 2 && possibleCaptures.length === 0) { // Nbd7
+                                if (this.isEqualByCol(possibleMoves[0], possibleMoves[1])) {
+                                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.reverse(board, sourcePiece.point.row) + MoveUtils.formatSingle(destPoint, board.reverted);
+                                }
+                                else {
+                                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatCol(board, sourcePiece.point.col) + MoveUtils.formatSingle(destPoint, board.reverted);
+                                }
+                            }
+                            else {
+                                if (possibleCaptures.length > 1) {
+                                    if ((this.isEqualByCol(possibleCaptures[0], possibleCaptures[1]))) {
+                                        this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.reverse(board, sourcePiece.point.row) + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
+                                    }
+                                    else {
+                                        this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatCol(board, sourcePiece.point.col) + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
+                                    }
+                                }
+                                else {
+                                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            this.pgn = this.pgn.trim();
+        };
+        DefaultPgnProcessor.prototype.resolvePieceByFirstChar = function (move, piece) {
+            return MoveUtils.getFirstLetterPiece(piece) === move;
+        };
+        DefaultPgnProcessor.prototype.isEqualByCol = function (aPiece, bPiece) {
+            return aPiece.point.col === bPiece.point.col;
+        };
+        return DefaultPgnProcessor;
+    }(AbstractPgnProcessor));
+
     var AbstractEngineFacade = /** @class */ (function () {
         function AbstractEngineFacade(board) {
             this.dragStartStrategy = new DragStartStrategy();
             this.dragEndStrategy = new DragEndStrategy();
+            this.pgnProcessor = new DefaultPgnProcessor$1();
             this.colorStrategy = new ColorStrategy();
             this.coords = new CoordsProvider();
             this.heightAndWidth = Constants.DEFAULT_SIZE;
@@ -2375,94 +2504,6 @@
         return Circle;
     }());
 
-    var AbstractPgnProcessor = /** @class */ (function () {
-        function AbstractPgnProcessor() {
-            this.pgn = '';
-            this.currentIndex = 0.5;
-        }
-        AbstractPgnProcessor.prototype.getPGN = function () {
-            return this.pgn;
-        };
-        return AbstractPgnProcessor;
-    }());
-
-    var DefaultPgnProcessor$1 = /** @class */ (function (_super) {
-        __extends(DefaultPgnProcessor, _super);
-        function DefaultPgnProcessor() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        DefaultPgnProcessor.prototype.process = function (board, sourcePiece, destPoint, destPiece) {
-            this.currentIndex += 0.5;
-            this.pgn += (this.currentIndex % Math.floor(this.currentIndex) === 0) ? (' ' + this.currentIndex + '. ') : ' ';
-            var possibleCaptures = [];
-            var possibleMoves = [];
-            if (destPiece) {
-                console.log('dest');
-                possibleCaptures = MoveUtils.findPieceByPossibleCapturesContaining(MoveUtils.formatSingle(destPoint, board.reverted), board, sourcePiece.color).filter(function (piece) { return piece.constructor.name === sourcePiece.constructor.name; });
-            }
-            possibleMoves = MoveUtils.findPieceByPossibleMovesContaining(MoveUtils.formatSingle(destPoint, board.reverted), board, sourcePiece.color).filter(function (piece) { return piece.constructor.name === sourcePiece.constructor.name; });
-            if (sourcePiece instanceof Pawn && !destPiece && possibleCaptures.length === 0) {
-                this.pgn += MoveUtils.formatSingle(destPoint, board.reverted);
-            }
-            else {
-                if (sourcePiece instanceof Pawn && destPiece) {
-                    this.pgn += MoveUtils.formatSingle(sourcePiece.point, board.reverted).substring(0, 1) + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
-                }
-                else {
-                    if (sourcePiece instanceof King && (Math.abs(sourcePiece.point.col - destPoint.col) === 2)) {
-                        if (board.reverted) {
-                            this.pgn += destPoint.col < 2
-                                ? 'O-O'
-                                : 'O-O-O';
-                        }
-                        else {
-                            this.pgn += destPoint.col < 3
-                                ? 'O-O-O'
-                                : 'O-O';
-                        }
-                    }
-                    else {
-                        if (!(sourcePiece instanceof Pawn) && possibleCaptures.length === 0 && possibleMoves.length < 2) { // Nf3
-                            this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatSingle(destPoint, board.reverted);
-                        }
-                        else {
-                            if (possibleMoves && possibleMoves.length === 2 && possibleCaptures.length === 0) { // Nbd7
-                                if (this.isEqualByCol(possibleMoves[0], possibleMoves[1])) {
-                                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + sourcePiece.point.row + MoveUtils.formatSingle(destPoint, board.reverted);
-                                }
-                                else {
-                                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + sourcePiece.point.col + MoveUtils.formatSingle(destPoint, board.reverted);
-                                }
-                            }
-                            else {
-                                if (possibleCaptures.length > 1) {
-                                    if (this.isEqualByCol(possibleCaptures[0], possibleCaptures[1])) {
-                                        this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + sourcePiece.point.row + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
-                                    }
-                                    else {
-                                        this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + sourcePiece.point.col + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
-                                    }
-                                }
-                                else {
-                                    this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + 'x' + MoveUtils.formatSingle(destPoint, board.reverted);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            this.pgn = this.pgn.trim();
-            console.log(this.pgn);
-        };
-        DefaultPgnProcessor.prototype.resolvePieceByFirstChar = function (move, piece) {
-            return MoveUtils.getFirstLetterPiece(piece) === move;
-        };
-        DefaultPgnProcessor.prototype.isEqualByCol = function (aPiece, bPiece) {
-            return aPiece.point.col === bPiece.point.col;
-        };
-        return DefaultPgnProcessor;
-    }(AbstractPgnProcessor));
-
     var PieceAbstractDecorator = /** @class */ (function () {
         function PieceAbstractDecorator(piece) {
             this.piece = piece;
@@ -2579,7 +2620,6 @@
             var _this = _super.call(this, board) || this;
             _this._selected = false;
             _this.disabling = false;
-            _this.pgnProcessor = new DefaultPgnProcessor$1();
             _this.moveChange = moveChange;
             _this.boardLoader = new BoardLoader(_this);
             _this.boardLoader.addPieces();
@@ -2593,6 +2633,7 @@
             this.board.reset();
             this.coords.reset();
             this.drawProvider.clear();
+            this.pgnProcessor.reset();
             this.freeMode = false;
         };
         EngineFacade.prototype.undo = function () {
@@ -2605,6 +2646,8 @@
                 this.board.possibleCaptures = [];
                 this.board.possibleMoves = [];
                 this.moveHistoryProvider.pop();
+                this.board.calculateFEN();
+                this.pgnProcessor.removeLast();
             }
         };
         EngineFacade.prototype.saveMoveClone = function () {
@@ -2816,6 +2859,8 @@
             var checkmate = this.checkForPossibleMoves(Color.BLACK) ||
                 this.checkForPossibleMoves(Color.WHITE);
             var stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+            this.pgnProcessor.processChecks(checkmate, check, stalemate);
+            this.pgnProcessor.addPromotionChoice(promotionIndex);
             this.disabling = false;
             this.board.calculateFEN();
             var lastMove = this.moveHistoryProvider.getLastMove();
@@ -2824,7 +2869,9 @@
             }
             this.moveChange.emit(Object.assign(Object.assign({}, lastMove), { check: check,
                 checkmate: checkmate,
-                stalemate: stalemate, fen: this.board.fen, freeMode: this.freeMode }));
+                stalemate: stalemate, fen: this.board.fen, pgn: {
+                    pgn: this.pgnProcessor.getPGN()
+                }, freeMode: this.freeMode }));
         };
         EngineFacade.prototype.checkForPat = function (color) {
             if (color === Color.WHITE && !this.board.whiteKingChecked) {
@@ -3162,7 +3209,6 @@
         Board.prototype.checkIfPawnTakesEnPassant = function (newPoint) {
             var _this = this;
             if (newPoint.isEqual(this.enPassantPoint)) {
-                console.log('usuwam');
                 this.pieces = this.pieces.filter(function (piece) { return piece !== _this.enPassantPiece; });
                 this.enPassantPoint = null;
                 this.enPassantPiece = null;
@@ -3198,206 +3244,13 @@
         };
         return NgxChessBoardService;
     }());
-    NgxChessBoardService.ɵfac = function NgxChessBoardService_Factory(t) { return new (t || NgxChessBoardService)(); };
-    NgxChessBoardService.ɵprov = i0.ɵɵdefineInjectable({ token: NgxChessBoardService, factory: NgxChessBoardService.ɵfac, providedIn: 'root' });
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(NgxChessBoardService, [{
-                type: i0.Injectable,
-                args: [{
-                        providedIn: 'root',
-                    }]
-            }], null, null);
-    })();
+    NgxChessBoardService.ɵprov = i0.ɵɵdefineInjectable({ factory: function NgxChessBoardService_Factory() { return new NgxChessBoardService(); }, token: NgxChessBoardService, providedIn: "root" });
+    NgxChessBoardService.decorators = [
+        { type: i0.Injectable, args: [{
+                    providedIn: 'root',
+                },] }
+    ];
 
-    var _c0 = ["myModal"];
-    var PiecePromotionModalComponent = /** @class */ (function () {
-        function PiecePromotionModalComponent() {
-            this.opened = false;
-        }
-        PiecePromotionModalComponent.prototype.open = function (closeCallback) {
-            this.opened = true;
-            this.onCloseCallback = closeCallback;
-            this.modal.nativeElement.style.display = 'block';
-        };
-        PiecePromotionModalComponent.prototype.changeSelection = function (index) {
-            this.modal.nativeElement.style.display = 'none';
-            this.opened = false;
-            this.onCloseCallback(index);
-        };
-        return PiecePromotionModalComponent;
-    }());
-    PiecePromotionModalComponent.ɵfac = function PiecePromotionModalComponent_Factory(t) { return new (t || PiecePromotionModalComponent)(); };
-    PiecePromotionModalComponent.ɵcmp = i0.ɵɵdefineComponent({ type: PiecePromotionModalComponent, selectors: [["app-piece-promotion-modal"]], viewQuery: function PiecePromotionModalComponent_Query(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵviewQuery(_c0, true);
-            }
-            if (rf & 2) {
-                var _t;
-                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.modal = _t.first);
-            }
-        }, decls: 13, vars: 0, consts: [[1, "container"], ["myModal", ""], [1, "wrapper"], [1, "content"], [1, "piece-wrapper"], [1, "piece", 3, "click"]], template: function PiecePromotionModalComponent_Template(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵelementStart(0, "div", 0, 1);
-                i0.ɵɵelementStart(2, "div", 2);
-                i0.ɵɵelementStart(3, "div", 3);
-                i0.ɵɵelementStart(4, "div", 4);
-                i0.ɵɵelementStart(5, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_5_listener() { return ctx.changeSelection(1); });
-                i0.ɵɵtext(6, "\u265B");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementStart(7, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_7_listener() { return ctx.changeSelection(2); });
-                i0.ɵɵtext(8, "\u265C");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementStart(9, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_9_listener() { return ctx.changeSelection(3); });
-                i0.ɵɵtext(10, "\u265D");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementStart(11, "div", 5);
-                i0.ɵɵlistener("click", function PiecePromotionModalComponent_Template_div_click_11_listener() { return ctx.changeSelection(4); });
-                i0.ɵɵtext(12, "\u265E");
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-                i0.ɵɵelementEnd();
-            }
-        }, styles: [".container[_ngcontent-%COMP%]{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{height:100%;width:100%}.content[_ngcontent-%COMP%], .wrapper[_ngcontent-%COMP%]{position:relative}.content[_ngcontent-%COMP%]{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece[_ngcontent-%COMP%]{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece[_ngcontent-%COMP%]:hover{background-color:#ccc;border-radius:5px}.piece-wrapper[_ngcontent-%COMP%]{height:80%;width:100%}#close-button[_ngcontent-%COMP%]{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected[_ngcontent-%COMP%]{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"] });
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(PiecePromotionModalComponent, [{
-                type: i0.Component,
-                args: [{
-                        selector: 'app-piece-promotion-modal',
-                        templateUrl: './piece-promotion-modal.component.html',
-                        styleUrls: ['./piece-promotion-modal.component.scss']
-                    }]
-            }], null, { modal: [{
-                    type: i0.ViewChild,
-                    args: ['myModal', { static: false }]
-                }] });
-    })();
-
-    var _c0$1 = ["boardRef"];
-    var _c1 = ["modal"];
-    function NgxChessBoardComponent_div_3_div_1_span_1_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "span", 15);
-            i0.ɵɵtext(1);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var i_r7 = i0.ɵɵnextContext(2).index;
-            var ctx_r11 = i0.ɵɵnextContext();
-            i0.ɵɵstyleProp("color", i_r7 % 2 === 0 ? ctx_r11.lightTileColor : ctx_r11.darkTileColor)("font-size", ctx_r11.pieceSize / 4, "px");
-            i0.ɵɵadvance(1);
-            i0.ɵɵtextInterpolate1(" ", ctx_r11.engineFacade.coords.yCoords[i_r7], " ");
-        }
-    }
-    function NgxChessBoardComponent_div_3_div_1_span_2_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "span", 16);
-            i0.ɵɵtext(1);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var j_r10 = i0.ɵɵnextContext().index;
-            var ctx_r12 = i0.ɵɵnextContext(2);
-            i0.ɵɵstyleProp("color", j_r10 % 2 === 0 ? ctx_r12.lightTileColor : ctx_r12.darkTileColor)("font-size", ctx_r12.pieceSize / 4, "px");
-            i0.ɵɵadvance(1);
-            i0.ɵɵtextInterpolate1(" ", ctx_r12.engineFacade.coords.xCoords[j_r10], " ");
-        }
-    }
-    function NgxChessBoardComponent_div_3_div_1_div_3_Template(rf, ctx) {
-        if (rf & 1) {
-            var _r18_1 = i0.ɵɵgetCurrentView();
-            i0.ɵɵelementStart(0, "div", 17);
-            i0.ɵɵelementStart(1, "div", 18);
-            i0.ɵɵlistener("cdkDragEnded", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragEnded_1_listener($event) { i0.ɵɵrestoreView(_r18_1); var ctx_r17 = i0.ɵɵnextContext(3); return ctx_r17.dragEnded($event); })("cdkDragStarted", function NgxChessBoardComponent_div_3_div_1_div_3_Template_div_cdkDragStarted_1_listener($event) { i0.ɵɵrestoreView(_r18_1); var ctx_r19 = i0.ɵɵnextContext(3); return ctx_r19.dragStart($event); });
-            i0.ɵɵelementEnd();
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var j_r10 = i0.ɵɵnextContext().index;
-            var i_r7 = i0.ɵɵnextContext().index;
-            var ctx_r13 = i0.ɵɵnextContext();
-            i0.ɵɵadvance(1);
-            i0.ɵɵstyleProp("font-size", ctx_r13.pieceSize + "px");
-            i0.ɵɵproperty("cdkDragDisabled", ctx_r13.engineFacade.dragDisabled)("innerHTML", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10).constant.icon : "", i0.ɵɵsanitizeHtml)("ngClass", "piece")("ngStyle", ctx_r13.engineFacade.pieceIconManager.isDefaultIcons() ? "" : ctx_r13.getCustomPieceIcons(ctx_r13.engineFacade.board.getPieceByPoint(i_r7, j_r10)));
-        }
-    }
-    function NgxChessBoardComponent_div_3_div_1_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "div", 11);
-            i0.ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_span_1_Template, 2, 5, "span", 12);
-            i0.ɵɵtemplate(2, NgxChessBoardComponent_div_3_div_1_span_2_Template, 2, 5, "span", 13);
-            i0.ɵɵtemplate(3, NgxChessBoardComponent_div_3_div_1_div_3_Template, 2, 6, "div", 14);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var j_r10 = ctx.index;
-            var i_r7 = i0.ɵɵnextContext().index;
-            var ctx_r8 = i0.ɵɵnextContext();
-            i0.ɵɵstyleProp("background-color", (i_r7 + j_r10) % 2 === 0 ? ctx_r8.lightTileColor : ctx_r8.darkTileColor);
-            i0.ɵɵclassProp("current-selection", ctx_r8.engineFacade.board.isXYInActiveMove(i_r7, j_r10))("dest-move", ctx_r8.engineFacade.board.isXYInDestMove(i_r7, j_r10))("king-check", ctx_r8.engineFacade.board.isKingChecked(ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10)))("point-circle", ctx_r8.engineFacade.board.isXYInPointSelection(i_r7, j_r10))("possible-capture", ctx_r8.engineFacade.board.isXYInPossibleCaptures(i_r7, j_r10))("possible-point", ctx_r8.engineFacade.board.isXYInPossibleMoves(i_r7, j_r10))("source-move", ctx_r8.engineFacade.board.isXYInSourceMove(i_r7, j_r10));
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.showCoords && j_r10 === 7);
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.showCoords && i_r7 === 7);
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", ctx_r8.engineFacade.board.getPieceByPoint(i_r7, j_r10));
-        }
-    }
-    function NgxChessBoardComponent_div_3_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵelementStart(0, "div", 9);
-            i0.ɵɵtemplate(1, NgxChessBoardComponent_div_3_div_1_Template, 4, 19, "div", 10);
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var row_r6 = ctx.$implicit;
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngForOf", row_r6);
-        }
-    }
-    function NgxChessBoardComponent__svg_defs_5_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵnamespaceSVG();
-            i0.ɵɵelementStart(0, "defs");
-            i0.ɵɵelementStart(1, "marker", 19);
-            i0.ɵɵelement(2, "path", 20);
-            i0.ɵɵelementEnd();
-            i0.ɵɵelementEnd();
-        }
-        if (rf & 2) {
-            var color_r23 = ctx.$implicit;
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("id", color_r23 + "Arrow");
-            i0.ɵɵadvance(1);
-            i0.ɵɵstyleProp("fill", color_r23);
-        }
-    }
-    function NgxChessBoardComponent__svg_line_6_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵnamespaceSVG();
-            i0.ɵɵelement(0, "line", 21);
-        }
-        if (rf & 2) {
-            var arrow_r24 = ctx.$implicit;
-            i0.ɵɵattribute("marker-end", "url(#" + arrow_r24.end.color + "Arrow)")("stroke", arrow_r24.end.color)("x1", arrow_r24.start.x)("x2", arrow_r24.end.x)("y1", arrow_r24.start.y)("y2", arrow_r24.end.y);
-        }
-    }
-    function NgxChessBoardComponent__svg_circle_8_Template(rf, ctx) {
-        if (rf & 1) {
-            i0.ɵɵnamespaceSVG();
-            i0.ɵɵelement(0, "circle", 22);
-        }
-        if (rf & 2) {
-            var circle_r25 = ctx.$implicit;
-            var ctx_r4 = i0.ɵɵnextContext();
-            i0.ɵɵattribute("cx", circle_r25.drawPoint.x)("cy", circle_r25.drawPoint.y)("r", ctx_r4.engineFacade.heightAndWidth / 18)("stroke", circle_r25.drawPoint.color);
-        }
-    }
-    var _c2 = function () { return ["red", "green", "blue", "orange"]; };
     var NgxChessBoardComponent = /** @class */ (function () {
         function NgxChessBoardComponent(ngxChessBoardService) {
             this.ngxChessBoardService = ngxChessBoardService;
@@ -3452,7 +3305,7 @@
         });
         Object.defineProperty(NgxChessBoardComponent.prototype, "pieceIcons", {
             set: function (pieceIcons) {
-                this.pieceIconManager.pieceIconInput = pieceIcons;
+                this.engineFacade.pieceIconManager.pieceIconInput = pieceIcons;
             },
             enumerable: false,
             configurable: true
@@ -3523,6 +3376,7 @@
         };
         NgxChessBoardComponent.prototype.setPGN = function (pgn) {
             try {
+                this.engineFacade.pgnProcessor.reset();
                 this.engineFacade.boardLoader.setNotationProcessor(NotationProcessorFactory.getProcessor(NotationType.PGN));
                 this.engineFacade.boardLoader.loadPGN(pgn);
                 this.engineFacade.board.possibleCaptures = [];
@@ -3570,109 +3424,66 @@
         NgxChessBoardComponent.prototype.addPiece = function (pieceTypeInput, colorInput, coords) {
             this.engineFacade.addPiece(pieceTypeInput, colorInput, coords);
         };
+        NgxChessBoardComponent.prototype.getPGN = function () {
+            return this.engineFacade.pgnProcessor.getPGN();
+        };
         return NgxChessBoardComponent;
     }());
-    NgxChessBoardComponent.ɵfac = function NgxChessBoardComponent_Factory(t) { return new (t || NgxChessBoardComponent)(i0.ɵɵdirectiveInject(NgxChessBoardService)); };
-    NgxChessBoardComponent.ɵcmp = i0.ɵɵdefineComponent({ type: NgxChessBoardComponent, selectors: [["ngx-chess-board"]], viewQuery: function NgxChessBoardComponent_Query(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵviewQuery(_c0$1, true);
-                i0.ɵɵviewQuery(_c1, true);
-            }
-            if (rf & 2) {
-                var _t;
-                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.boardRef = _t.first);
-                i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.modal = _t.first);
-            }
-        }, hostBindings: function NgxChessBoardComponent_HostBindings(rf, ctx) {
-            if (rf & 1) {
-                i0.ɵɵlistener("contextmenu", function NgxChessBoardComponent_contextmenu_HostBindingHandler($event) { return ctx.onRightClick($event); });
-            }
-        }, inputs: { darkTileColor: "darkTileColor", lightTileColor: "lightTileColor", showCoords: "showCoords", size: "size", freeMode: "freeMode", dragDisabled: "dragDisabled", drawDisabled: "drawDisabled", pieceIcons: "pieceIcons", lightDisabled: "lightDisabled", darkDisabled: "darkDisabled" }, outputs: { moveChange: "moveChange", checkmate: "checkmate", stalemate: "stalemate" }, features: [i0.ɵɵNgOnChangesFeature], decls: 12, vars: 15, consts: [["id", "board", 3, "pointerdown", "pointerup"], ["boardRef", ""], ["id", "drag"], ["class", "board-row", 4, "ngFor", "ngForOf"], [2, "position", "absolute", "top", "0", "pointer-events", "none"], [4, "ngFor", "ngForOf"], ["class", "arrow", 4, "ngFor", "ngForOf"], ["fill-opacity", "0.0", "stroke-width", "2", 4, "ngFor", "ngForOf"], ["modal", ""], [1, "board-row"], ["class", "board-col", 3, "current-selection", "dest-move", "king-check", "point-circle", "possible-capture", "possible-point", "source-move", "background-color", 4, "ngFor", "ngForOf"], [1, "board-col"], ["class", "yCoord", 3, "color", "font-size", 4, "ngIf"], ["class", "xCoord", 3, "color", "font-size", 4, "ngIf"], ["style", "height:100%; width:100%", 4, "ngIf"], [1, "yCoord"], [1, "xCoord"], [2, "height", "100%", "width", "100%"], ["cdkDrag", "", 3, "cdkDragDisabled", "innerHTML", "ngClass", "ngStyle", "cdkDragEnded", "cdkDragStarted"], ["markerHeight", "13", "markerWidth", "13", "orient", "auto", "refX", "9", "refY", "6", 3, "id"], ["d", "M2,2 L2,11 L10,6 L2,2"], [1, "arrow"], ["fill-opacity", "0.0", "stroke-width", "2"]], template: function NgxChessBoardComponent_Template(rf, ctx) {
-            if (rf & 1) {
-                var _r26_1 = i0.ɵɵgetCurrentView();
-                i0.ɵɵelementStart(0, "div", 0, 1);
-                i0.ɵɵlistener("pointerdown", function NgxChessBoardComponent_Template_div_pointerdown_0_listener($event) { i0.ɵɵrestoreView(_r26_1); var _r5 = i0.ɵɵreference(11); return !_r5.opened && ctx.onMouseDown($event); })("pointerup", function NgxChessBoardComponent_Template_div_pointerup_0_listener($event) { i0.ɵɵrestoreView(_r26_1); var _r5 = i0.ɵɵreference(11); return !_r5.opened && ctx.onMouseUp($event); });
-                i0.ɵɵelementStart(2, "div", 2);
-                i0.ɵɵtemplate(3, NgxChessBoardComponent_div_3_Template, 2, 1, "div", 3);
-                i0.ɵɵelementEnd();
-                i0.ɵɵnamespaceSVG();
-                i0.ɵɵelementStart(4, "svg", 4);
-                i0.ɵɵtemplate(5, NgxChessBoardComponent__svg_defs_5_Template, 3, 3, "defs", 5);
-                i0.ɵɵtemplate(6, NgxChessBoardComponent__svg_line_6_Template, 1, 6, "line", 6);
-                i0.ɵɵpipe(7, "async");
-                i0.ɵɵtemplate(8, NgxChessBoardComponent__svg_circle_8_Template, 1, 4, "circle", 7);
-                i0.ɵɵpipe(9, "async");
-                i0.ɵɵelementEnd();
-                i0.ɵɵnamespaceHTML();
-                i0.ɵɵelement(10, "app-piece-promotion-modal", null, 8);
-                i0.ɵɵelementEnd();
-            }
-            if (rf & 2) {
-                i0.ɵɵstyleProp("height", ctx.engineFacade.heightAndWidth, "px")("width", ctx.engineFacade.heightAndWidth, "px");
-                i0.ɵɵadvance(3);
-                i0.ɵɵproperty("ngForOf", ctx.engineFacade.board.board);
-                i0.ɵɵadvance(1);
-                i0.ɵɵattribute("height", ctx.engineFacade.heightAndWidth)("width", ctx.engineFacade.heightAndWidth);
-                i0.ɵɵadvance(1);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpureFunction0(14, _c2));
-                i0.ɵɵadvance(1);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(7, 10, ctx.engineFacade.drawProvider.arrows$));
-                i0.ɵɵadvance(2);
-                i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind1(9, 12, ctx.engineFacade.drawProvider.circles$));
-            }
-        }, directives: [i2.NgForOf, PiecePromotionModalComponent, i2.NgIf, i4.CdkDrag, i2.NgClass, i2.NgStyle], pipes: [i2.AsyncPipe], styles: ["@charset \"UTF-8\";#board[_ngcontent-%COMP%]{font-family:Courier New,serif;position:relative}.board-row[_ngcontent-%COMP%]{display:block;height:12.5%;position:relative;width:100%}.board-col[_ngcontent-%COMP%]{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece[_ngcontent-%COMP%], .piece[_ngcontent-%COMP%]:after{box-sizing:border-box}.piece[_ngcontent-%COMP%]:after{content:\"\u200B\"}#drag[_ngcontent-%COMP%]{height:100%;width:100%}.possible-point[_ngcontent-%COMP%]{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture[_ngcontent-%COMP%]:hover, .possible-point[_ngcontent-%COMP%]:hover{opacity:.4}.possible-capture[_ngcontent-%COMP%]{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check[_ngcontent-%COMP%]{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move[_ngcontent-%COMP%]{background-color:rgba(146,111,26,.79)!important}.dest-move[_ngcontent-%COMP%]{background-color:#b28e1a!important}.current-selection[_ngcontent-%COMP%]{background-color:#72620b!important}.yCoord[_ngcontent-%COMP%]{right:.2em}.xCoord[_ngcontent-%COMP%], .yCoord[_ngcontent-%COMP%]{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord[_ngcontent-%COMP%]{bottom:0;left:.2em}.hovering[_ngcontent-%COMP%]{background-color:red!important}.arrow[_ngcontent-%COMP%]{stroke-width:2}svg[_ngcontent-%COMP%]{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}[_nghost-%COMP%]{display:inline-block!important}"] });
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(NgxChessBoardComponent, [{
-                type: i0.Component,
-                args: [{
-                        selector: 'ngx-chess-board',
-                        templateUrl: './ngx-chess-board.component.html',
-                        styleUrls: ['./ngx-chess-board.component.scss'],
-                    }]
-            }], function () { return [{ type: NgxChessBoardService }]; }, { darkTileColor: [{
-                    type: i0.Input
-                }], lightTileColor: [{
-                    type: i0.Input
-                }], showCoords: [{
-                    type: i0.Input
-                }], moveChange: [{
-                    type: i0.Output
-                }], checkmate: [{
-                    type: i0.Output
-                }], stalemate: [{
-                    type: i0.Output
-                }], boardRef: [{
-                    type: i0.ViewChild,
-                    args: ['boardRef']
-                }], modal: [{
-                    type: i0.ViewChild,
-                    args: ['modal']
-                }], size: [{
-                    type: i0.Input,
-                    args: ['size']
-                }], freeMode: [{
-                    type: i0.Input,
-                    args: ['freeMode']
-                }], dragDisabled: [{
-                    type: i0.Input,
-                    args: ['dragDisabled']
-                }], drawDisabled: [{
-                    type: i0.Input,
-                    args: ['drawDisabled']
-                }], pieceIcons: [{
-                    type: i0.Input,
-                    args: ['pieceIcons']
-                }], lightDisabled: [{
-                    type: i0.Input,
-                    args: ['lightDisabled']
-                }], darkDisabled: [{
-                    type: i0.Input,
-                    args: ['darkDisabled']
-                }], onRightClick: [{
-                    type: i0.HostListener,
-                    args: ['contextmenu', ['$event']]
-                }] });
-    })();
+    NgxChessBoardComponent.decorators = [
+        { type: i0.Component, args: [{
+                    selector: 'ngx-chess-board',
+                    template: "<div\r\n    id=\"board\"\r\n    [style.height.px]=\"engineFacade.heightAndWidth\"\r\n    [style.width.px]=\"engineFacade.heightAndWidth\"\r\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\r\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\r\n    #boardRef\r\n>\r\n    <div id=\"drag\">\r\n        <div\r\n            class=\"board-row\"\r\n            *ngFor=\"let row of engineFacade.board.board; let i = index\"\r\n        >\r\n            <div\r\n                class=\"board-col\"\r\n                [class.current-selection]=\"engineFacade.board.isXYInActiveMove(i,j)\"\r\n                [class.dest-move]=\"engineFacade.board.isXYInDestMove(i,j)\"\r\n                [class.king-check]=\" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))\"\r\n                [class.point-circle]=\"engineFacade.board.isXYInPointSelection(i, j)\"\r\n                [class.possible-capture]=\"engineFacade.board.isXYInPossibleCaptures(i, j)\"\r\n                [class.possible-point]=\"engineFacade.board.isXYInPossibleMoves(i, j)\"\r\n                [class.source-move]=\"engineFacade.board.isXYInSourceMove(i, j)\"\r\n                [style.background-color]=\"((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor\"\r\n                *ngFor=\"let col of row; let j = index\"\r\n            >\r\n                <span\r\n                    class=\"yCoord\"\r\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && j === 7\"\r\n                >\r\n                    {{engineFacade.coords.yCoords[i]}}\r\n                </span>\r\n                <span\r\n                    class=\"xCoord\"\r\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && i === 7\"\r\n                >\r\n                    {{engineFacade.coords.xCoords[j]}}\r\n                </span>\r\n                <div\r\n                    *ngIf=\"engineFacade.board.getPieceByPoint(i, j) as piece\"\r\n                    style=\"height:100%; width:100%\"\r\n                >\r\n                    <div\r\n                        [cdkDragDisabled]=\"engineFacade.dragDisabled\"\r\n                        [innerHTML]=\"engineFacade.pieceIconManager.isDefaultIcons() ? engineFacade.board.getPieceByPoint(i,j).constant.icon : ''\"\r\n                        [ngClass]=\"'piece'\"\r\n                        [style.font-size]=\"pieceSize + 'px'\"\r\n                        [ngStyle]=\"engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(engineFacade.board.getPieceByPoint(i,j))\"\r\n                        (cdkDragEnded)=\"dragEnded($event)\"\r\n                        (cdkDragStarted)=\"dragStart($event)\"\r\n                        cdkDrag\r\n                    >\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <svg\r\n        [attr.height]=\"engineFacade.heightAndWidth\"\r\n        [attr.width]=\"engineFacade.heightAndWidth\"\r\n        style=\"position:absolute; top:0; pointer-events: none\"\r\n    >\r\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\r\n            <marker\r\n                [id]=\"color + 'Arrow'\"\r\n                markerHeight=\"13\"\r\n                markerWidth=\"13\"\r\n                orient=\"auto\"\r\n                refX=\"9\"\r\n                refY=\"6\"\r\n            >\r\n                <path\r\n                    [style.fill]=\"color\"\r\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\r\n                ></path>\r\n            </marker>\r\n        </defs>\r\n        <line\r\n            class=\"arrow\"\r\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\r\n            [attr.stroke]=\"arrow.end.color\"\r\n            [attr.x1]=\"arrow.start.x\"\r\n            [attr.x2]=\"arrow.end.x\"\r\n            [attr.y1]=\"arrow.start.y\"\r\n            [attr.y2]=\"arrow.end.y\"\r\n            *ngFor=\"let arrow of engineFacade.drawProvider.arrows$ | async\"\r\n        ></line>\r\n        <circle\r\n            [attr.cx]=\"circle.drawPoint.x\"\r\n            [attr.cy]=\"circle.drawPoint.y\"\r\n            [attr.r]=\"engineFacade.heightAndWidth / 18\"\r\n            [attr.stroke]=\"circle.drawPoint.color\"\r\n            *ngFor=\"let circle of engineFacade.drawProvider.circles$ | async\"\r\n            fill-opacity=\"0.0\"\r\n            stroke-width=\"2\"\r\n        ></circle>\r\n    </svg>\r\n    <app-piece-promotion-modal #modal></app-piece-promotion-modal>\r\n</div>\r\n",
+                    styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move{background-color:rgba(146,111,26,.79)!important}.dest-move{background-color:#b28e1a!important}.current-selection{background-color:#72620b!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}:host{display:inline-block!important}"]
+                },] }
+    ];
+    NgxChessBoardComponent.ctorParameters = function () { return [
+        { type: NgxChessBoardService }
+    ]; };
+    NgxChessBoardComponent.propDecorators = {
+        darkTileColor: [{ type: i0.Input }],
+        lightTileColor: [{ type: i0.Input }],
+        showCoords: [{ type: i0.Input }],
+        moveChange: [{ type: i0.Output }],
+        checkmate: [{ type: i0.Output }],
+        stalemate: [{ type: i0.Output }],
+        boardRef: [{ type: i0.ViewChild, args: ['boardRef',] }],
+        modal: [{ type: i0.ViewChild, args: ['modal',] }],
+        size: [{ type: i0.Input, args: ['size',] }],
+        freeMode: [{ type: i0.Input, args: ['freeMode',] }],
+        dragDisabled: [{ type: i0.Input, args: ['dragDisabled',] }],
+        drawDisabled: [{ type: i0.Input, args: ['drawDisabled',] }],
+        pieceIcons: [{ type: i0.Input, args: ['pieceIcons',] }],
+        lightDisabled: [{ type: i0.Input, args: ['lightDisabled',] }],
+        darkDisabled: [{ type: i0.Input, args: ['darkDisabled',] }],
+        onRightClick: [{ type: i0.HostListener, args: ['contextmenu', ['$event'],] }]
+    };
+
+    var PiecePromotionModalComponent = /** @class */ (function () {
+        function PiecePromotionModalComponent() {
+            this.opened = false;
+        }
+        PiecePromotionModalComponent.prototype.open = function (closeCallback) {
+            this.opened = true;
+            this.onCloseCallback = closeCallback;
+            this.modal.nativeElement.style.display = 'block';
+        };
+        PiecePromotionModalComponent.prototype.changeSelection = function (index) {
+            this.modal.nativeElement.style.display = 'none';
+            this.opened = false;
+            this.onCloseCallback(index);
+        };
+        return PiecePromotionModalComponent;
+    }());
+    PiecePromotionModalComponent.decorators = [
+        { type: i0.Component, args: [{
+                    selector: 'app-piece-promotion-modal',
+                    template: "<div #myModal class=\"container\">\r\n    <div class=\"wrapper\">\r\n        <div class=\"content\">\r\n            <div class=\"piece-wrapper\">\r\n                <div class=\"piece\" (click)=\"changeSelection(1)\">&#x265B;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(2)\">&#x265C;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(3)\">&#x265D;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(4)\">&#x265E;</div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n",
+                    styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container,.wrapper{height:100%;width:100%}.content,.wrapper{position:relative}.content{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece:hover{background-color:#ccc;border-radius:5px}.piece-wrapper{height:80%;width:100%}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"]
+                },] }
+    ];
+    PiecePromotionModalComponent.propDecorators = {
+        modal: [{ type: i0.ViewChild, args: ['myModal', { static: false },] }]
+    };
 
     var NgxChessBoardModule = /** @class */ (function () {
         function NgxChessBoardModule() {
@@ -3685,19 +3496,13 @@
         };
         return NgxChessBoardModule;
     }());
-    NgxChessBoardModule.ɵmod = i0.ɵɵdefineNgModule({ type: NgxChessBoardModule });
-    NgxChessBoardModule.ɵinj = i0.ɵɵdefineInjector({ factory: function NgxChessBoardModule_Factory(t) { return new (t || NgxChessBoardModule)(); }, imports: [[i2.CommonModule, i4.DragDropModule]] });
-    (function () { (typeof ngJitMode === "undefined" || ngJitMode) && i0.ɵɵsetNgModuleScope(NgxChessBoardModule, { declarations: [NgxChessBoardComponent, PiecePromotionModalComponent], imports: [i2.CommonModule, i4.DragDropModule], exports: [NgxChessBoardComponent] }); })();
-    /*@__PURE__*/ (function () {
-        i0.ɵsetClassMetadata(NgxChessBoardModule, [{
-                type: i0.NgModule,
-                args: [{
-                        declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
-                        imports: [i2.CommonModule, i4.DragDropModule],
-                        exports: [NgxChessBoardComponent],
-                    }]
-            }], null, null);
-    })();
+    NgxChessBoardModule.decorators = [
+        { type: i0.NgModule, args: [{
+                    declarations: [NgxChessBoardComponent, PiecePromotionModalComponent],
+                    imports: [common.CommonModule, dragDrop.DragDropModule],
+                    exports: [NgxChessBoardComponent],
+                },] }
+    ];
 
     /*
      * Public API Surface of ngx-chess-board
