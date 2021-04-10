@@ -106,9 +106,6 @@ export class MoveUtils {
                 }
             }
         }
-        if (foundPieces.length === 0) {
-            console.log(coords + ' debug');
-        }
         return foundPieces;
     }
 
@@ -133,9 +130,6 @@ export class MoveUtils {
                     foundPieces.push(piece);
                 }
             }
-        }
-        if (foundPieces.length === 0) {
-            console.log(coords + ' debug');
         }
 
         return foundPieces;
@@ -185,4 +179,15 @@ export class MoveUtils {
         return '';
     }
 
+    static reverse(board: Board, row: number) {
+        return board.reverted
+            ? row + 1
+            : Math.abs(row - 7) + 1;
+    }
+
+    static formatCol(board: Board, col: number): string {
+        return board.reverted
+            ? String.fromCharCode(104 - col)
+            : String.fromCharCode(97 + col);
+    }
 }

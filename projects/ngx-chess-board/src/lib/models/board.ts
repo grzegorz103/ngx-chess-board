@@ -280,7 +280,6 @@ export class Board {
 
     public checkIfPawnTakesEnPassant(newPoint: Point) {
         if (newPoint.isEqual(this.enPassantPoint)) {
-            console.log('usuwam');
             this.pieces = this.pieces.filter(
                 (piece) => piece !== this.enPassantPiece
             );

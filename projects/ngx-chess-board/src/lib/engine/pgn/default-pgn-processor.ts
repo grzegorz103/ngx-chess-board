@@ -4,7 +4,7 @@ import { Pawn } from '../../models/pieces/pawn';
 import { Piece } from '../../models/pieces/piece';
 import { Point } from '../../models/pieces/point';
 import { MoveUtils } from '../../utils/move-utils';
-import { AbstractPgnProcessor } from './pgn-processor';
+import { AbstractPgnProcessor } from './abstract-pgn-processor';
 
 export class DefaultPgnProcessor extends AbstractPgnProcessor {
 
@@ -21,7 +21,6 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
         let possibleMoves = [];
 
         if (destPiece) {
-            console.log('dest');
             possibleCaptures = MoveUtils.findPieceByPossibleCapturesContaining(
                 MoveUtils.formatSingle(destPoint, board.reverted),
                 board,
@@ -69,31 +68,43 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                                 possibleMoves[1]
                             )) {
                                 this.pgn += MoveUtils.getFirstLetterPiece(
-                                    sourcePiece) + sourcePiece.point.row + MoveUtils.formatSingle(
+                                    sourcePiece) + MoveUtils.reverse(
+                                    board,
+                                    sourcePiece.point.row
+                                ) + MoveUtils.formatSingle(
                                     destPoint,
                                     board.reverted
                                 );
                             } else {
                                 this.pgn += MoveUtils.getFirstLetterPiece(
-                                    sourcePiece) + sourcePiece.point.col + MoveUtils.formatSingle(
+                                    sourcePiece) + MoveUtils.formatCol(
+                                    board,
+                                    sourcePiece.point.col
+                                ) + MoveUtils.formatSingle(
                                     destPoint,
                                     board.reverted
                                 );
                             }
                         } else {
                             if (possibleCaptures.length > 1) {
-                                if (this.isEqualByCol(
+                                if ((this.isEqualByCol(
                                     possibleCaptures[0],
                                     possibleCaptures[1]
-                                )) {
+                                ))) {
                                     this.pgn += MoveUtils.getFirstLetterPiece(
-                                        sourcePiece) + sourcePiece.point.row + 'x' + MoveUtils.formatSingle(
+                                        sourcePiece) + MoveUtils.reverse(
+                                        board,
+                                        sourcePiece.point.row
+                                    ) + 'x' + MoveUtils.formatSingle(
                                         destPoint,
                                         board.reverted
                                     );
                                 } else {
                                     this.pgn += MoveUtils.getFirstLetterPiece(
-                                        sourcePiece) + sourcePiece.point.col + 'x' + MoveUtils.formatSingle(
+                                        sourcePiece) + MoveUtils.formatCol(
+                                        board,
+                                        sourcePiece.point.col
+                                    ) + 'x' + MoveUtils.formatSingle(
                                         destPoint,
                                         board.reverted
                                     );
@@ -111,7 +122,6 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
         }
 
         this.pgn = this.pgn.trim();
-        console.log(this.pgn);
     }
 
     private resolvePieceByFirstChar(move: string, piece: Piece) {

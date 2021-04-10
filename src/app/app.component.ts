@@ -75,6 +75,7 @@ export class AppComponent {
 
     public moveCallback(move: MoveChange): void {
         this.fen = this.boardManager.getFEN();
+        this.pgn = this.boardManager.getPGN();
         console.log(move);
     }
 

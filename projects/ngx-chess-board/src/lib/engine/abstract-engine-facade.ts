@@ -16,11 +16,14 @@ import { DragEndStrategy } from './drag/end/drag-end-strategy';
 import { DragStartStrategy } from './drag/start/drag-start-strategy';
 import { ColorStrategy } from './drawing-tools/colors/color-strategy';
 import { DrawProvider } from './drawing-tools/draw-provider';
+import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
+import { AbstractPgnProcessor } from './pgn/abstract-pgn-processor';
 
 export abstract class AbstractEngineFacade {
 
     public dragStartStrategy: DragStartStrategy = new DragStartStrategy();
     public dragEndStrategy: DragEndStrategy = new DragEndStrategy();
+    public pgnProcessor: AbstractPgnProcessor = new DefaultPgnProcessor();
     protected colorStrategy: ColorStrategy = new ColorStrategy();
 
     public coords: CoordsProvider = new CoordsProvider();
