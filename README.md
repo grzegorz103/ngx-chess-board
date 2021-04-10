@@ -114,3 +114,4 @@ getFEN() | string | Returns current board FEN position
 move(coords: string) | void | Makes move by specified coords. The coords parameter contains source and destination position e.g. 'd2d4'.
 addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string) | void | Adds new piece to the board at specified square, e.g. 'd4'. Left click on a piece with control removes piece. Free mode must be enabled first. 
 setPGN(coords:string) | void | Imports board position in PGN notation 
+getPGN() | void | Imports board position in PGN notation 

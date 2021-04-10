@@ -18,10 +18,11 @@ import { King } from '../models/pieces/king';
 import { Pawn } from '../models/pieces/pawn';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
+import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
 import { AvailableMoveDecorator } from './piece-decorator/available-move-decorator';
 import { PiecePromotionResolver } from '../piece-promotion/piece-promotion-resolver';
 import { MoveUtils } from '../utils/move-utils';
-import { MoveChange } from './move-change/move-change';
+import { MoveChange } from './outputs/move-change/move-change';
 import { PieceFactory } from './utils/piece-factory';
 
 export class EngineFacade extends AbstractEngineFacade {
@@ -52,6 +53,7 @@ export class EngineFacade extends AbstractEngineFacade {
         this.board.reset();
         this.coords.reset();
         this.drawProvider.clear();
+        this.pgnProcessor.reset();
         this.freeMode = false;
     }
 
@@ -65,6 +67,8 @@ export class EngineFacade extends AbstractEngineFacade {
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
             this.moveHistoryProvider.pop();
+            this.board.calculateFEN();
+            this.pgnProcessor.removeLast();
         }
     }
 
@@ -325,6 +329,13 @@ export class EngineFacade extends AbstractEngineFacade {
                 piece.point.row === newPoint.row
         );
 
+        this.pgnProcessor.process(
+            this.board,
+            toMovePiece,
+            newPoint,
+            destPiece
+        );
+
         if (destPiece && toMovePiece.color !== destPiece.color) {
             this.board.pieces = this.board.pieces.filter(
                 (piece) => piece !== destPiece
@@ -431,6 +442,9 @@ export class EngineFacade extends AbstractEngineFacade {
         const stalemate =
             this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
 
+        this.pgnProcessor.processChecks(checkmate, check, stalemate);
+        this.pgnProcessor.addPromotionChoice(promotionIndex);
+
         this.disabling = false;
         this.board.calculateFEN();
 
@@ -445,6 +459,9 @@ export class EngineFacade extends AbstractEngineFacade {
             checkmate,
             stalemate,
             fen: this.board.fen,
+            pgn: {
+              pgn: this.pgnProcessor.getPGN()
+            },
             freeMode: this.freeMode
         });
     }

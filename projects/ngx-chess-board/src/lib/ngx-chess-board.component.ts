@@ -19,7 +19,7 @@ import {
 } from './engine/board-state-provider/board-loader/notation-processors/notation-processor-factory';
 import { ClickUtils } from './engine/click/click-utils';
 import { EngineFacade } from './engine/engine-facade';
-import { MoveChange } from './engine/move-change/move-change';
+import { MoveChange } from './engine/outputs/move-change/move-change';
 import { HistoryMove } from './history-move-provider/history-move';
 import { Board } from './models/board';
 import { Piece } from './models/pieces/piece';
@@ -101,7 +101,7 @@ export class NgxChessBoardComponent
 
     @Input('pieceIcons')
     public set pieceIcons(pieceIcons: PieceIconInput) {
-        this.pieceIconManager.pieceIconInput = pieceIcons;
+        this.engineFacade.pieceIconManager.pieceIconInput = pieceIcons;
     }
 
     @Input('lightDisabled')
@@ -183,6 +183,7 @@ export class NgxChessBoardComponent
 
     setPGN(pgn: string): void {
         try {
+            this.engineFacade.pgnProcessor.reset();
             this.engineFacade.boardLoader.setNotationProcessor(
                 NotationProcessorFactory.getProcessor(NotationType.PGN)
             );
@@ -262,4 +263,7 @@ export class NgxChessBoardComponent
         this.engineFacade.addPiece(pieceTypeInput, colorInput, coords);
     }
 
+    getPGN() {
+        return this.engineFacade.pgnProcessor.getPGN();
+    }
 }
