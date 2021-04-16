@@ -40,6 +40,8 @@ export abstract class AbstractEngineFacade {
     public drawProvider: DrawProvider = new DrawProvider();
     public pieceIconManager: PieceIconInputManager = new PieceIconInputManager();
     public moveHistoryProvider: HistoryMoveProvider = new HistoryMoveProvider();
+    public moveDone: boolean;
+    public disabling = false;
 
     protected constructor(board: Board) {
         this.board = board;

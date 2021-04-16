@@ -117,3 +117,26 @@ svg {
 }
 
 :host { display:inline-block!important; }
+
+.single-piece {
+position: absolute;
+    z-index: 999;
+    justify-content: center;
+    text-align: center;
+    user-select: none;
+    -webkit-user-select: none;
+    //-webkit-transition: all 1s ease-in-out;
+    //-moz-transition: all 1s ease-in-out;
+    //-o-transition: all 1s ease-in-out;
+    //-ms-transition: all 1s ease-in-out;
+    color: black !important;
+    cursor: grab;
+}
+
+.single-piece::after {
+    content: '\200b';
+    box-sizing: border-box;
+}
+.cdk-drag:not(.cdk-drag-dragging) {
+    transition: transform 200ms cubic-bezier(0,.3,.14,.49);
+}

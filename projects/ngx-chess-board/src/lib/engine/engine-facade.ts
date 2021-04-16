@@ -30,7 +30,6 @@ export class EngineFacade extends AbstractEngineFacade {
     _selected = false;
     drawPoint: DrawPoint;
     drawProvider: DrawProvider;
-    disabling = false;
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;
     moveChange: EventEmitter<MoveChange>;
@@ -173,7 +172,6 @@ export class EngineFacade extends AbstractEngineFacade {
 
     public handleClickEvent(pointClicked: Point, isMouseDown: boolean) {
         let moving = false;
-
         if ((
             this.board.isPointInPossibleMoves(pointClicked) ||
             this.board.isPointInPossibleCaptures(pointClicked)
@@ -211,6 +209,7 @@ export class EngineFacade extends AbstractEngineFacade {
         left?: number,
         top?: number
     ) {
+        this.moveDone = false;
         if (event.button !== 0) {
             this.drawPoint = ClickUtils.getDrawingPoint(
                 this.heightAndWidth,
@@ -271,6 +270,7 @@ export class EngineFacade extends AbstractEngineFacade {
         left: number,
         top: number
     ) {
+        this.moveDone = false;
         if (event.button !== 0 && !this.drawDisabled) {
             this.addDrawPoint(
                 event.x,
@@ -464,6 +464,8 @@ export class EngineFacade extends AbstractEngineFacade {
             },
             freeMode: this.freeMode
         });
+
+        this.moveDone = true;
     }
 
     checkForPat(color: Color) {
