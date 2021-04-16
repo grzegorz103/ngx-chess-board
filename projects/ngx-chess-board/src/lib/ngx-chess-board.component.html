@@ -8,6 +8,22 @@
 >
     <div id="drag">
         <div
+            [cdkDragDisabled]="engineFacade.dragDisabled"
+            (cdkDragEnded)="dragEnded($event)"
+            (cdkDragMoved)="dragMoved($event)"
+            (cdkDragStarted)="dragStart($event)"
+            class="single-piece" [innerHTML]="engineFacade.pieceIconManager.isDefaultIcons() ? piece.constant.icon : ''"
+            [ngStyle]="engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(piece)"
+            [style.transform]="'translate3d(' + piece.point.col * pieceSize + 'px, ' + piece.point.row * pieceSize + 'px,0px)'"
+            [style.max-height]="pieceSize + 'px'"
+            [style.font-size]="pieceSize * 0.8 + 'px'"
+            [style.width]="pieceSize + 'px'"
+            [style.height]="pieceSize + 'px'"
+            cdkDrag
+            *ngFor="let piece of engineFacade.board.pieces; let i = index"
+        >
+        </div>
+        <div
             class="board-row"
             *ngFor="let row of engineFacade.board.board; let i = index"
         >
@@ -44,14 +60,9 @@
                     style="height:100%; width:100%"
                 >
                     <div
-                        [cdkDragDisabled]="engineFacade.dragDisabled"
-                        [innerHTML]="engineFacade.pieceIconManager.isDefaultIcons() ? engineFacade.board.getPieceByPoint(i,j).constant.icon : ''"
                         [ngClass]="'piece'"
                         [style.font-size]="pieceSize + 'px'"
-                        [ngStyle]="engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(engineFacade.board.getPieceByPoint(i,j))"
-                        (cdkDragEnded)="dragEnded($event)"
-                        (cdkDragStarted)="dragStart($event)"
-                        cdkDrag
+
                     >
                     </div>
                 </div>
