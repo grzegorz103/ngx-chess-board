@@ -14,7 +14,6 @@ export declare class EngineFacade extends AbstractEngineFacade {
     _selected: boolean;
     drawPoint: DrawPoint;
     drawProvider: DrawProvider;
-    disabling: boolean;
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;
     moveChange: EventEmitter<MoveChange>;

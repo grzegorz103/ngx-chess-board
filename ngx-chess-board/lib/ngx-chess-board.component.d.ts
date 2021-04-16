@@ -1,4 +1,4 @@
-import { CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
+import { CdkDragEnd, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import { AfterViewInit, ElementRef, EventEmitter, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { AbstractEngineFacade } from './engine/abstract-engine-facade';
 import { BoardLoader } from './engine/board-state-provider/board-loader/board-loader';
@@ -29,6 +29,8 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     selected: boolean;
     boardLoader: BoardLoader;
     pieceIconManager: PieceIconInputManager;
+    isDragging: boolean;
+    startTransition: string;
     engineFacade: AbstractEngineFacade;
     constructor(ngxChessBoardService: NgxChessBoardService);
     set size(size: number);
@@ -60,4 +62,5 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     undo(): void;
     addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string): void;
     getPGN(): string;
+    dragMoved($event: CdkDragMove<any>): void;
 }

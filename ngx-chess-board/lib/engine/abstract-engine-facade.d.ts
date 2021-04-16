@@ -31,6 +31,8 @@ export declare abstract class AbstractEngineFacade {
     drawProvider: DrawProvider;
     pieceIconManager: PieceIconInputManager;
     moveHistoryProvider: HistoryMoveProvider;
+    moveDone: boolean;
+    disabling: boolean;
     protected constructor(board: Board);
     abstract reset(): void;
     abstract undo(): void;
