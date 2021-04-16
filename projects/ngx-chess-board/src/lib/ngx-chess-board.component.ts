@@ -1,4 +1,4 @@
-import { CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
+import { CdkDragEnd, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
     AfterViewInit,
     Component,
@@ -59,6 +59,8 @@ export class NgxChessBoardComponent
     selected = false;
     boardLoader: BoardLoader;
     pieceIconManager: PieceIconInputManager;
+    isDragging = false;
+    startTransition = '';
 
     engineFacade: AbstractEngineFacade;
 
@@ -202,10 +204,19 @@ export class NgxChessBoardComponent
     }
 
     dragEnded(event: CdkDragEnd): void {
-        this.engineFacade.dragEndStrategy.process(event);
+        this.isDragging = false;
+        this.engineFacade.dragEndStrategy.process(
+            event,
+            this.engineFacade.moveDone,
+            this.startTransition
+        );
     }
 
     dragStart(event: CdkDragStart): void {
+        this.isDragging = true;
+        let trans = event.source.getRootElement().style.transform.split(') ');
+        //   this.startTrans= trans;
+        this.startTransition = trans.length === 2 ? trans[1] : trans[0];
         this.engineFacade.dragStartStrategy.process(event);
     }
 
@@ -227,7 +238,7 @@ export class NgxChessBoardComponent
     }
 
     private calculatePieceSize() {
-        this.pieceSize = this.engineFacade.heightAndWidth / 10;
+        this.pieceSize = this.engineFacade.heightAndWidth / 8;
     }
 
 
@@ -265,5 +276,12 @@ export class NgxChessBoardComponent
 
     getPGN() {
         return this.engineFacade.pgnProcessor.getPGN();
+    }
+
+    dragMoved($event: CdkDragMove<any>) {
+        let x = ($event.pointerPosition.x - $event.source.getRootElement().parentElement.getBoundingClientRect().left) - (this.pieceSize / 2);
+        let y = ($event.pointerPosition.y - $event.source.getRootElement().parentElement.getBoundingClientRect().top) - (this.pieceSize / 2);
+        $event.source.getRootElement().style.transform = 'translate3d(' + x + 'px, '
+            + (y) + 'px,0px)';
     }
 }
