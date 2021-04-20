@@ -131,6 +131,7 @@ position: absolute;
     //-ms-transition: all 1s ease-in-out;
     color: black !important;
     cursor: grab;
+    background-size: cover;
 }
 
 .single-piece::after {
