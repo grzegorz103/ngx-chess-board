@@ -86,6 +86,10 @@ Input | Type | Description
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
+`[sourcePointColor]` | string | Sets background color for the source box from where the piece is moved.
+`[destinationPointColor]` | string | Sets background color for the destination box where the piece is dropped.
+`[showLastMove]` | boolean | Specifies whether the last move should be highlighted or not.
+`[showLegalMoves]` | boolean | Specifies whether the legal moves should be highlighted or not.
 `[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
 `[drawDisabled]` | boolean|  Specifies whether drawing with right mouse button is disabled. Default value is <b>false</b>
 `[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
