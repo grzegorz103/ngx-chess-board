@@ -86,6 +86,10 @@ Input | Type | Description
 `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
 `[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
+`[sourcePointColor]` | string | Sets background color for the source box from where the piece is moved.
+`[destinationPointColor]` | string | Sets background color for the destination box where the piece is dropped.
+`[showLastMove]` | boolean | Specifies whether the last move should be highlighted or not.
+`[showLegalMoves]` | boolean | Specifies whether the legal moves should be highlighted or not.
 `[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
 `[drawDisabled]` | boolean|  Specifies whether drawing with right mouse button is disabled. Default value is <b>false</b>
 `[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
@@ -105,13 +109,13 @@ Name | Type | Description
 
 Method | Return type | Description
 | :---: | :---: | :---: |
-`reset()` | void | Resets specified chess game
-`reverse()` | void | Reverse specified chess board
-`undo()` | void | Undo the last move
-`getMoveHistory()` | JSON | Returns array in JSON format which contains information about every move
-`setFEN(fen: string)` | void | Allows to import specified board position by FEN
-`getFEN()` | string | Returns current board FEN position
-`move(coords: string)` | void | Makes move by specified coords. The coords parameter contains source and destination position e.g. 'd2d4'.
-`addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string)` | void | Adds new piece to the board at specified square, e.g. 'd4'. Left click on a piece with control removes piece. Free mode must be enabled first. 
-`setPGN(coords:string)` | void | Imports board position in PGN notation 
-`getPGN()` | string | Returns current board position in PGN notation 
+reset() | void | Resets specified chess game
+reverse() | void | Reverse specified chess board
+undo() | void | Undo the last move
+getMoveHistory() | JSON | Returns array in JSON format which contains information about every move
+setFEN(fen: string) | void | Allows to import specified board position by FEN
+getFEN() | string | Returns current board FEN position
+move(coords: string) | void | Makes move by specified coords. The coords parameter contains source and destination position e.g. 'd2d4'.
+addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string) | void | Adds new piece to the board at specified square, e.g. 'd4'. Left click on a piece with control removes piece. Free mode must be enabled first. 
+setPGN(coords:string) | void | Imports board position in PGN notation 
+getPGN() | void | Imports board position in PGN notation 

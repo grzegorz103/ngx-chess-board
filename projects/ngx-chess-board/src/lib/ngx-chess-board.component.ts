@@ -43,6 +43,11 @@ export class NgxChessBoardComponent
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
     @Input() showCoords = true;
+    @Input() sourcePointColor: string = Constants.DEFAULT_SOURCE_POINT_COLOR;
+    @Input() destinationPointColor: string = Constants.DEFAULT_DESTINATION_POINT_COLOR;
+    @Input() legalMovesPointColor: string = Constants.DEFAULT_LEGAL_MOVE_POINT_COLOR;
+    @Input() showLastMove = true;
+    @Input() showLegalMoves = true;
     /**
      * Enabling free mode removes turn-based restriction and allows to move any piece freely!
      */
@@ -283,5 +288,21 @@ export class NgxChessBoardComponent
         let y = ($event.pointerPosition.y - $event.source.getRootElement().parentElement.getBoundingClientRect().top) - (this.pieceSize / 2);
         $event.source.getRootElement().style.transform = 'translate3d(' + x + 'px, '
             + (y) + 'px,0px)';
+    }
+
+    getTileBackgroundColor(i, j): string {
+        let color = ((i + j) % 2 === 0) ? this.lightTileColor : this.darkTileColor;
+
+        if (this.showLastMove) {
+            if (this.engineFacade.board.isXYInSourceMove(i, j)) {
+                color = this.sourcePointColor;
+            }
+
+            if (this.engineFacade.board.isXYInDestMove(i, j)) {
+                color = this.destinationPointColor;
+            }
+        }
+
+        return color;
     }
 }

@@ -30,13 +30,11 @@
             <div
                 class="board-col"
                 [class.current-selection]="engineFacade.board.isXYInActiveMove(i,j)"
-                [class.dest-move]="engineFacade.board.isXYInDestMove(i,j)"
                 [class.king-check]=" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))"
                 [class.point-circle]="engineFacade.board.isXYInPointSelection(i, j)"
                 [class.possible-capture]="engineFacade.board.isXYInPossibleCaptures(i, j)"
-                [class.possible-point]="engineFacade.board.isXYInPossibleMoves(i, j)"
-                [class.source-move]="engineFacade.board.isXYInSourceMove(i, j)"
-                [style.background-color]="((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor"
+                [class.possible-point]="engineFacade.board.isXYInPossibleMoves(i, j) && showLegalMoves"
+                [style.background-color]="getTileBackgroundColor(i, j)"
                 *ngFor="let col of row; let j = index"
             >
                 <span
