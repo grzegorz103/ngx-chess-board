@@ -34,6 +34,11 @@
     width: 25%;
     cursor: pointer;
     display: inline-block;
+    text-align: center;
+
+    img {
+        max-width: 100%;
+    }
 }
 
 .piece:hover{
