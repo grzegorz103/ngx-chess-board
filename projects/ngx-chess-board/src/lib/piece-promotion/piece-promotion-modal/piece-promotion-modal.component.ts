@@ -1,6 +1,7 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild, Input} from '@angular/core';
 import {Piece} from '../../models/pieces/piece';
 import {Observable} from 'rxjs';
+import { PieceIconInput } from '../../utils/inputs/piece-icon-input';
 
 @Component({
     selector: 'app-piece-promotion-modal',
@@ -10,6 +11,9 @@ import {Observable} from 'rxjs';
 export class PiecePromotionModalComponent {
 
     @ViewChild('myModal', {static: false}) modal: ElementRef;
+
+    @Input()
+    pieceIconInput: PieceIconInput;
 
     opened = false;
     private onCloseCallback: (index: number) => void;
