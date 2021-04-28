@@ -9,9 +9,9 @@
   "description": "Chess game component",
   "repository": {
     "type": "git",
-    "url": "https://github.com/miradnan/ngx-chess-board.git"
+    "url": "https://github.com/grzegorz103/ngx-chess-board.git"
   },
-  "homepage": "https://github.com/miradnan/ngx-chess-board",
+  "homepage": "https://github.com/grzegorz103/ngx-chess-board",
   "keywords": [
     "angular",
     "chess",
