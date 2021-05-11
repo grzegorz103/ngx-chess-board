@@ -53,7 +53,6 @@ export class EngineFacade extends AbstractEngineFacade {
         this.coords.reset();
         this.drawProvider.clear();
         this.pgnProcessor.reset();
-        this.freeMode = false;
     }
 
     public undo(): void {
