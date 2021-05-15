@@ -171,10 +171,10 @@ export class EngineFacade extends AbstractEngineFacade {
 
     public handleClickEvent(pointClicked: Point, isMouseDown: boolean) {
         let moving = false;
-        if ((
+        if (((
             this.board.isPointInPossibleMoves(pointClicked) ||
             this.board.isPointInPossibleCaptures(pointClicked)
-        ) || this.freeMode) {
+        ) || this.freeMode) && pointClicked.isInRange()) {
             this.saveClone();
             this.board.lastMoveSrc = new Point(
                 this.board.activePiece.point.row,

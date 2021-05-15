@@ -82,23 +82,22 @@ import {NgxChessBoardView} from 'ngx-chess-board';
 
 Input | Type | Description    
 | :---: | :---: | :---: |
-    `[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>. Size must be in range between 100-4000.
-    `[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
-    `[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
-    `[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
-    `[sourcePointColor]` | string | Sets background color for the source box from where the piece is moved.
-    `[destinationPointColor]` | string | Sets background color for the destination box where the piece is dropped.
-    `[showLastMove]` | boolean | Specifies whether the last move should be highlighted or not.
-    `[showLegalMoves]` | boolean | Specifies whether the legal moves should be highlighted or not.
-    `[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
-    `[drawDisabled]` | boolean|  Specifies whether drawing with right mouse button is disabled. Default value is <b>false</b>
-    `[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
-    `[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>
-    `[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
-    `[freeMode]` | boolean | Sets the board in free mode. In this mode pieces can be moved freely, even to tiles that aren't in possible moves or possible captures.
-    `[showActivePiece]` | boolean | Specifies whether active piece clicked has to be highlighted.  Default value is true
-    `[showPossibleCaptures]` | boolean | Specifies whether possible captures have to be highlighted. Default value is true
-    <hr>
+`[size]` | number | Sets size of the chess board (in pixels). Default value is <b>400</b>. Size must be in range between 100-4000.
+`[lightTileColor]` | string | Sets color of light tiles. Accepts predefined color names, RGB, HEX, HSL.
+`[darkTileColor]` | string | Sets color of dark tiles. Accepts predefined color names, RGB, HEX, HSL.
+`[showCoords]` | boolean | Sets visibility of coordination bar. Default value is <b>true</b>
+`[sourcePointColor]` | string | Sets background color for the source box from where the piece is moved.
+`[destinationPointColor]` | string | Sets background color for the destination box where the piece is dropped.
+`[showLastMove]` | boolean | Specifies whether the last move should be highlighted or not.
+`[showLegalMoves]` | boolean | Specifies whether the legal moves should be highlighted or not.
+`[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
+`[drawDisabled]` | boolean|  Specifies whether drawing with right mouse button is disabled. Default value is <b>false</b>
+`[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
+`[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>            `[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
+`[freeMode]` | boolean | Sets the board in free mode. In this mode pieces can be moved freely, even to tiles that aren't in possible moves or possible captures.
+`[showActivePiece]` | boolean | Specifies whether active piece clicked has to be highlighted.  Default value is true
+`[showPossibleCaptures]` | boolean | Specifies whether possible captures have to be highlighted. Default value is true
+<hr>
 
 #### Outputs
 

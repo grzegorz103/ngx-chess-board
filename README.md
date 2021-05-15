@@ -93,8 +93,7 @@ Input | Type | Description
 `[dragDisabled]` | boolean | Specifies whether piece dragging is disabled. Default value is <b>false</b>
 `[drawDisabled]` | boolean|  Specifies whether drawing with right mouse button is disabled. Default value is <b>false</b>
 `[lightDisabled]` | boolean | Specifies whether light pieces are disabled to move. Default value is <b>false</b>
-`[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>
-`[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
+`[darkDisabled]` | boolean | Specifies whether dark pieces are disabled to move. Default value is <b>false</b>            `[pieceIcons]` | PieceIconInput | Sets custom piece icons. Accepts SVG, IMG. Default the ASCII icons are used.
 `[freeMode]` | boolean | Sets the board in free mode. In this mode pieces can be moved freely, even to tiles that aren't in possible moves or possible captures.
 `[showActivePiece]` | boolean | Specifies whether active piece clicked has to be highlighted.  Default value is true
 `[showPossibleCaptures]` | boolean | Specifies whether possible captures have to be highlighted. Default value is true

@@ -15,6 +15,10 @@ export class Point {
         return row && col && this.row === row && this.col === col;
     }
 
+    isInRange(): boolean {
+        return this.row >= 0 && this.row <= 7 && this.col >= 0 && this.col <= 7;
+    }
+
     clone() {
         return new Point(this.row, this.col);
     }
