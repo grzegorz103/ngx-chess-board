@@ -459,7 +459,7 @@ export class EngineFacade extends AbstractEngineFacade {
             stalemate,
             fen: this.board.fen,
             pgn: {
-              pgn: this.pgnProcessor.getPGN()
+                pgn: this.pgnProcessor.getPGN()
             },
             freeMode: this.freeMode
         });
