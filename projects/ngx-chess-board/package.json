@@ -1,6 +1,6 @@
 {
   "name": "ngx-chess-board",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "peerDependencies": {
     "@angular/common": "^10.1.6",
     "@angular/core": "^10.1.6",

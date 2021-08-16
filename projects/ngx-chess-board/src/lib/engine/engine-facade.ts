@@ -459,7 +459,7 @@ export class EngineFacade extends AbstractEngineFacade {
             stalemate,
             fen: this.board.fen,
             pgn: {
-              pgn: this.pgnProcessor.getPGN()
+                pgn: this.pgnProcessor.getPGN()
             },
             freeMode: this.freeMode
         });
@@ -478,7 +478,6 @@ export class EngineFacade extends AbstractEngineFacade {
     }
 
     openPromoteDialog(piece: Piece) {
-        // console.log(`color: ${this.board.getCurrentPlayerColor()} === ${this.board.activePiece.color} | ${this.board.getCurrentPlayerColor() !== this.board.activePiece.color}`);
         if (this.board.getCurrentPlayerColor() !== this.board.activePiece.color) {
             this.modal.open((index) => {
                 PiecePromotionResolver.resolvePromotionChoice(
