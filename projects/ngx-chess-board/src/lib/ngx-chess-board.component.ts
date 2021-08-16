@@ -48,6 +48,8 @@ export class NgxChessBoardComponent
     @Input() legalMovesPointColor: string = Constants.DEFAULT_LEGAL_MOVE_POINT_COLOR;
     @Input() showLastMove = true;
     @Input() showLegalMoves = true;
+    @Input() showActivePiece = true;
+    @Input() showPossibleCaptures = true;
     /**
      * Enabling free mode removes turn-based restriction and allows to move any piece freely!
      */
