@@ -107,5 +107,7 @@
             stroke-width="2"
         ></circle>
     </svg>
-    <app-piece-promotion-modal #modal [pieceIconInput]="engineFacade.pieceIconManager.pieceIconInput"></app-piece-promotion-modal>
+    <app-piece-promotion-modal #modal
+                               [pieceIconInput]="engineFacade.pieceIconManager.pieceIconInput"
+                               [color]="engineFacade.board.getCurrentPlayerColor() ? 'white' : 'black'"></app-piece-promotion-modal>
 </div>

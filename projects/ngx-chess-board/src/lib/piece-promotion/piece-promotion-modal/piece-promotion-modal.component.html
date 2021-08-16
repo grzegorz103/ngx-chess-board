@@ -3,16 +3,16 @@
         <div class="content">
             <div class="piece-wrapper" *ngIf="pieceIconInput">
                 <div class="piece" (click)="changeSelection(1)">
-                    <img [src]="pieceIconInput.blackQueenUrl" alt="Queen">
+                    <img [src]="getPieceIcon('queen')" alt="Queen">
                 </div>
                 <div class="piece" (click)="changeSelection(2)">
-                    <img [src]="pieceIconInput.blackRookUrl" alt="Rook">
+                    <img [src]="getPieceIcon('rook')" alt="Rook">
                 </div>
                 <div class="piece" (click)="changeSelection(3)">
-                    <img [src]="pieceIconInput.blackBishopUrl" alt="Bishop">
+                    <img [src]="getPieceIcon('bishop')" alt="Bishop">
                 </div>
                 <div class="piece" (click)="changeSelection(4)">
-                    <img [src]="pieceIconInput.blackKnightUrl" alt="Knight">
+                    <img [src]="getPieceIcon('knight')" alt="Knight">
                 </div>
             </div>
             <div class="piece-wrapper" *ngIf="!pieceIconInput">

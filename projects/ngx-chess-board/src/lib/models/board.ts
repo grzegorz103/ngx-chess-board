@@ -309,4 +309,7 @@ export class Board {
         }
     }
 
+    getCurrentPlayerColor(): number {
+        return this.currentWhitePlayer ? Color.WHITE : Color.BLACK;
+    }
 }
