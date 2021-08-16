@@ -479,14 +479,17 @@ export class EngineFacade extends AbstractEngineFacade {
     }
 
     openPromoteDialog(piece: Piece) {
-        this.modal.open((index) => {
-            PiecePromotionResolver.resolvePromotionChoice(
-                this.board,
-                piece,
-                index
-            );
-            this.afterMoveActions(index);
-        });
+        // console.log(`color: ${this.board.getCurrentPlayerColor()} === ${this.board.activePiece.color} | ${this.board.getCurrentPlayerColor() !== this.board.activePiece.color}`);
+        if (this.board.getCurrentPlayerColor() !== this.board.activePiece.color) {
+            this.modal.open((index) => {
+                PiecePromotionResolver.resolvePromotionChoice(
+                    this.board,
+                    piece,
+                    index
+                );
+                this.afterMoveActions(index);
+            });
+        }
     }
 
     checkForPossibleMoves(color: Color): boolean {

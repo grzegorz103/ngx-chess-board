@@ -1,6 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild, Input} from '@angular/core';
-import {Piece} from '../../models/pieces/piece';
-import {Observable} from 'rxjs';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { PieceIconInput } from '../../utils/inputs/piece-icon-input';
 
 @Component({
@@ -14,6 +12,9 @@ export class PiecePromotionModalComponent {
 
     @Input()
     pieceIconInput: PieceIconInput;
+
+    @Input()
+    color = 'white';
 
     opened = false;
     private onCloseCallback: (index: number) => void;
@@ -30,4 +31,23 @@ export class PiecePromotionModalComponent {
         this.onCloseCallback(index);
     }
 
+    getPieceIcon(piece: string): string {
+        let coloredPiece = '';
+        switch (piece.toLowerCase()) {
+            case 'queen':
+                coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteQueenUrl : this.pieceIconInput.blackQueenUrl;
+                break;
+            case 'rook':
+                coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteRookUrl : this.pieceIconInput.blackRookUrl;
+                break;
+            case 'bishop':
+                coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteBishopUrl : this.pieceIconInput.blackBishopUrl;
+                break;
+            case 'knight':
+                coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteKnightUrl : this.pieceIconInput.blackKnightUrl;
+                break;
+        }
+
+        return coloredPiece;
+    }
 }
