@@ -43,12 +43,20 @@ export class DefaultPgnProcessor implements NotationProcessor {
                         engineFacade.board,
                         color
                     ).find(piece => piece instanceof Pawn);
+
+                    // en passant check
+                    if(!piece) {
+                        piece = MoveUtils.findPieceByPossibleCapturesContaining(
+                            move, engineFacade.board, color
+                        ).find(piece => piece instanceof Pawn);
+                    }
+
+                    // if piece is found for sure
                     if (piece) {
                         engineFacade.move(MoveUtils.formatSingle(
                             piece.point,
                             false
                         ) + move + promotionIndex);
-                    } else {
                     }
                 } else {
                     if (/^[A-Z][a-h]\d$/g.test(move)) {// jezeli ma wielka litere, czyli trzeba odszukac ktora figura Nf3
