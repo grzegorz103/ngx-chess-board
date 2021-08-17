@@ -478,7 +478,7 @@ export class EngineFacade extends AbstractEngineFacade {
     }
 
     openPromoteDialog(piece: Piece) {
-        if (this.board.getCurrentPlayerColor() !== this.board.activePiece.color) {
+        if (piece.color === this.board.activePiece.color) {
             this.modal.open((index) => {
                 PiecePromotionResolver.resolvePromotionChoice(
                     this.board,
