@@ -21,7 +21,7 @@ export class DefaultFenProcessor implements NotationProcessor {
             const split = fen.split('/');
             for (let i = 0; i < 8; ++i) {
                 let pointer = 0;
-                for (let j = 0; j < 8; ++j) {
+                for (let j = 0; j < split[i].split(' ')[0].length; ++j) {
                     const chunk = split[i].charAt(j);
                     if (chunk.match(/[0-9]/)) {
                         pointer += Number(chunk);
