@@ -34,6 +34,8 @@ export class EngineFacade extends AbstractEngineFacade {
     moveStateProvider: MoveStateProvider;
     moveChange: EventEmitter<MoveChange>;
 
+    private historyMoveCandidate: HistoryMove;
+
     constructor(
         board: Board,
         moveChange: EventEmitter<MoveChange>
@@ -345,13 +347,13 @@ export class EngineFacade extends AbstractEngineFacade {
             }
         }
 
-        const move = new HistoryMove(
+        this.historyMoveCandidate = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
             toMovePiece.constant.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece
         );
-        this.moveHistoryProvider.addMove(move);
+        this.moveHistoryProvider.addMove(this.historyMoveCandidate);
 
         if (toMovePiece instanceof King) {
             const squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
@@ -441,6 +443,7 @@ export class EngineFacade extends AbstractEngineFacade {
         const stalemate =
             this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
 
+        this.historyMoveCandidate.setGameStates(check, stalemate, checkmate);
         this.pgnProcessor.processChecks(checkmate, check, stalemate);
         this.pgnProcessor.addPromotionChoice(promotionIndex);
 
