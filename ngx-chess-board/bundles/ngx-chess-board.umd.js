@@ -2670,6 +2670,8 @@
                 this.board = lastBoard;
                 this.board.possibleCaptures = [];
                 this.board.possibleMoves = [];
+                //this.board.lastMoveSrc = null;
+                this.board.activePiece = null;
                 this.moveHistoryProvider.pop();
                 this.board.calculateFEN();
                 this.pgnProcessor.removeLast();
