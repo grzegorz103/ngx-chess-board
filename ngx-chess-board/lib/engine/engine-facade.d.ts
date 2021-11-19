@@ -17,6 +17,7 @@ export declare class EngineFacade extends AbstractEngineFacade {
     boardStateProvider: BoardStateProvider;
     moveStateProvider: MoveStateProvider;
     moveChange: EventEmitter<MoveChange>;
+    private historyMoveCandidate;
     constructor(board: Board, moveChange: EventEmitter<MoveChange>);
     reset(): void;
     undo(): void;

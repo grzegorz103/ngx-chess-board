@@ -45,4 +45,5 @@ export declare class Board {
     checkIfPawnTakesEnPassant(newPoint: Point): void;
     checkIfPawnEnpassanted(piece: Pawn, newPoint: Point): void;
     isKingChecked(piece: Piece): boolean;
+    getCurrentPlayerColor(): number;
 }

@@ -17,6 +17,13 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     darkTileColor: string;
     lightTileColor: string;
     showCoords: boolean;
+    sourcePointColor: string;
+    destinationPointColor: string;
+    legalMovesPointColor: string;
+    showLastMove: boolean;
+    showLegalMoves: boolean;
+    showActivePiece: boolean;
+    showPossibleCaptures: boolean;
     /**
      * Enabling free mode removes turn-based restriction and allows to move any piece freely!
      */
@@ -63,4 +70,5 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     addPiece(pieceTypeInput: PieceTypeInput, colorInput: ColorInput, coords: string): void;
     getPGN(): string;
     dragMoved($event: CdkDragMove<any>): void;
+    getTileBackgroundColor(i: any, j: any): string;
 }

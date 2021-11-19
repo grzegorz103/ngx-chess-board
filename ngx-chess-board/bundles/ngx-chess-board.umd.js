@@ -334,6 +334,9 @@
         Point.prototype.hasCoordsEqual = function (row, col) {
             return row && col && this.row === row && this.col === col;
         };
+        Point.prototype.isInRange = function () {
+            return this.row >= 0 && this.row <= 7 && this.col >= 0 && this.col <= 7;
+        };
         Point.prototype.clone = function () {
             return new Point(this.row, this.col);
         };
@@ -1325,7 +1328,7 @@
                 var split = fen.split('/');
                 for (var i = 0; i < 8; ++i) {
                     var pointer = 0;
-                    for (var j = 0; j < 8; ++j) {
+                    for (var j = 0; j < split[i].split(' ')[0].length; ++j) {
                         var chunk = split[i].charAt(j);
                         if (chunk.match(/[0-9]/)) {
                             pointer += Number(chunk);
@@ -1715,10 +1718,13 @@
                         : Color.BLACK;
                     if (/^[a-z]\d$/g.test(move)) { // zwykly ruch na wolne pole e4
                         var piece = MoveUtils.findPieceByPossibleMovesContaining(move, engineFacade.board, color).find(function (piece) { return piece instanceof Pawn; });
+                        // en passant check
+                        if (!piece) {
+                            piece = MoveUtils.findPieceByPossibleCapturesContaining(move, engineFacade.board, color).find(function (piece) { return piece instanceof Pawn; });
+                        }
+                        // if piece is found for sure
                         if (piece) {
                             engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move + promotionIndex);
-                        }
-                        else {
                         }
                     }
                     else {
@@ -1788,6 +1794,9 @@
                                                             engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(move.indexOf('x') + 1) + promotionIndex);
                                                         }
                                                     }
+                                                    else {
+                                                        this_1.processR1f2(move, engineFacade, color, promotionIndex);
+                                                    }
                                                 }
                                             }
                                         }
@@ -1810,6 +1819,16 @@
                         if (moves_1_1 && !moves_1_1.done && (_a = moves_1.return)) _a.call(moves_1);
                     }
                     finally { if (e_1) throw e_1.error; }
+                }
+            }
+        };
+        DefaultPgnProcessor.prototype.processR1f2 = function (move, engineFacade, color, promotionIndex) {
+            var _this = this;
+            if (/^[A-Z]\d[a-z]\d$/g.test(move)) { // R1f2
+                var pieces = MoveUtils.findPieceByPossibleMovesContaining(move.substring(2, 4), engineFacade.board, color).filter(function (piece) { return _this.resolvePieceByFirstChar(move.charAt(0), piece); });
+                var piece = this.resolveByRow(pieces, move.substring(1, 2));
+                if (piece) {
+                    engineFacade.move(MoveUtils.formatSingle(piece.point, false) + move.substring(2, 4) + promotionIndex);
                 }
             }
         };
@@ -1968,6 +1987,11 @@
             this.color = color;
             this.x = captured;
         }
+        HistoryMove.prototype.setGameStates = function (check, stalemate, mate) {
+            this.check = check;
+            this.stalemate = stalemate;
+            this.mate = mate;
+        };
         return HistoryMove;
     }());
 
@@ -2018,6 +2042,9 @@
     Constants.DEFAULT_SIZE = 500;
     Constants.MIN_BOARD_SIZE = 100;
     Constants.MAX_BOARD_SIZE = 4000;
+    Constants.DEFAULT_SOURCE_POINT_COLOR = 'rgba(146, 111, 26, 0.79)';
+    Constants.DEFAULT_DESTINATION_POINT_COLOR = '#b28e1a';
+    Constants.DEFAULT_LEGAL_MOVE_POINT_COLOR = 'radial-gradient(#13262F 15%, transparent 20%);';
 
     var PieceIconInputManager = /** @class */ (function () {
         function PieceIconInputManager() {
@@ -2633,7 +2660,6 @@
             this.coords.reset();
             this.drawProvider.clear();
             this.pgnProcessor.reset();
-            this.freeMode = false;
         };
         EngineFacade.prototype.undo = function () {
             if (!this.boardStateProvider.isEmpty()) {
@@ -2698,8 +2724,8 @@
         };
         EngineFacade.prototype.handleClickEvent = function (pointClicked, isMouseDown) {
             var moving = false;
-            if ((this.board.isPointInPossibleMoves(pointClicked) ||
-                this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) {
+            if (((this.board.isPointInPossibleMoves(pointClicked) ||
+                this.board.isPointInPossibleCaptures(pointClicked)) || this.freeMode) && pointClicked.isInRange()) {
                 this.saveClone();
                 this.board.lastMoveSrc = new Point(this.board.activePiece.point.row, this.board.activePiece.point.col);
                 this.board.lastMoveDest = pointClicked.clone();
@@ -2798,8 +2824,8 @@
                     return;
                 }
             }
-            var move = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
-            this.moveHistoryProvider.addMove(move);
+            this.historyMoveCandidate = new HistoryMove(MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted), toMovePiece.constant.name, toMovePiece.color === Color.WHITE ? 'white' : 'black', !!destPiece);
+            this.moveHistoryProvider.addMove(this.historyMoveCandidate);
             if (toMovePiece instanceof King) {
                 var squaresMoved = Math.abs(newPoint.col - toMovePiece.point.col);
                 if (squaresMoved > 1) {
@@ -2860,6 +2886,7 @@
             var checkmate = this.checkForPossibleMoves(Color.BLACK) ||
                 this.checkForPossibleMoves(Color.WHITE);
             var stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+            this.historyMoveCandidate.setGameStates(check, stalemate, checkmate);
             this.pgnProcessor.processChecks(checkmate, check, stalemate);
             this.pgnProcessor.addPromotionChoice(promotionIndex);
             this.disabling = false;
@@ -2887,10 +2914,12 @@
         };
         EngineFacade.prototype.openPromoteDialog = function (piece) {
             var _this = this;
-            this.modal.open(function (index) {
-                PiecePromotionResolver.resolvePromotionChoice(_this.board, piece, index);
-                _this.afterMoveActions(index);
-            });
+            if (piece.color === this.board.activePiece.color) {
+                this.modal.open(function (index) {
+                    PiecePromotionResolver.resolvePromotionChoice(_this.board, piece, index);
+                    _this.afterMoveActions(index);
+                });
+            }
         };
         EngineFacade.prototype.checkForPossibleMoves = function (color) {
             var _this = this;
@@ -3233,6 +3262,9 @@
                     : this.blackKingChecked;
             }
         };
+        Board.prototype.getCurrentPlayerColor = function () {
+            return this.currentWhitePlayer ? Color.WHITE : Color.BLACK;
+        };
         return Board;
     }());
 
@@ -3259,6 +3291,13 @@
             this.darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
             this.lightTileColor = Constants.DEFAULT_LIGHT_TILE_COLOR;
             this.showCoords = true;
+            this.sourcePointColor = Constants.DEFAULT_SOURCE_POINT_COLOR;
+            this.destinationPointColor = Constants.DEFAULT_DESTINATION_POINT_COLOR;
+            this.legalMovesPointColor = Constants.DEFAULT_LEGAL_MOVE_POINT_COLOR;
+            this.showLastMove = true;
+            this.showLegalMoves = true;
+            this.showActivePiece = true;
+            this.showPossibleCaptures = true;
             /**
              * Enabling free mode removes turn-based restriction and allows to move any piece freely!
              */
@@ -3442,13 +3481,25 @@
             $event.source.getRootElement().style.transform = 'translate3d(' + x + 'px, '
                 + (y) + 'px,0px)';
         };
+        NgxChessBoardComponent.prototype.getTileBackgroundColor = function (i, j) {
+            var color = ((i + j) % 2 === 0) ? this.lightTileColor : this.darkTileColor;
+            if (this.showLastMove) {
+                if (this.engineFacade.board.isXYInSourceMove(i, j)) {
+                    color = this.sourcePointColor;
+                }
+                if (this.engineFacade.board.isXYInDestMove(i, j)) {
+                    color = this.destinationPointColor;
+                }
+            }
+            return color;
+        };
         return NgxChessBoardComponent;
     }());
     NgxChessBoardComponent.decorators = [
         { type: i0.Component, args: [{
                     selector: 'ngx-chess-board',
-                    template: "<div\r\n    id=\"board\"\r\n    [style.height.px]=\"engineFacade.heightAndWidth\"\r\n    [style.width.px]=\"engineFacade.heightAndWidth\"\r\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\r\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\r\n    #boardRef\r\n>\r\n    <div id=\"drag\">\r\n        <div\r\n            [cdkDragDisabled]=\"engineFacade.dragDisabled\"\r\n            (cdkDragEnded)=\"dragEnded($event)\"\r\n            (cdkDragMoved)=\"dragMoved($event)\"\r\n            (cdkDragStarted)=\"dragStart($event)\"\r\n            class=\"single-piece\" [innerHTML]=\"engineFacade.pieceIconManager.isDefaultIcons() ? piece.constant.icon : ''\"\r\n            [ngStyle]=\"engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(piece)\"\r\n            [style.transform]=\"'translate3d(' + piece.point.col * pieceSize + 'px, ' + piece.point.row * pieceSize + 'px,0px)'\"\r\n            [style.max-height]=\"pieceSize + 'px'\"\r\n            [style.font-size]=\"pieceSize * 0.8 + 'px'\"\r\n            [style.width]=\"pieceSize + 'px'\"\r\n            [style.height]=\"pieceSize + 'px'\"\r\n            cdkDrag\r\n            *ngFor=\"let piece of engineFacade.board.pieces; let i = index\"\r\n        >\r\n        </div>\r\n        <div\r\n            class=\"board-row\"\r\n            *ngFor=\"let row of engineFacade.board.board; let i = index\"\r\n        >\r\n            <div\r\n                class=\"board-col\"\r\n                [class.current-selection]=\"engineFacade.board.isXYInActiveMove(i,j)\"\r\n                [class.dest-move]=\"engineFacade.board.isXYInDestMove(i,j)\"\r\n                [class.king-check]=\" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))\"\r\n                [class.point-circle]=\"engineFacade.board.isXYInPointSelection(i, j)\"\r\n                [class.possible-capture]=\"engineFacade.board.isXYInPossibleCaptures(i, j)\"\r\n                [class.possible-point]=\"engineFacade.board.isXYInPossibleMoves(i, j)\"\r\n                [class.source-move]=\"engineFacade.board.isXYInSourceMove(i, j)\"\r\n                [style.background-color]=\"((i + j) % 2 === 0 ) ? lightTileColor : darkTileColor\"\r\n                *ngFor=\"let col of row; let j = index\"\r\n            >\r\n                <span\r\n                    class=\"yCoord\"\r\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && j === 7\"\r\n                >\r\n                    {{engineFacade.coords.yCoords[i]}}\r\n                </span>\r\n                <span\r\n                    class=\"xCoord\"\r\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\r\n                    [style.font-size.px]=\"pieceSize / 4\"\r\n                    *ngIf=\"showCoords && i === 7\"\r\n                >\r\n                    {{engineFacade.coords.xCoords[j]}}\r\n                </span>\r\n                <div\r\n                    *ngIf=\"engineFacade.board.getPieceByPoint(i, j) as piece\"\r\n                    style=\"height:100%; width:100%\"\r\n                >\r\n                    <div\r\n                        [ngClass]=\"'piece'\"\r\n                        [style.font-size]=\"pieceSize + 'px'\"\r\n\r\n                    >\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <svg\r\n        [attr.height]=\"engineFacade.heightAndWidth\"\r\n        [attr.width]=\"engineFacade.heightAndWidth\"\r\n        style=\"position:absolute; top:0; pointer-events: none\"\r\n    >\r\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\r\n            <marker\r\n                [id]=\"color + 'Arrow'\"\r\n                markerHeight=\"13\"\r\n                markerWidth=\"13\"\r\n                orient=\"auto\"\r\n                refX=\"9\"\r\n                refY=\"6\"\r\n            >\r\n                <path\r\n                    [style.fill]=\"color\"\r\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\r\n                ></path>\r\n            </marker>\r\n        </defs>\r\n        <line\r\n            class=\"arrow\"\r\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\r\n            [attr.stroke]=\"arrow.end.color\"\r\n            [attr.x1]=\"arrow.start.x\"\r\n            [attr.x2]=\"arrow.end.x\"\r\n            [attr.y1]=\"arrow.start.y\"\r\n            [attr.y2]=\"arrow.end.y\"\r\n            *ngFor=\"let arrow of engineFacade.drawProvider.arrows$ | async\"\r\n        ></line>\r\n        <circle\r\n            [attr.cx]=\"circle.drawPoint.x\"\r\n            [attr.cy]=\"circle.drawPoint.y\"\r\n            [attr.r]=\"engineFacade.heightAndWidth / 18\"\r\n            [attr.stroke]=\"circle.drawPoint.color\"\r\n            *ngFor=\"let circle of engineFacade.drawProvider.circles$ | async\"\r\n            fill-opacity=\"0.0\"\r\n            stroke-width=\"2\"\r\n        ></circle>\r\n    </svg>\r\n    <app-piece-promotion-modal #modal></app-piece-promotion-modal>\r\n</div>\r\n",
-                    styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.source-move{background-color:rgba(146,111,26,.79)!important}.dest-move{background-color:#b28e1a!important}.current-selection{background-color:#72620b!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}:host{display:inline-block!important}.single-piece{-moz-user-select:none;-webkit-user-select:none;color:#000!important;cursor:-webkit-grab;cursor:grab;justify-content:center;position:absolute;text-align:center;user-select:none;z-index:999}.single-piece:after{box-sizing:border-box;content:\"\u200B\"}.cdk-drag:not(.cdk-drag-dragging){transition:transform .2s cubic-bezier(0,.3,.14,.49)}"]
+                    template: "<div\n    id=\"board\"\n    [style.height.px]=\"engineFacade.heightAndWidth\"\n    [style.width.px]=\"engineFacade.heightAndWidth\"\n    (pointerdown)=\"!modal.opened && onMouseDown($event)\"\n    (pointerup)=\"!modal.opened && onMouseUp($event)\"\n    #boardRef\n>\n    <div id=\"drag\">\n        <div\n            [cdkDragDisabled]=\"engineFacade.dragDisabled\"\n            (cdkDragEnded)=\"dragEnded($event)\"\n            (cdkDragMoved)=\"dragMoved($event)\"\n            (cdkDragStarted)=\"dragStart($event)\"\n            class=\"single-piece\" [innerHTML]=\"engineFacade.pieceIconManager.isDefaultIcons() ? piece.constant.icon : ''\"\n            [ngStyle]=\"engineFacade.pieceIconManager.isDefaultIcons() ? '' : getCustomPieceIcons(piece)\"\n            [style.transform]=\"'translate3d(' + piece.point.col * pieceSize + 'px, ' + piece.point.row * pieceSize + 'px,0px)'\"\n            [style.max-height]=\"pieceSize + 'px'\"\n            [style.font-size]=\"pieceSize * 0.8 + 'px'\"\n            [style.width]=\"pieceSize + 'px'\"\n            [style.height]=\"pieceSize + 'px'\"\n            cdkDrag\n            *ngFor=\"let piece of engineFacade.board.pieces; let i = index\"\n        >\n        </div>\n        <div\n            class=\"board-row\"\n            *ngFor=\"let row of engineFacade.board.board; let i = index\"\n        >\n            <div\n                class=\"board-col\"\n                [class.current-selection]=\"showActivePiece && engineFacade.board.isXYInActiveMove(i,j)\"\n                [class.king-check]=\" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))\"\n                [class.point-circle]=\"engineFacade.board.isXYInPointSelection(i, j)\"\n                [class.possible-capture]=\"showPossibleCaptures && engineFacade.board.isXYInPossibleCaptures(i, j)\"\n                [class.possible-point]=\"engineFacade.board.isXYInPossibleMoves(i, j) && showLegalMoves\"\n                [style.background-color]=\"getTileBackgroundColor(i, j)\"\n                *ngFor=\"let col of row; let j = index\"\n            >\n                <span\n                    class=\"yCoord\"\n                    [style.color]=\"(i % 2 === 0) ? lightTileColor : darkTileColor\"\n                    [style.font-size.px]=\"pieceSize / 4\"\n                    *ngIf=\"showCoords && j === 7\"\n                >\n                    {{engineFacade.coords.yCoords[i]}}\n                </span>\n                <span\n                    class=\"xCoord\"\n                    [style.color]=\"(j % 2 === 0) ? lightTileColor : darkTileColor\"\n                    [style.font-size.px]=\"pieceSize / 4\"\n                    *ngIf=\"showCoords && i === 7\"\n                >\n                    {{engineFacade.coords.xCoords[j]}}\n                </span>\n                <div\n                    *ngIf=\"engineFacade.board.getPieceByPoint(i, j) as piece\"\n                    style=\"height:100%; width:100%\"\n                >\n                    <div\n                        [ngClass]=\"'piece'\"\n                        [style.font-size]=\"pieceSize + 'px'\"\n\n                    >\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n    <svg\n        [attr.height]=\"engineFacade.heightAndWidth\"\n        [attr.width]=\"engineFacade.heightAndWidth\"\n        style=\"position:absolute; top:0; pointer-events: none\"\n    >\n        <defs *ngFor=\"let color of ['red', 'green', 'blue', 'orange']\">\n            <marker\n                [id]=\"color + 'Arrow'\"\n                markerHeight=\"13\"\n                markerWidth=\"13\"\n                orient=\"auto\"\n                refX=\"9\"\n                refY=\"6\"\n            >\n                <path\n                    [style.fill]=\"color\"\n                    d=\"M2,2 L2,11 L10,6 L2,2\"\n                ></path>\n            </marker>\n        </defs>\n        <line\n            class=\"arrow\"\n            [attr.marker-end]=\"'url(#' + arrow.end.color + 'Arrow)'\"\n            [attr.stroke]=\"arrow.end.color\"\n            [attr.x1]=\"arrow.start.x\"\n            [attr.x2]=\"arrow.end.x\"\n            [attr.y1]=\"arrow.start.y\"\n            [attr.y2]=\"arrow.end.y\"\n            *ngFor=\"let arrow of engineFacade.drawProvider.arrows$ | async\"\n        ></line>\n        <circle\n            [attr.cx]=\"circle.drawPoint.x\"\n            [attr.cy]=\"circle.drawPoint.y\"\n            [attr.r]=\"engineFacade.heightAndWidth / 18\"\n            [attr.stroke]=\"circle.drawPoint.color\"\n            *ngFor=\"let circle of engineFacade.drawProvider.circles$ | async\"\n            fill-opacity=\"0.0\"\n            stroke-width=\"2\"\n        ></circle>\n    </svg>\n    <app-piece-promotion-modal #modal\n                               [pieceIconInput]=\"engineFacade.pieceIconManager.pieceIconInput\"\n                               [color]=\"engineFacade.board.getCurrentPlayerColor() ? 'white' : 'black'\"></app-piece-promotion-modal>\n</div>\n",
+                    styles: ["@charset \"UTF-8\";#board{font-family:Courier New,serif;position:relative}.board-row{display:block;height:12.5%;position:relative;width:100%}.board-col{cursor:default;display:inline-block;height:100%;position:relative;vertical-align:top;width:12.5%}.piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;height:100%;justify-content:center;text-align:center;user-select:none;width:100%}.piece,.piece:after{box-sizing:border-box}.piece:after{content:\"\u200B\"}#drag{height:100%;width:100%}.possible-point{background:radial-gradient(#13262f 15%,transparent 20%)}.possible-capture:hover,.possible-point:hover{opacity:.4}.possible-capture{background:radial-gradient(transparent 0,transparent 80%,#13262f 0);box-sizing:border-box;margin:0;opacity:.5;padding:0}.king-check{background:radial-gradient(ellipse at center,red 0,#e70000 25%,rgba(169,0,0,0) 89%,rgba(158,0,0,0) 100%)}.current-selection{background-color:#72620b!important}.yCoord{right:.2em}.xCoord,.yCoord{-moz-user-select:none;-webkit-user-select:none;box-sizing:border-box;cursor:pointer;font-family:Lucida Console,Courier,monospace;position:absolute;user-select:none}.xCoord{bottom:0;left:.2em}.hovering{background-color:red!important}.arrow{stroke-width:2}svg{filter:drop-shadow(1px 1px 0 #111) drop-shadow(-1px 1px 0 #111) drop-shadow(1px -1px 0 #111) drop-shadow(-1px -1px 0 #111)}:host{display:inline-block!important}.single-piece{-moz-user-select:none;-webkit-user-select:none;background-size:cover;color:#000!important;cursor:-webkit-grab;cursor:grab;justify-content:center;position:absolute;text-align:center;user-select:none;z-index:999}.single-piece:after{box-sizing:border-box;content:\"\u200B\"}.cdk-drag:not(.cdk-drag-dragging){transition:transform .2s cubic-bezier(0,.3,.14,.49)}"]
                 },] }
     ];
     NgxChessBoardComponent.ctorParameters = function () { return [
@@ -3458,6 +3509,13 @@
         darkTileColor: [{ type: i0.Input }],
         lightTileColor: [{ type: i0.Input }],
         showCoords: [{ type: i0.Input }],
+        sourcePointColor: [{ type: i0.Input }],
+        destinationPointColor: [{ type: i0.Input }],
+        legalMovesPointColor: [{ type: i0.Input }],
+        showLastMove: [{ type: i0.Input }],
+        showLegalMoves: [{ type: i0.Input }],
+        showActivePiece: [{ type: i0.Input }],
+        showPossibleCaptures: [{ type: i0.Input }],
         moveChange: [{ type: i0.Output }],
         checkmate: [{ type: i0.Output }],
         stalemate: [{ type: i0.Output }],
@@ -3475,6 +3533,7 @@
 
     var PiecePromotionModalComponent = /** @class */ (function () {
         function PiecePromotionModalComponent() {
+            this.color = 'white';
             this.opened = false;
         }
         PiecePromotionModalComponent.prototype.open = function (closeCallback) {
@@ -3487,17 +3546,37 @@
             this.opened = false;
             this.onCloseCallback(index);
         };
+        PiecePromotionModalComponent.prototype.getPieceIcon = function (piece) {
+            var coloredPiece = '';
+            switch (piece.toLowerCase()) {
+                case 'queen':
+                    coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteQueenUrl : this.pieceIconInput.blackQueenUrl;
+                    break;
+                case 'rook':
+                    coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteRookUrl : this.pieceIconInput.blackRookUrl;
+                    break;
+                case 'bishop':
+                    coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteBishopUrl : this.pieceIconInput.blackBishopUrl;
+                    break;
+                case 'knight':
+                    coloredPiece = this.color === 'white' ? this.pieceIconInput.whiteKnightUrl : this.pieceIconInput.blackKnightUrl;
+                    break;
+            }
+            return coloredPiece;
+        };
         return PiecePromotionModalComponent;
     }());
     PiecePromotionModalComponent.decorators = [
         { type: i0.Component, args: [{
                     selector: 'app-piece-promotion-modal',
-                    template: "<div #myModal class=\"container\">\r\n    <div class=\"wrapper\">\r\n        <div class=\"content\">\r\n            <div class=\"piece-wrapper\">\r\n                <div class=\"piece\" (click)=\"changeSelection(1)\">&#x265B;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(2)\">&#x265C;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(3)\">&#x265D;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(4)\">&#x265E;</div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n",
-                    styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:1}.container,.wrapper{height:100%;width:100%}.content,.wrapper{position:relative}.content{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece{cursor:pointer;display:inline-block;font-size:5rem;height:100%;width:25%}.piece:hover{background-color:#ccc;border-radius:5px}.piece-wrapper{height:80%;width:100%}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"]
+                    template: "<div #myModal class=\"container\">\r\n    <div class=\"wrapper\">\r\n        <div class=\"content\">\r\n            <div class=\"piece-wrapper\" *ngIf=\"pieceIconInput\">\r\n                <div class=\"piece\" (click)=\"changeSelection(1)\">\r\n                    <img [src]=\"getPieceIcon('queen')\" alt=\"Queen\">\r\n                </div>\r\n                <div class=\"piece\" (click)=\"changeSelection(2)\">\r\n                    <img [src]=\"getPieceIcon('rook')\" alt=\"Rook\">\r\n                </div>\r\n                <div class=\"piece\" (click)=\"changeSelection(3)\">\r\n                    <img [src]=\"getPieceIcon('bishop')\" alt=\"Bishop\">\r\n                </div>\r\n                <div class=\"piece\" (click)=\"changeSelection(4)\">\r\n                    <img [src]=\"getPieceIcon('knight')\" alt=\"Knight\">\r\n                </div>\r\n            </div>\r\n            <div class=\"piece-wrapper\" *ngIf=\"!pieceIconInput\">\r\n                <div class=\"piece\" (click)=\"changeSelection(1)\">&#x265B;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(2)\">&#x265C;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(3)\">&#x265D;</div>\r\n                <div class=\"piece\" (click)=\"changeSelection(4)\">&#x265E;</div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n",
+                    styles: [".container{background-color:rgba(0,0,0,.4);color:#000;display:none;overflow:auto;position:absolute;top:0;z-index:9999}.container,.wrapper{height:100%;width:100%}.content,.wrapper{position:relative}.content{background-color:#fefefe;border:1px solid #888;font-size:100%;height:40%;margin:auto;padding:10px;top:30%;width:90%}.piece{cursor:pointer;display:inline-block;font-size:5rem;height:100%;text-align:center;width:25%}.piece img{max-width:100%}.piece:hover{background-color:#ccc;border-radius:5px}.piece-wrapper{height:80%;width:100%}#close-button{background-color:#4caf50;border:none;border-radius:4px;color:#fff;display:inline-block;padding-left:5px;padding-right:5px;text-align:center;text-decoration:none}.selected{border:2px solid #00b919;border-radius:4px;box-sizing:border-box}"]
                 },] }
     ];
     PiecePromotionModalComponent.propDecorators = {
-        modal: [{ type: i0.ViewChild, args: ['myModal', { static: false },] }]
+        modal: [{ type: i0.ViewChild, args: ['myModal', { static: false },] }],
+        pieceIconInput: [{ type: i0.Input }],
+        color: [{ type: i0.Input }]
     };
 
     var NgxChessBoardModule = /** @class */ (function () {

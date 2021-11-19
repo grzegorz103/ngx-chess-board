@@ -4,5 +4,6 @@ export declare class Point {
     constructor(row: number, col: number);
     isEqual(that: Point): boolean;
     hasCoordsEqual(row: number, col: number): boolean;
+    isInRange(): boolean;
     clone(): Point;
 }
