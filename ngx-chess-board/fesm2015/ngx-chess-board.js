@@ -2178,7 +2178,6 @@ class EngineFacade extends AbstractEngineFacade {
             this.board = lastBoard;
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
-            //this.board.lastMoveSrc = null;
             this.board.activePiece = null;
             this.moveHistoryProvider.pop();
             this.board.calculateFEN();
@@ -2387,6 +2386,7 @@ class EngineFacade extends AbstractEngineFacade {
         }
     }
     afterMoveActions(promotionIndex) {
+        var _a;
         this.checkIfPawnFirstMove(this.board.activePiece);
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
@@ -2396,7 +2396,7 @@ class EngineFacade extends AbstractEngineFacade {
         const checkmate = this.checkForPossibleMoves(Color.BLACK) ||
             this.checkForPossibleMoves(Color.WHITE);
         const stalemate = this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
-        this.historyMoveCandidate.setGameStates(check, stalemate, checkmate);
+        (_a = this.historyMoveCandidate) === null || _a === void 0 ? void 0 : _a.setGameStates(check, stalemate, checkmate);
         this.pgnProcessor.processChecks(checkmate, check, stalemate);
         this.pgnProcessor.addPromotionChoice(promotionIndex);
         this.disabling = false;
