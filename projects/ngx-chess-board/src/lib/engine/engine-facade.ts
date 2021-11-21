@@ -444,7 +444,7 @@ export class EngineFacade extends AbstractEngineFacade {
         const stalemate =
             this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
 
-        this.historyMoveCandidate.setGameStates(check, stalemate, checkmate);
+        this.historyMoveCandidate?.setGameStates(check, stalemate, checkmate);
         this.pgnProcessor.processChecks(checkmate, check, stalemate);
         this.pgnProcessor.addPromotionChoice(promotionIndex);
 
