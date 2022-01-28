@@ -22,7 +22,7 @@
     "@angular/router": "~10.1.6",
     "@types/lodash": "^4.14.162",
     "bootstrap": "^4.5.3",
-    "i": "^0.3.6",
+    "i": "^0.3.7",
     "ngx-chess-board": "file:projects/ngx-chess-board",
     "npm": "^6.14.8",
     "rxjs": "~6.6.3",
