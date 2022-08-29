@@ -4,7 +4,7 @@ import { Point } from '../../models/pieces/point';
 
 export abstract class AbstractPgnProcessor {
 
-    protected pgn = '';
+    protected pgn = [];
     protected currentIndex = 0.5;
 
     public abstract process(
@@ -15,48 +15,52 @@ export abstract class AbstractPgnProcessor {
     ): void;
 
     public getPGN() {
-        return this.pgn;
+        return this.pgn.join(' ');
+    }
+
+    protected getLast() {
+        return this.pgn[this.pgn.length - 1];
+    }
+
+    protected appendToLast(str: string) {
+        this.pgn[this.pgn.length - 1] = this.getLast() + str;
     }
 
     processChecks(checkmate: boolean, check: boolean, stalemate: boolean) {
         if (checkmate) {
-            this.pgn += '#';
+            this.appendToLast('#');
         } else {
             if (check) {
-                this.pgn += '+';
+                this.appendToLast('+');
             }
         }
     }
 
     reset() {
-        this.pgn = '';
+        this.pgn = [];
         this.currentIndex = 0.5;
     }
 
     addPromotionChoice(promotion) {
         switch (promotion) {
             case 1:
-                this.pgn += '=Q';
+                this.appendToLast('=Q');
                 break;
             case 2:
-                this.pgn += '=R';
+                this.appendToLast('=R');
                 break;
             case 3:
-                this.pgn += '=B';
+                this.appendToLast('=B');
                 break;
             case 4:
-                this.pgn += '=N';
+                this.appendToLast('=N');
                 break;
         }
     }
 
     removeLast() {
-        if(this.currentIndex >= 0.5) {
-            this.currentIndex -= 0.5;
-            const regex1 = new RegExp( /\d+\./g );
-            regex1.test(this.pgn);
-            this.pgn = this.pgn.substring(0, regex1.lastIndex).trim();
-        }
+        this.pgn.pop();
+        this.currentIndex -= 0.5;
     }
 
 }
