@@ -1,10 +1,10 @@
 {
   "name": "ngx-chess-board",
-  "version": "2.1.18",
+  "version": "2.2.2",
   "peerDependencies": {
-    "@angular/common": "^10.1.6",
-    "@angular/core": "^10.1.6",
-    "@angular/cdk": "^10.2.5"
+    "@angular/common": "^13.2.0",
+    "@angular/core": "^13.2.0",
+    "@angular/cdk": "^13.2.0"
   },
   "description": "Chess game component",
   "repository": {
@@ -24,15 +24,27 @@
     "fen"
   ],
   "license": "MIT",
-  "main": "bundles/ngx-chess-board.umd.js",
-  "module": "fesm2015/ngx-chess-board.js",
-  "es2015": "fesm2015/ngx-chess-board.js",
-  "esm2015": "esm2015/ngx-chess-board.js",
-  "fesm2015": "fesm2015/ngx-chess-board.js",
+  "module": "fesm2015/ngx-chess-board.mjs",
+  "es2020": "fesm2020/ngx-chess-board.mjs",
+  "esm2020": "esm2020/ngx-chess-board.mjs",
+  "fesm2020": "fesm2020/ngx-chess-board.mjs",
+  "fesm2015": "fesm2015/ngx-chess-board.mjs",
   "typings": "ngx-chess-board.d.ts",
-  "metadata": "ngx-chess-board.metadata.json",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./ngx-chess-board.d.ts",
+      "esm2020": "./esm2020/ngx-chess-board.mjs",
+      "es2020": "./fesm2020/ngx-chess-board.mjs",
+      "es2015": "./fesm2015/ngx-chess-board.mjs",
+      "node": "./fesm2015/ngx-chess-board.mjs",
+      "default": "./fesm2020/ngx-chess-board.mjs"
+    }
+  },
   "sideEffects": false,
   "dependencies": {
-    "tslib": "^2.0.0"
+    "tslib": "^2.3.0"
   }
 }

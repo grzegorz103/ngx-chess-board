@@ -12,6 +12,7 @@ import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
+import * as i0 from "@angular/core";
 export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChessBoardView, AfterViewInit {
     private ngxChessBoardService;
     darkTileColor: string;
@@ -71,4 +72,6 @@ export declare class NgxChessBoardComponent implements OnInit, OnChanges, NgxChe
     getPGN(): string;
     dragMoved($event: CdkDragMove<any>): void;
     getTileBackgroundColor(i: any, j: any): string;
+    static ɵfac: i0.ɵɵFactoryDeclaration<NgxChessBoardComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<NgxChessBoardComponent, "ngx-chess-board", never, { "darkTileColor": "darkTileColor"; "lightTileColor": "lightTileColor"; "showCoords": "showCoords"; "sourcePointColor": "sourcePointColor"; "destinationPointColor": "destinationPointColor"; "legalMovesPointColor": "legalMovesPointColor"; "showLastMove": "showLastMove"; "showLegalMoves": "showLegalMoves"; "showActivePiece": "showActivePiece"; "showPossibleCaptures": "showPossibleCaptures"; "size": "size"; "freeMode": "freeMode"; "dragDisabled": "dragDisabled"; "drawDisabled": "drawDisabled"; "pieceIcons": "pieceIcons"; "lightDisabled": "lightDisabled"; "darkDisabled": "darkDisabled"; }, { "moveChange": "moveChange"; "checkmate": "checkmate"; "stalemate": "stalemate"; }, never, never>;
 }
