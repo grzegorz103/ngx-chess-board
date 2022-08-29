@@ -1878,7 +1878,7 @@ class DefaultPgnProcessor extends AbstractPgnProcessor {
         this.currentIndex += 0.5;
         let currentMove = '';
         if (this.currentIndex % Math.floor(this.currentIndex) === 0) {
-            currentMove = this.currentIndex + '.';
+            currentMove = this.currentIndex + '. ';
         }
         let possibleCaptures = [];
         let possibleMoves = [];
