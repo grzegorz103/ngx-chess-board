@@ -15,8 +15,10 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
         destPiece?: Piece
     ): void {
         this.currentIndex += 0.5;
-        this.pgn += (this.currentIndex % Math.floor(this.currentIndex) === 0) ? (' ' + this.currentIndex + '. ') : ' ';
-
+        let currentMove = '';
+        if(this.currentIndex % Math.floor(this.currentIndex) === 0) {
+            currentMove = this.currentIndex + '.';
+        }
         let possibleCaptures = [];
         let possibleMoves = [];
 
@@ -34,30 +36,30 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
         ).filter(piece => piece.constructor.name === sourcePiece.constructor.name);
 
         if (sourcePiece instanceof Pawn && !destPiece && possibleCaptures.length === 0) {
-            this.pgn += MoveUtils.formatSingle(destPoint, board.reverted);
+            currentMove += MoveUtils.formatSingle(destPoint, board.reverted);
         } else {
             if (sourcePiece instanceof Pawn && destPiece) {
-                this.pgn += MoveUtils.formatSingle(
+                currentMove += (MoveUtils.formatSingle(
                     sourcePiece.point,
                     board.reverted
                 ).substring(0, 1) + 'x' + MoveUtils.formatSingle(
                     destPoint,
                     board.reverted
-                );
+                ));
             } else {
                 if (sourcePiece instanceof King && (Math.abs(sourcePiece.point.col - destPoint.col) === 2)) {
                     if (board.reverted) {
-                        this.pgn += destPoint.col < 2
+                        currentMove += (destPoint.col < 2
                             ? 'O-O'
-                            : 'O-O-O';
+                            : 'O-O-O');
                     } else {
-                        this.pgn += destPoint.col < 3
+                        currentMove += destPoint.col < 3
                             ? 'O-O-O'
                             : 'O-O';
                     }
                 } else {
                     if (!(sourcePiece instanceof Pawn) && possibleCaptures.length === 0 && possibleMoves.length < 2) {     // Nf3
-                        this.pgn += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatSingle(
+                        currentMove += MoveUtils.getFirstLetterPiece(sourcePiece) + MoveUtils.formatSingle(
                             destPoint,
                             board.reverted
                         );
@@ -67,7 +69,7 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                                 possibleMoves[0],
                                 possibleMoves[1]
                             )) {
-                                this.pgn += MoveUtils.getFirstLetterPiece(
+                                currentMove +=  MoveUtils.getFirstLetterPiece(
                                     sourcePiece) + MoveUtils.reverse(
                                     board,
                                     sourcePiece.point.row
@@ -76,7 +78,7 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                                     board.reverted
                                 );
                             } else {
-                                this.pgn += MoveUtils.getFirstLetterPiece(
+                                currentMove += MoveUtils.getFirstLetterPiece(
                                     sourcePiece) + MoveUtils.formatCol(
                                     board,
                                     sourcePiece.point.col
@@ -91,7 +93,7 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                                     possibleCaptures[0],
                                     possibleCaptures[1]
                                 ))) {
-                                    this.pgn += MoveUtils.getFirstLetterPiece(
+                                    currentMove += MoveUtils.getFirstLetterPiece(
                                         sourcePiece) + MoveUtils.reverse(
                                         board,
                                         sourcePiece.point.row
@@ -100,7 +102,7 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                                         board.reverted
                                     );
                                 } else {
-                                    this.pgn += MoveUtils.getFirstLetterPiece(
+                                    currentMove += MoveUtils.getFirstLetterPiece(
                                         sourcePiece) + MoveUtils.formatCol(
                                         board,
                                         sourcePiece.point.col
@@ -110,7 +112,7 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                                     );
                                 }
                             } else {
-                                this.pgn += MoveUtils.getFirstLetterPiece(
+                                currentMove += MoveUtils.getFirstLetterPiece(
                                     sourcePiece) + 'x' + MoveUtils.formatSingle(
                                     destPoint, board.reverted
                                 );
@@ -120,8 +122,7 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                 }
             }
         }
-
-        this.pgn = this.pgn.trim();
+        this.pgn.push(currentMove);
     }
 
     private resolvePieceByFirstChar(move: string, piece: Piece) {
