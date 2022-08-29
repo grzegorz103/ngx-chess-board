@@ -65,6 +65,7 @@ export class AppComponent {
     public undo(): void {
         this.boardManager.undo();
         this.fen = this.boardManager.getFEN();
+        this.pgn = this.boardManager.getPGN();
     }
 
     public setFen(): void {
@@ -155,5 +156,9 @@ export class AppComponent {
             '13. Qxb8 Qxb8 14. Kf2 Kd8 15. Nc3 Be7 16. Nc4 Bf6\n' +
             '17. Nb6 Nb5 18. Nbxd5 f4 19. Ne4 Na7 20. Nexf6';
         this.setPgn();
+    }
+
+    getPGN() {
+        alert(this.boardManager.getPGN());
     }
 }
