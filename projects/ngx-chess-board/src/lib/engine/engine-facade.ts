@@ -18,7 +18,6 @@ import { King } from '../models/pieces/king';
 import { Pawn } from '../models/pieces/pawn';
 import { Piece } from '../models/pieces/piece';
 import { Point } from '../models/pieces/point';
-import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
 import { AvailableMoveDecorator } from './piece-decorator/available-move-decorator';
 import { PiecePromotionResolver } from '../piece-promotion/piece-promotion-resolver';
 import { MoveUtils } from '../utils/move-utils';
@@ -205,6 +204,14 @@ export class EngineFacade extends AbstractEngineFacade {
         }
     }
 
+    public onContextMenu(
+        event: MouseEvent,
+    ): void {
+        if (this.board.activePiece) {
+            this.disableSelection();
+        }
+    }
+
     onMouseDown(
         event: MouseEvent,
         pointClicked: Point,
@@ -273,15 +280,19 @@ export class EngineFacade extends AbstractEngineFacade {
         top: number
     ) {
         this.moveDone = false;
-        if (event.button !== 0 && !this.drawDisabled) {
-            this.addDrawPoint(
-                event.x,
-                event.y,
-                event.ctrlKey,
-                event.altKey,
-                event.shiftKey,
-                left, top
-            );
+        if (event.button !== 0) {
+            if (!this.drawDisabled) {
+                this.addDrawPoint(
+                    event.x,
+                    event.y,
+                    event.ctrlKey,
+                    event.altKey,
+                    event.shiftKey,
+                    left,
+                    top
+                );
+                return;
+            }
             return;
         }
 

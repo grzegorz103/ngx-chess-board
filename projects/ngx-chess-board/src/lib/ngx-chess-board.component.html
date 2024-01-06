@@ -2,6 +2,7 @@
     id="board"
     [style.height.px]="engineFacade.heightAndWidth"
     [style.width.px]="engineFacade.heightAndWidth"
+    (contextmenu)="!modal.opened && onContextMenu($event)"
     (pointerdown)="!modal.opened && onMouseDown($event)"
     (pointerup)="!modal.opened && onMouseUp($event)"
     #boardRef
@@ -20,6 +21,7 @@
             [style.width]="pieceSize + 'px'"
             [style.height]="pieceSize + 'px'"
             cdkDrag
+            [style.--animation-duration]="animationDuration + 'ms'"
             *ngFor="let piece of engineFacade.board.pieces; let i = index"
         >
         </div>
