@@ -281,7 +281,7 @@ export class EngineFacade extends AbstractEngineFacade {
     ) {
         this.moveDone = false;
         if (event.button !== 0) {
-            if (!this.drawDisabled) {
+            if (!this.drawDisabled && this.drawPoint) {
                 this.addDrawPoint(
                     event.x,
                     event.y,
