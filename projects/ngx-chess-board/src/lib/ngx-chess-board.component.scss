@@ -1,3 +1,7 @@
+:host {
+    display: inline-block;
+}
+
 #board {
     font-family: 'Courier New', serif;
     position: relative;
@@ -47,9 +51,14 @@
 .possible-point {
     background: radial-gradient(#13262F 15%, transparent 20%);
 }
+.premove-possible-point {
+    background: radial-gradient(rgb(19, 38, 47, 0.2) 15%, transparent 20%);
+}
 
 .possible-point:hover,
-.possible-capture:hover {
+.premove-possible-point:hover,
+.possible-capture:hover,
+.premove-possible-capture:hover {
     opacity: 0.4;
 }
 
@@ -57,6 +66,13 @@
     background: radial-gradient(transparent 0%, transparent 80%,#13262F 80%);
     opacity: 0.5;
     box-sizing: border-box;  margin: 0;
+    padding: 0;
+}
+
+.premove-possible-capture {
+    background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 85, .5) 80%);
+    box-sizing: border-box;
+    margin: 0;
     padding: 0;
 }
 
@@ -72,6 +88,10 @@
 
 .current-selection {
     background-color: #72620B !important;
+}
+
+.premove-current-selection {
+    background-color: rgba(91, 112, 228, 0.4) !important;
 }
 
 .yCoord {
@@ -108,7 +128,6 @@ svg {
         drop-shadow(-1px -1px 0px #111);
 }
 
-:host { display:inline-block; }
 
 .single-piece {
     position: absolute;

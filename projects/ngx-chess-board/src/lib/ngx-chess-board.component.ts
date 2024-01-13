@@ -1,6 +1,7 @@
 import { CdkDragEnd, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
     AfterViewInit,
+    ChangeDetectorRef,
     Component,
     ElementRef,
     EventEmitter,
@@ -44,6 +45,8 @@ export class NgxChessBoardComponent
     @Input() showCoords = true;
     @Input() sourcePointColor: string = Constants.DEFAULT_SOURCE_POINT_COLOR;
     @Input() destinationPointColor: string = Constants.DEFAULT_DESTINATION_POINT_COLOR;
+    @Input() premoveSourcePointColor: string = Constants.DEFAULT_PREMOVE_SOURCE_POINT_COLOR;
+    @Input() premoveDestinationPointColor: string = Constants.DEFAULT_PREMOVE_DESTINATION_POINT_COLOR;
     @Input() legalMovesPointColor: string = Constants.DEFAULT_LEGAL_MOVE_POINT_COLOR;
     @Input() showLastMove = true;
     @Input() showLegalMoves = true;
@@ -73,7 +76,7 @@ export class NgxChessBoardComponent
 
     randomId = (Math.random() + 1).toString(36).substring(7);
 
-    constructor() {
+    constructor(public cd: ChangeDetectorRef) {
         this.engineFacade = new EngineFacade(
             new Board(),
             this.moveChange
@@ -305,8 +308,24 @@ export class NgxChessBoardComponent
             if (this.engineFacade.board.isXYInDestMove(i, j)) {
                 color = this.destinationPointColor;
             }
+
+            if (this.engineFacade.board.isXYInSourcePremove(i, j)) {
+                color = this.premoveSourcePointColor;
+            }
+
+            if (this.engineFacade.board.isXYInDestPremove(i, j)) {
+                color = this.premoveDestinationPointColor;
+            }
         }
 
         return color;
+    }
+
+    public trackByRow(_: number, numbers: number[]): string {
+        return numbers.toString();
+    }
+
+    public trackByCol(_: number, number: number): number {
+        return number;
     }
 }

@@ -13,4 +13,5 @@ export abstract class PieceAbstractDecorator implements AbstractPiece {
 
     abstract getPossibleMoves(): Point[];
 
+    abstract getAllMoves(): Point[];
 }

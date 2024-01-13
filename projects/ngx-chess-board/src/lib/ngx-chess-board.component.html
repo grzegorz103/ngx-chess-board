@@ -32,12 +32,15 @@
             <div
                 class="board-col"
                 [class.current-selection]="showActivePiece && engineFacade.board.isXYInActiveMove(i,j)"
+                [class.premove-current-selection]="showActivePiece && engineFacade.board.isXYInActivePremove(i,j)"
                 [class.king-check]=" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))"
                 [class.point-circle]="engineFacade.board.isXYInPointSelection(i, j)"
                 [class.possible-capture]="showPossibleCaptures && engineFacade.board.isXYInPossibleCaptures(i, j)"
                 [class.possible-point]="engineFacade.board.isXYInPossibleMoves(i, j) && showLegalMoves"
+                [class.premove-possible-capture]="showPossibleCaptures && engineFacade.board.isXYInPremovePossibleCaptures(i, j)"
+                [class.premove-possible-point]="engineFacade.board.isXYInPremovePossibleMoves(i, j) && showLegalMoves"
                 [style.background-color]="getTileBackgroundColor(i, j)"
-                *ngFor="let col of row; let j = index"
+                *ngFor="let col of row; let j = index; trackBy: trackByCol"
             >
                 <span
                     class="yCoord"

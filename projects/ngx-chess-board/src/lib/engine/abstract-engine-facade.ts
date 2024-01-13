@@ -20,7 +20,6 @@ import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
 import { AbstractPgnProcessor } from './pgn/abstract-pgn-processor';
 
 export abstract class AbstractEngineFacade {
-
     public dragStartStrategy: DragStartStrategy = new DragStartStrategy();
     public dragEndStrategy: DragEndStrategy = new DragEndStrategy();
     public pgnProcessor: AbstractPgnProcessor = new DefaultPgnProcessor();
@@ -38,10 +37,11 @@ export abstract class AbstractEngineFacade {
     public modal: PiecePromotionModalComponent;
     public boardLoader: BoardLoader;
     public drawProvider: DrawProvider = new DrawProvider();
-    public pieceIconManager: PieceIconInputManager = new PieceIconInputManager();
-    public moveHistoryProvider: HistoryMoveProvider = new HistoryMoveProvider();
+    public pieceIconManager = new PieceIconInputManager();
+    public moveHistoryProvider = new HistoryMoveProvider();
     public moveDone: boolean;
     public disabling = false;
+    public premoveDisabling = false;
 
     protected constructor(board: Board) {
         this.board = board;
@@ -66,6 +66,11 @@ export abstract class AbstractEngineFacade {
         top: number
     ): void;
 
+    clearPremove() {
+        this.board.premoveSrc = null;
+        this.board.premoveDest = null;
+    }
+
     public abstract onMouseDown(
         event: MouseEvent,
         pointClicked: Point,
@@ -73,10 +78,15 @@ export abstract class AbstractEngineFacade {
         top?: number
     ): void;
 
-    public abstract onContextMenu(
-        event: MouseEvent,
+    public abstract movePiece(
+        toMovePiece: Piece,
+        newPoint: Point,
+        promotionLetter?: string
     ): void;
 
+    public abstract onContextMenu(event: MouseEvent): void;
+
+    public abstract saveClone(): void;
     public checkIfPawnFirstMove(piece: Piece) {
         if (piece instanceof Pawn) {
             piece.isMovedAlready = true;
@@ -99,4 +109,5 @@ export abstract class AbstractEngineFacade {
         return this.moveHistoryProvider.getAll();
     }
 
+    public abstract applyPremove(): void;
 }

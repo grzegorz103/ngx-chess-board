@@ -17,18 +17,18 @@ export class PiecePromotionModalComponent {
     color = 'white';
 
     opened = false;
-    private onCloseCallback: (index: number) => void;
+    private onCloseCallback: (letter: string) => void;
 
-    open(closeCallback: (index: number) => void) {
+    open(closeCallback: (letter: string) => void) {
         this.opened = true;
         this.onCloseCallback = closeCallback;
         this.modal.nativeElement.style.display = 'block';
     }
 
-    changeSelection(index: number){
+    changeSelection(letter: string) {
         this.modal.nativeElement.style.display = 'none';
         this.opened = false;
-        this.onCloseCallback(index);
+        this.onCloseCallback(letter);
     }
 
     getPieceIcon(piece: string): string {

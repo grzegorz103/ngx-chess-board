@@ -8,6 +8,10 @@ export class Constants {
 
     static readonly DEFAULT_SOURCE_POINT_COLOR = 'rgba(146, 111, 26, 0.79)';
     static readonly DEFAULT_DESTINATION_POINT_COLOR = '#b28e1a';
+
+    static readonly DEFAULT_PREMOVE_SOURCE_POINT_COLOR = 'rgb(104 112 158)';
+    static readonly DEFAULT_PREMOVE_DESTINATION_POINT_COLOR = 'rgb(104 112 158)';
+
     static readonly DEFAULT_LEGAL_MOVE_POINT_COLOR = 'radial-gradient(#13262F 15%, transparent 20%);';
 
 }

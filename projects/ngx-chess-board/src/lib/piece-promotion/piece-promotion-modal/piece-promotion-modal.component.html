@@ -2,24 +2,24 @@
     <div class="wrapper">
         <div class="content">
             <div class="piece-wrapper" *ngIf="pieceIconInput">
-                <div class="piece" (click)="changeSelection(1)">
+                <div class="piece" (click)="changeSelection('q')">
                     <img [src]="getPieceIcon('queen')" alt="Queen">
                 </div>
-                <div class="piece" (click)="changeSelection(2)">
+                <div class="piece" (click)="changeSelection('r')">
                     <img [src]="getPieceIcon('rook')" alt="Rook">
                 </div>
-                <div class="piece" (click)="changeSelection(3)">
+                <div class="piece" (click)="changeSelection('b')">
                     <img [src]="getPieceIcon('bishop')" alt="Bishop">
                 </div>
-                <div class="piece" (click)="changeSelection(4)">
+                <div class="piece" (click)="changeSelection('n')">
                     <img [src]="getPieceIcon('knight')" alt="Knight">
                 </div>
             </div>
             <div class="piece-wrapper" *ngIf="!pieceIconInput">
-                <div class="piece" (click)="changeSelection(1)">&#x265B;</div>
-                <div class="piece" (click)="changeSelection(2)">&#x265C;</div>
-                <div class="piece" (click)="changeSelection(3)">&#x265D;</div>
-                <div class="piece" (click)="changeSelection(4)">&#x265E;</div>
+                <div class="piece" (click)="changeSelection('q')">&#x265B;</div>
+                <div class="piece" (click)="changeSelection('r')">&#x265C;</div>
+                <div class="piece" (click)="changeSelection('b')">&#x265D;</div>
+                <div class="piece" (click)="changeSelection('k')">&#x265E;</div>
             </div>
         </div>
     </div>

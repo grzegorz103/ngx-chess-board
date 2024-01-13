@@ -10,11 +10,20 @@ export class AvailableMoveDecorator extends PieceAbstractDecorator {
     private color: Color;
     private board: Board;
 
-    constructor(piece: AbstractPiece, pointClicked: Point, color: Color, board: Board) {
+    constructor(
+        piece: AbstractPiece,
+        pointClicked: Point,
+        color: Color,
+        board: Board
+    ) {
         super(piece);
         this.pointClicked = pointClicked;
         this.color = color;
         this.board = board;
+    }
+
+    getAllMoves() {
+        return this.piece.getAllMoves();
     }
 
     getPossibleCaptures(): Point[] {
