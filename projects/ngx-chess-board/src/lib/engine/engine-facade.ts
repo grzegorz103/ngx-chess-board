@@ -124,6 +124,7 @@ export class EngineFacade extends AbstractEngineFacade {
                 this.movePiece(
                     srcPiece,
                     new Point(destIndexes.yAxis, destIndexes.xAxis),
+                    false,
                     coords.length === 5 ? coords.substring(4, 5).toLowerCase() : null
                 );
 
@@ -220,7 +221,7 @@ export class EngineFacade extends AbstractEngineFacade {
                 this.board.activePiece.point.col
             );
             this.board.lastMoveDest = pointClicked.clone();
-            this.movePiece(this.board.activePiece, pointClicked);
+            this.movePiece(this.board.activePiece, pointClicked, false);
 
             if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
                 moving = true;
@@ -428,7 +429,7 @@ export class EngineFacade extends AbstractEngineFacade {
         this.boardStateProvider.addMove(new BoardState(clone));
     }
 
-    movePiece(toMovePiece: Piece, newPoint: Point, promotionLetter?: string) {
+    movePiece(toMovePiece: Piece, newPoint: Point, premove: boolean, promotionLetter?: string) {
         const destPiece = this.board.pieces.find(
             (piece) =>
                 piece.point.col === newPoint.col &&
@@ -456,7 +457,8 @@ export class EngineFacade extends AbstractEngineFacade {
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
             toMovePiece.constant.name,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
-            !!destPiece
+            !!destPiece,
+            premove
         );
         this.moveHistoryProvider.addMove(this.historyMoveCandidate);
 
@@ -778,7 +780,7 @@ export class EngineFacade extends AbstractEngineFacade {
             this.board.isPointInPossibleCaptures(this.board.premoveDest)
         ) {
             this.saveClone();
-            this.movePiece(piece, this.board.premoveDest, 'q');
+            this.movePiece(piece, this.board.premoveDest, true, 'q');
             if(this.moveDone) {
                 this.board.lastMoveSrc = this.board.premoveSrc.clone();
                 this.board.lastMoveDest = this.board.premoveDest.clone();

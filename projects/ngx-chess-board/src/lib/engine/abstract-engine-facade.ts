@@ -81,6 +81,7 @@ export abstract class AbstractEngineFacade {
     public abstract movePiece(
         toMovePiece: Piece,
         newPoint: Point,
+        premove: boolean,
         promotionLetter?: string
     ): void;
 

@@ -6,7 +6,7 @@ export interface MoveChange {
     color: string;
     x: boolean;
     mate: boolean;
-
+    premove: boolean;
     check: boolean;
     stalemate: boolean;
     checkmate: boolean;
