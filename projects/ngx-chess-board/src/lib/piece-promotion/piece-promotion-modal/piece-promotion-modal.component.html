@@ -1,5 +1,5 @@
 <div #myModal class="container">
-    <div class="wrapper">
+    <div class="wrapper" (click)="close()">
         <div class="content">
             <div class="piece-wrapper" *ngIf="pieceIconInput">
                 <div class="piece" (click)="changeSelection('q')">

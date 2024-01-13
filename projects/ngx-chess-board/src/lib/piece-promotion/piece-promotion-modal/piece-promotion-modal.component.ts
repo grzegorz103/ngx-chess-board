@@ -25,10 +25,16 @@ export class PiecePromotionModalComponent {
         this.modal.nativeElement.style.display = 'block';
     }
 
+    close(): void {
+        this.changeSelection(undefined);
+    }
+
     changeSelection(letter: string) {
-        this.modal.nativeElement.style.display = 'none';
-        this.opened = false;
-        this.onCloseCallback(letter);
+        if (this.opened) {
+            this.modal.nativeElement.style.display = 'none';
+            this.onCloseCallback(letter);
+            this.opened = false;
+        }
     }
 
     getPieceIcon(piece: string): string {
