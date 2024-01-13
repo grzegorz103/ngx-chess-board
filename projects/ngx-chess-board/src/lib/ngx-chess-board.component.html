@@ -75,7 +75,7 @@
     <svg
         [attr.height]="engineFacade.heightAndWidth"
         [attr.width]="engineFacade.heightAndWidth"
-        style="position:absolute; top:0; pointer-events: none"
+        style="position:absolute; top:0; pointer-events: none; z-index: 100"
     >
         <defs *ngFor="let color of ['red', 'green', 'blue', 'orange']">
             <marker

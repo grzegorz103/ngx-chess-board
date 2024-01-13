@@ -5,7 +5,7 @@ export class AnimationDragStartProcessor implements DragStartProcessor {
 
     dragStarted(event: CdkDragStart) {
         const style = event.source.getRootElement().style;
-        style.zIndex = '1000';
+        style.zIndex = '99';
         style.position = 'absolute';
     }
 
