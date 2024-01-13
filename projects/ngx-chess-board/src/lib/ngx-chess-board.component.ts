@@ -173,6 +173,10 @@ export class NgxChessBoardComponent
         this.engineFacade.board = board;
         this.engineFacade.board.possibleCaptures = [];
         this.engineFacade.board.possibleMoves = [];
+
+        this.engineFacade.board.premovePossibleCaptures = [];
+        this.engineFacade.board.premovePossibleMoves = [];
+
         this.boardLoader = new BoardLoader(this.engineFacade);
         this.boardLoader.setEngineFacade(this.engineFacade);
     };
@@ -185,6 +189,8 @@ export class NgxChessBoardComponent
             this.engineFacade.boardLoader.loadFEN(fen);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.board.premovePossibleCaptures = [];
+            this.engineFacade.board.premovePossibleMoves = [];
             this.engineFacade.coords.reset();
         } catch (exception) {
             this.engineFacade.boardLoader.addPieces();

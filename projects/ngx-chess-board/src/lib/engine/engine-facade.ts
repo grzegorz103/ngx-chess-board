@@ -64,7 +64,10 @@ export class EngineFacade extends AbstractEngineFacade {
             this.board = lastBoard;
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
+            this.board.premovePossibleCaptures = [];
+            this.board.premovePossibleMoves = [];
             this.board.activePiece = null;
+            this.board.premoveActivePiece = null;
             this.moveHistoryProvider.pop();
             this.board.calculateFEN();
             this.pgnProcessor.removeLast();
