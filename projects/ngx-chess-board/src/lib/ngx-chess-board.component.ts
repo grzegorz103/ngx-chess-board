@@ -71,6 +71,8 @@ export class NgxChessBoardComponent
 
     engineFacade: AbstractEngineFacade;
 
+    randomId = (Math.random() + 1).toString(36).substring(7);
+
     constructor() {
         this.engineFacade = new EngineFacade(
             new Board(),

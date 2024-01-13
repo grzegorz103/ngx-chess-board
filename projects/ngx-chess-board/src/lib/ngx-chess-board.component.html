@@ -76,7 +76,7 @@
     >
         <defs *ngFor="let color of ['red', 'green', 'blue', 'orange']">
             <marker
-                [id]="color + 'Arrow'"
+                [id]="randomId + color + 'Arrow'"
                 markerHeight="13"
                 markerWidth="13"
                 orient="auto"
@@ -91,7 +91,7 @@
         </defs>
         <line
             class="arrow"
-            [attr.marker-end]="'url(#' + arrow.end.color + 'Arrow)'"
+            [attr.marker-end]="'url(#' + randomId + arrow.end.color + 'Arrow)'"
             [attr.stroke]="arrow.end.color"
             [attr.x1]="arrow.start.x"
             [attr.x2]="arrow.end.x"
