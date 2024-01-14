@@ -15,4 +15,5 @@ export interface MoveChange {
     fen: string;
     pgn: PgnOutput;
     freeMode: boolean;
+    insufficientMaterial: boolean,
 }

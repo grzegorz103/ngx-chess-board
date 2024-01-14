@@ -572,9 +572,9 @@ export class EngineFacade extends AbstractEngineFacade {
             pgn: {
                 pgn: this.pgnProcessor.getPGN()
             },
-            freeMode: this.freeMode
+            freeMode: this.freeMode,
+            insufficientMaterial: this.checkInSufficientMaterial(),
         });
-
     }
 
     checkForPat(color: Color) {

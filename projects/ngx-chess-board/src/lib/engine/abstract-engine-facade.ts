@@ -18,6 +18,8 @@ import { ColorStrategy } from './drawing-tools/colors/color-strategy';
 import { DrawProvider } from './drawing-tools/draw-provider';
 import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
 import { AbstractPgnProcessor } from './pgn/abstract-pgn-processor';
+import { Bishop } from '../models/pieces/bishop';
+import { Knight } from '../models/pieces/knight';
 
 export abstract class AbstractEngineFacade {
     public dragStartStrategy: DragStartStrategy = new DragStartStrategy();
@@ -91,6 +93,33 @@ export abstract class AbstractEngineFacade {
         if (piece instanceof Pawn) {
             piece.isMovedAlready = true;
         }
+    }
+
+    public checkInSufficientMaterial(): boolean {
+        const piecesLength = this.board.pieces.length;
+        const bishops = this.board.pieces.filter(
+            (piece) => piece instanceof Bishop
+        );
+        const knights = this.board.pieces.filter(
+            (piece) => piece instanceof Knight
+        );
+
+        const hasBishop = bishops.length > 0;
+        const hasKnight = knights.length > 0;
+
+        if (piecesLength === 2) {
+            return true;
+        }
+
+        if (piecesLength === 3 && (hasBishop || hasKnight)) {
+            return true;
+        }
+
+        if (piecesLength === bishops.length + 2) {
+            return true;
+        }
+
+        return false;
     }
 
     public checkIfRookMoved(piece: Piece) {
