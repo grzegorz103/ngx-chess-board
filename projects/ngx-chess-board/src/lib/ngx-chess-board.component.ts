@@ -31,6 +31,7 @@ import { Constants } from './utils/constants';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
+import { Color } from './models/pieces/color';
 
 @Component({
     selector: 'ngx-chess-board',
@@ -43,7 +44,8 @@ export class NgxChessBoardComponent
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
     @Input() showCoords = true;
-    @Input() disableDragOpponentPieces = false;
+    @Input() dragWhiteDisabled: boolean = false;
+    @Input() dragBlackDisabled: boolean = false;
     @Input() sourcePointColor: string = Constants.DEFAULT_SOURCE_POINT_COLOR;
     @Input() destinationPointColor: string = Constants.DEFAULT_DESTINATION_POINT_COLOR;
     @Input() premoveSourcePointColor: string = Constants.DEFAULT_PREMOVE_SOURCE_POINT_COLOR;
@@ -65,7 +67,7 @@ export class NgxChessBoardComponent
     boardRef: ElementRef;
     @ViewChild('modal')
     modal: PiecePromotionModalComponent;
-
+    Color = Color;
     pieceSize: number;
     selected = false;
     boardLoader: BoardLoader;

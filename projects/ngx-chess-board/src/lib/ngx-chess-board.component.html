@@ -9,7 +9,7 @@
 >
     <div id="drag">
         <div
-            [cdkDragDisabled]="engineFacade.dragDisabled || (disableDragOpponentPieces && piece.color !== engineFacade.board.getCurrentPlayerColor())"
+            [cdkDragDisabled]="engineFacade.dragDisabled || (dragWhiteDisabled && piece.color === Color.WHITE) || (dragBlackDisabled && piece.color === Color.BLACK)"
             (cdkDragEnded)="dragEnded($event, piece)"
             (cdkDragMoved)="dragMoved($event)"
             (cdkDragStarted)="dragStart($event)"
