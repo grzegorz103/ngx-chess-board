@@ -217,11 +217,11 @@ export class NgxChessBoardComponent
         return this.engineFacade.board.fen;
     }
 
-    dragEnded(event: CdkDragEnd): void {
+    dragEnded(event: CdkDragEnd, piece: Piece): void {
         this.isDragging = false;
         this.engineFacade.dragEndStrategy.process(
             event,
-            this.engineFacade.moveDone,
+            piece === this.engineFacade.moveHistoryProvider.getLastMove()?.piece,
             this.startTransition
         );
     }
@@ -229,7 +229,6 @@ export class NgxChessBoardComponent
     dragStart(event: CdkDragStart): void {
         this.isDragging = true;
         let trans = event.source.getRootElement().style.transform.split(') ');
-        //   this.startTrans= trans;
         this.startTransition = trans.length === 2 ? trans[1] : trans[0];
         this.engineFacade.dragStartStrategy.process(event);
     }

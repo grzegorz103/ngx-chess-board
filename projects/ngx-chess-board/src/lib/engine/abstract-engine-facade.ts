@@ -39,7 +39,6 @@ export abstract class AbstractEngineFacade {
     public drawProvider: DrawProvider = new DrawProvider();
     public pieceIconManager = new PieceIconInputManager();
     public moveHistoryProvider = new HistoryMoveProvider();
-    public moveDone: boolean;
     public disabling = false;
     public premoveDisabling = false;
 

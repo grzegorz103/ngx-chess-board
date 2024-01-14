@@ -2,7 +2,7 @@
     id="board"
     [style.height.px]="engineFacade.heightAndWidth"
     [style.width.px]="engineFacade.heightAndWidth"
-    (contextmenu)="!modal.opened && onContextMenu($event)"
+    (contextmenu)="onContextMenu($event)"
     (pointerdown)="!modal.opened && onMouseDown($event)"
     (pointerup)="!modal.opened && onMouseUp($event)"
     #boardRef
@@ -10,7 +10,7 @@
     <div id="drag">
         <div
             [cdkDragDisabled]="engineFacade.dragDisabled"
-            (cdkDragEnded)="dragEnded($event)"
+            (cdkDragEnded)="dragEnded($event, piece)"
             (cdkDragMoved)="dragMoved($event)"
             (cdkDragStarted)="dragStart($event)"
             class="single-piece" [innerHTML]="engineFacade.pieceIconManager.isDefaultIcons() ? piece.constant.icon : ''"

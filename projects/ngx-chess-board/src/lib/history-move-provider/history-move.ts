@@ -1,6 +1,8 @@
+import { Piece } from "../models/pieces/piece";
+
 export class HistoryMove {
     move: string;
-    piece: string;
+    piece: Piece;
     color: string;
     x: boolean;
     check: boolean;
@@ -8,7 +10,7 @@ export class HistoryMove {
     premove: boolean;
     mate: boolean;
 
-    constructor(move: string, piece: string, color: string, captured: boolean, premove: boolean) {
+    constructor(move: string, piece: Piece, color: string, captured: boolean, premove: boolean) {
         this.move = move;
         this.piece = piece;
         this.color = color;

@@ -1,8 +1,9 @@
+import { Piece } from '../../../models/pieces/piece';
 import { PgnOutput } from './pgn-output';
 
 export interface MoveChange {
     move: string;
-    piece: string;
+    piece: Piece;
     color: string;
     x: boolean;
     mate: boolean;

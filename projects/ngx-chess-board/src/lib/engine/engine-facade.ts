@@ -265,7 +265,6 @@ export class EngineFacade extends AbstractEngineFacade {
         left?: number,
         top?: number
     ) {
-        this.moveDone = false;
         if (event.button !== 0) {
             this.drawPoint = ClickUtils.getDrawingPoint(
                 this.heightAndWidth,
@@ -343,7 +342,6 @@ export class EngineFacade extends AbstractEngineFacade {
         left: number,
         top: number
     ) {
-        this.moveDone = false;
         if (event.button !== 0) {
             if (!this.drawDisabled && this.drawPoint) {
                 this.addDrawPoint(
@@ -458,7 +456,7 @@ export class EngineFacade extends AbstractEngineFacade {
 
         this.historyMoveCandidate = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
-            toMovePiece.constant.name,
+            toMovePiece,
             toMovePiece.color === Color.WHITE ? 'white' : 'black',
             !!destPiece,
             premove
@@ -577,7 +575,6 @@ export class EngineFacade extends AbstractEngineFacade {
             freeMode: this.freeMode
         });
 
-        this.moveDone = true;
     }
 
     checkForPat(color: Color) {
@@ -788,7 +785,7 @@ export class EngineFacade extends AbstractEngineFacade {
         ) {
             this.saveClone();
             this.movePiece(piece, this.board.premoveDest, true, 'q');
-            if(this.moveDone) {
+            if (piece === this.moveHistoryProvider.getLastMove()?.piece) {
                 this.board.lastMoveSrc = this.board.premoveSrc.clone();
                 this.board.lastMoveDest = this.board.premoveDest.clone();
             }
