@@ -457,7 +457,7 @@ export class EngineFacade extends AbstractEngineFacade {
         this.historyMoveCandidate = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
             toMovePiece,
-            toMovePiece.color === Color.WHITE ? 'white' : 'black',
+            toMovePiece.color,
             !!destPiece,
             premove
         );

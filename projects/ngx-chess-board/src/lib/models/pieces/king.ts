@@ -9,7 +9,7 @@ export class King extends Piece {
     castledAlready = false;
     shortCastled = false;
     longCastled = false;
-    isMovedAlready;
+    isMovedAlready = false;
     isCastling = false;
 
     constructor(

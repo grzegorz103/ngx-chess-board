@@ -70,6 +70,7 @@ export class NgxChessBoardComponent
     boardLoader: BoardLoader;
     pieceIconManager: PieceIconInputManager;
     isDragging = false;
+    dragStartHistoryLength: number
     startTransition = '';
 
     engineFacade: AbstractEngineFacade;
@@ -219,15 +220,20 @@ export class NgxChessBoardComponent
 
     dragEnded(event: CdkDragEnd, piece: Piece): void {
         this.isDragging = false;
+
+        const lastMove = this.engineFacade.moveHistoryProvider.getLastMove();
+        const length = this.engineFacade.getMoveHistory().length;
+
         this.engineFacade.dragEndStrategy.process(
             event,
-            piece === this.engineFacade.moveHistoryProvider.getLastMove()?.piece,
+            piece === lastMove?.piece && length !== this.dragStartHistoryLength,
             this.startTransition
         );
     }
 
     dragStart(event: CdkDragStart): void {
         this.isDragging = true;
+        this.dragStartHistoryLength = this.engineFacade.getMoveHistory().length
         let trans = event.source.getRootElement().style.transform.split(') ');
         this.startTransition = trans.length === 2 ? trans[1] : trans[0];
         this.engineFacade.dragStartStrategy.process(event);
