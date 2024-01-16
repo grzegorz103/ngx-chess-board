@@ -1,4 +1,5 @@
 import { cloneDeep } from 'lodash';
+import { BehaviorSubject } from 'rxjs';
 import { Bishop } from './pieces/bishop';
 import { Color } from './pieces/color';
 import { King } from './pieces/king';
@@ -11,7 +12,16 @@ import { Rook } from './pieces/rook';
 
 export class Board {
     board: number[][] = [];
-    pieces: Piece[] = [];
+    piecesSubject$ = new BehaviorSubject<Piece[]>([]);
+    pieces$ = this.piecesSubject$.asObservable();
+
+    get pieces(): Piece[] {
+        return this.piecesSubject$.value;
+    }
+
+    set pieces(pieces: Piece[]) {
+        this.piecesSubject$.next(pieces);
+    }
 
     enPassantPoint: Point = null;
     enPassantPiece: Piece = null;
