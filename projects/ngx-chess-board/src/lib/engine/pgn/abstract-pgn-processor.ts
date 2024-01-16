@@ -18,7 +18,7 @@ export abstract class AbstractPgnProcessor {
         return this.pgn.join(' ');
     }
 
-    protected getLast() {
+    getLast() {
         return this.pgn[this.pgn.length - 1];
     }
 

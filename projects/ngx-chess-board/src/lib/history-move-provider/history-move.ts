@@ -9,7 +9,7 @@ export class HistoryMove {
     check: boolean;
     stalemate: boolean;
     premove: boolean;
-    mate: boolean;
+    checkmate: boolean;
 
     constructor(move: string, piece: Piece, color: Color, captured: boolean, premove: boolean) {
         this.move = move;
@@ -19,10 +19,10 @@ export class HistoryMove {
         this.premove = premove
     }
 
-    setGameStates(check: boolean, stalemate: boolean, mate: boolean): void {
+    setGameStates(check: boolean, stalemate: boolean, checkmate: boolean): void {
         this.check = check;
         this.stalemate = stalemate;
-        this.mate = mate;
+        this.checkmate = checkmate;
     }
 
 }

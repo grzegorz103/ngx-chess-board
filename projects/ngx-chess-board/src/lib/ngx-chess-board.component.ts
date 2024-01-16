@@ -210,6 +210,8 @@ export class NgxChessBoardComponent
             this.engineFacade.boardLoader.loadPGN(pgn);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.board.premovePossibleCaptures = [];
+            this.engineFacade.board.premovePossibleMoves = [];
             this.engineFacade.coords.reset();
         } catch (exception) {
             console.log(exception);

@@ -12,8 +12,8 @@ export * from './lib/piece-promotion/piece-promotion-modal/piece-promotion-modal
 
 export * from './lib/ngx-chess-board-view';
 export * from './lib/models/board';
-export * from './lib/models/pieces/color';
-export * from './lib/engine/outputs/move-change/move-change'
+export * from './lib/models/pieces';
+export * from './lib/engine/outputs/move-change/move-change';
 
 /*
  * Public API Surface of im-grid
