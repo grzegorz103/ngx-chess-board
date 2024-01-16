@@ -172,17 +172,28 @@ export class EngineFacade extends AbstractEngineFacade {
 
     preparePremoveActivePiece(pieceClicked: Piece, pointClicked: Point) {
         this.board.premoveActivePiece = pieceClicked;
-        const decorator = new AvailableMoveDecorator(
-            pieceClicked,
-            pointClicked,
-            this.board.currentWhitePlayer ? Color.BLACK : Color.WHITE,
-            this.board
-        );
+        
+        const lastMove = this.moveHistoryProvider.getLastMove();
+        const gameOver = lastMove?.stalemate || lastMove?.checkmate;
 
-        const moves = decorator.getAllMoves();
-        this.board.premovePossibleMoves = moves;
-        this.board.premovePossibleCaptures = moves
-            .filter((move) => !this.board.isFieldEmpty(move.row, move.col))
+        if (gameOver) {
+            this.board.premovePossibleMoves = [];
+            this.board.premovePossibleCaptures = [];
+        } else {
+            const decorator = new AvailableMoveDecorator(
+                pieceClicked,
+                pointClicked,
+                this.board.currentWhitePlayer ? Color.BLACK : Color.WHITE,
+                this.board
+            );
+
+            const moves = decorator.getAllMoves();
+
+            this.board.premovePossibleMoves = moves;
+            this.board.premovePossibleCaptures = moves.filter(
+                (move) => !this.board.isFieldEmpty(move.row, move.col)
+            );
+        }
   }
 
     onPieceClicked(pieceClicked: Piece, pointClicked: Point) {
@@ -394,9 +405,8 @@ export class EngineFacade extends AbstractEngineFacade {
         }
 
         if (
-            [...this.board.possibleMoves, ...this.board.possibleCaptures].some(
-                (point) => point.isEqual(pointClicked)
-            )
+            this.board.isPointInPossibleMoves(pointClicked) ||
+            this.board.isPointInPossibleCaptures(pointClicked)
         ) {
             this.handleClickEvent(pointClicked, false);
         } else if (
@@ -407,10 +417,8 @@ export class EngineFacade extends AbstractEngineFacade {
         }
 
         if (
-            [
-                ...this.board.premovePossibleMoves,
-                ...this.board.premovePossibleCaptures,
-            ].some((point) => point.isEqual(pointClicked))
+            this.board.isPointInPremovePossibleMoves(pointClicked) ||
+            this.board.isPointInPremovePossibleCaptures(pointClicked)
         ) {
             this.handlePremoveClickEvent(pointClicked, false);
         } else if (
@@ -545,11 +553,13 @@ export class EngineFacade extends AbstractEngineFacade {
         );
         const check =
             this.board.blackKingChecked || this.board.whiteKingChecked;
-        const checkmate =
-            this.checkForPossibleMoves(Color.BLACK) ||
-            this.checkForPossibleMoves(Color.WHITE);
-        const stalemate =
-            this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+
+        const checkmate = this.board.currentWhitePlayer
+            ? this.checkForCheckmate(Color.WHITE) 
+            : this.checkForCheckmate(Color.BLACK);
+        const stalemate = this.board.currentWhitePlayer
+            ? this.checkForPat(Color.WHITE) 
+            : this.checkForPat(Color.BLACK);
 
         this.historyMoveCandidate.setGameStates(check, stalemate, checkmate);
         this.pgnProcessor.processChecks(checkmate, check, stalemate);
@@ -566,24 +576,31 @@ export class EngineFacade extends AbstractEngineFacade {
         this.moveChange.emit({
             ...lastMove,
             check,
-            checkmate,
-            stalemate,
             fen: this.board.fen,
-            pgn: {
-                pgn: this.pgnProcessor.getPGN()
-            },
+            pgn: this.pgnProcessor.getPGN(),
             freeMode: this.freeMode,
             insufficientMaterial: this.checkInSufficientMaterial(),
+            notation: this.pgnProcessor.getLast()
         });
     }
 
     checkForPat(color: Color) {
-        if (color === Color.WHITE && !this.board.whiteKingChecked) {
-            return this.checkForPossibleMoves(color);
-        } else {
-            if (color === Color.BLACK && !this.board.blackKingChecked) {
-                return this.checkForPossibleMoves(color);
-            }
+        if (color === Color.WHITE) {
+            return this.hasPossibleMoves(color) && !this.board.whiteKingChecked;
+        }
+
+        if (color === Color.BLACK) {
+            return this.hasPossibleMoves(color) && !this.board.blackKingChecked;
+        }
+    }
+
+    checkForCheckmate(color: Color) {
+        if (color === Color.WHITE) {
+            return this.hasPossibleMoves(color) && this.board.whiteKingChecked;
+        }
+
+        if (color === Color.BLACK) {
+            return this.hasPossibleMoves(color) && this.board.blackKingChecked;
         }
     }
 
@@ -604,7 +621,7 @@ export class EngineFacade extends AbstractEngineFacade {
         }
     }
 
-    checkForPossibleMoves(color: Color): boolean {
+    hasPossibleMoves(color: Color): boolean {
         return !this.board.pieces
             .filter((piece) => piece.color === color)
             .some(

@@ -29,7 +29,7 @@ export class DefaultPgnProcessor implements NotationProcessor {
                 let promotionIndex = '';
 
                 if (move.includes('=')) {
-                    promotionIndex = this.resolvePromotion(move.substring(move.length - 1));
+                    promotionIndex = move.substring(move.length - 1);
                     move = move.substring(0, move.length - 2);
                 }
 
@@ -328,25 +328,4 @@ export class DefaultPgnProcessor implements NotationProcessor {
             : pieces[1];
     }
 
-    private replacePromotion(move: string) {
-        return move
-            .replace('=Q', '1')
-            .replace('=R', '2')
-            .replace('=B', '3')
-            .replace('=K', '4');
-    }
-
-    private resolvePromotion(promotionChar: string) {
-        switch (promotionChar) {
-            case 'Q':
-                return '1';
-            case 'R':
-                return '2';
-            case 'B':
-                return '3';
-            case 'N':
-                return '4';
-        }
-        return '';
-    }
 }

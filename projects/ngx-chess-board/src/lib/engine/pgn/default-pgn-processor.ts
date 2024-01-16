@@ -27,13 +27,15 @@ export class DefaultPgnProcessor extends AbstractPgnProcessor {
                 MoveUtils.formatSingle(destPoint, board.reverted),
                 board,
                 sourcePiece.color
-            ).filter(piece => piece.constructor.name === sourcePiece.constructor.name);
+            ).filter(
+                (piece) => piece.constant.name === sourcePiece.constant.name
+            );
         }
         possibleMoves = MoveUtils.findPieceByPossibleMovesContaining(
             MoveUtils.formatSingle(destPoint, board.reverted),
             board,
             sourcePiece.color
-        ).filter(piece => piece.constructor.name === sourcePiece.constructor.name);
+        ).filter((piece) => piece.constant.name === sourcePiece.constant.name);
 
         if (sourcePiece instanceof Pawn && !destPiece && possibleCaptures.length === 0) {
             currentMove += MoveUtils.formatSingle(destPoint, board.reverted);
