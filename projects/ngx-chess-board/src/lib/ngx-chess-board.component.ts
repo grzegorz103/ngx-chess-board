@@ -102,6 +102,11 @@ export class NgxChessBoardComponent
         this.calculatePieceSize();
     }
 
+    @Input('premoveEnabled')
+    public set premoveEnabled(premoveEnabled: boolean) {
+        this.engineFacade.premoveEnabled = premoveEnabled;
+    }
+
     @Input('freeMode')
     public set freeMode(freeMode: boolean) {
         this.engineFacade.freeMode = freeMode;

@@ -171,6 +171,9 @@ export class EngineFacade extends AbstractEngineFacade {
     }
 
     preparePremoveActivePiece(pieceClicked: Piece, pointClicked: Point) {
+        if(this.premoveEnabled !== true) {
+            return;
+        }
         this.board.premoveActivePiece = pieceClicked;
         
         const lastMove = this.moveHistoryProvider.getLastMove();

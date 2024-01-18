@@ -43,6 +43,7 @@ export abstract class AbstractEngineFacade {
     public moveHistoryProvider = new HistoryMoveProvider();
     public disabling = false;
     public premoveDisabling = false;
+    public premoveEnabled = true;
 
     protected constructor(board: Board) {
         this.board = board;
