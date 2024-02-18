@@ -18,7 +18,7 @@ export abstract class AbstractPgnProcessor {
         return this.pgn.join(' ');
     }
 
-    protected getLast() {
+    getLast() {
         return this.pgn[this.pgn.length - 1];
     }
 
@@ -41,18 +41,18 @@ export abstract class AbstractPgnProcessor {
         this.currentIndex = 0.5;
     }
 
-    addPromotionChoice(promotion) {
+    addPromotionChoice(promotion: string) {
         switch (promotion) {
-            case 1:
+            case "q":
                 this.appendToLast('=Q');
                 break;
-            case 2:
+            case "r":
                 this.appendToLast('=R');
                 break;
-            case 3:
+            case "b":
                 this.appendToLast('=B');
                 break;
-            case 4:
+            case "n":
                 this.appendToLast('=N');
                 break;
         }

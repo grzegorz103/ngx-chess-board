@@ -18,9 +18,10 @@ import { ColorStrategy } from './drawing-tools/colors/color-strategy';
 import { DrawProvider } from './drawing-tools/draw-provider';
 import { DefaultPgnProcessor } from './pgn/default-pgn-processor';
 import { AbstractPgnProcessor } from './pgn/abstract-pgn-processor';
+import { Bishop } from '../models/pieces/bishop';
+import { Knight } from '../models/pieces/knight';
 
 export abstract class AbstractEngineFacade {
-
     public dragStartStrategy: DragStartStrategy = new DragStartStrategy();
     public dragEndStrategy: DragEndStrategy = new DragEndStrategy();
     public pgnProcessor: AbstractPgnProcessor = new DefaultPgnProcessor();
@@ -38,10 +39,11 @@ export abstract class AbstractEngineFacade {
     public modal: PiecePromotionModalComponent;
     public boardLoader: BoardLoader;
     public drawProvider: DrawProvider = new DrawProvider();
-    public pieceIconManager: PieceIconInputManager = new PieceIconInputManager();
-    public moveHistoryProvider: HistoryMoveProvider = new HistoryMoveProvider();
-    public moveDone: boolean;
+    public pieceIconManager = new PieceIconInputManager();
+    public moveHistoryProvider = new HistoryMoveProvider();
     public disabling = false;
+    public premoveDisabling = false;
+    public premoveEnabled = true;
 
     protected constructor(board: Board) {
         this.board = board;
@@ -66,6 +68,11 @@ export abstract class AbstractEngineFacade {
         top: number
     ): void;
 
+    clearPremove() {
+        this.board.premoveSrc = null;
+        this.board.premoveDest = null;
+    }
+
     public abstract onMouseDown(
         event: MouseEvent,
         pointClicked: Point,
@@ -73,14 +80,47 @@ export abstract class AbstractEngineFacade {
         top?: number
     ): void;
 
-    public abstract onContextMenu(
-        event: MouseEvent,
+    public abstract movePiece(
+        toMovePiece: Piece,
+        newPoint: Point,
+        premove: boolean,
+        promotionLetter?: string
     ): void;
 
+    public abstract onContextMenu(event: MouseEvent): void;
+
+    public abstract saveClone(): void;
     public checkIfPawnFirstMove(piece: Piece) {
         if (piece instanceof Pawn) {
             piece.isMovedAlready = true;
         }
+    }
+
+    public checkInSufficientMaterial(): boolean {
+        const piecesLength = this.board.pieces.length;
+        const bishops = this.board.pieces.filter(
+            (piece) => piece instanceof Bishop
+        );
+        const knights = this.board.pieces.filter(
+            (piece) => piece instanceof Knight
+        );
+
+        const hasBishop = bishops.length > 0;
+        const hasKnight = knights.length > 0;
+
+        if (piecesLength === 2) {
+            return true;
+        }
+
+        if (piecesLength === 3 && (hasBishop || hasKnight)) {
+            return true;
+        }
+
+        if (piecesLength === bishops.length + 2) {
+            return true;
+        }
+
+        return false;
     }
 
     public checkIfRookMoved(piece: Piece) {
@@ -99,4 +139,5 @@ export abstract class AbstractEngineFacade {
         return this.moveHistoryProvider.getAll();
     }
 
+    public abstract applyPremove(): void;
 }

@@ -16,6 +16,41 @@ export class Pawn extends Piece {
         super(point, color, constant, 1, board);
     }
 
+    getAllMoves(): Point[] {
+        const possiblePoints = [];
+        const row = this.point.row;
+        const col = this.point.col;
+        if (
+            (!this.board.reverted && this.color === Color.WHITE) ||
+            (this.board.reverted && this.color === Color.BLACK)
+        ) {
+            possiblePoints.push(new Point(row - 1, col));
+
+            if (!this.isMovedAlready) {
+                possiblePoints.push(new Point(row - 2, col));
+            }
+        } else {
+            possiblePoints.push(new Point(row + 1, col));
+
+            if (!this.isMovedAlready) {
+                possiblePoints.push(new Point(row + 2, col));
+            }
+        }
+
+        if (
+            (!this.board.reverted && this.color === Color.WHITE) ||
+            (this.board.reverted && this.color === Color.BLACK)
+        ) {
+            possiblePoints.push(new Point(row - 1, col - 1));
+            possiblePoints.push(new Point(row - 1, col + 1));
+        } else {
+            possiblePoints.push(new Point(row + 1, col - 1));
+            possiblePoints.push(new Point(row + 1, col + 1));
+        }
+
+        return possiblePoints;
+    }
+
     getPossibleMoves(): Point[] {
         const possiblePoints = [];
         const row = this.point.row;

@@ -1,4 +1,5 @@
 import { cloneDeep } from 'lodash';
+import { BehaviorSubject } from 'rxjs';
 import { Bishop } from './pieces/bishop';
 import { Color } from './pieces/color';
 import { King } from './pieces/king';
@@ -11,17 +12,35 @@ import { Rook } from './pieces/rook';
 
 export class Board {
     board: number[][] = [];
-    pieces: Piece[] = [];
+    piecesSubject$ = new BehaviorSubject<Piece[]>([]);
+    pieces$ = this.piecesSubject$.asObservable();
+
+    get pieces(): Piece[] {
+        return this.piecesSubject$.value;
+    }
+
+    set pieces(pieces: Piece[]) {
+        this.piecesSubject$.next(pieces);
+    }
 
     enPassantPoint: Point = null;
     enPassantPiece: Piece = null;
     lastMoveSrc: Point = null;
     lastMoveDest: Point = null;
+
+    premoveSrc: Point = null;
+    premoveDest: Point = null;
+
     activePiece: Piece;
+    possibleCaptures: Point[] = [];
+    possibleMoves: Point[] = [];
+
+    premoveActivePiece: Piece;
+    premovePossibleCaptures: Point[] = [];
+    premovePossibleMoves: Point[] = [];
 
     blackKingChecked: boolean;
-    possibleCaptures: any[] = [];
-    possibleMoves: Point[] = [];
+
     whiteKingChecked: boolean;
 
     currentWhitePlayer = true;
@@ -42,38 +61,96 @@ export class Board {
         return this.possibleMoves.some((move) => move.row === row && move.col === col);
     }
 
+    isXYInPremovePossibleMoves(row: number, col: number): boolean {
+        return this.premovePossibleMoves.some(
+            (move) => move.row === row && move.col === col
+        );
+    }
+
     isXYInPossibleCaptures(row: number, col: number): boolean {
         return this.possibleCaptures.some((capture) => capture.row === row && capture.col === col);
+    }
+
+    isXYInPremovePossibleCaptures(row: number, col: number): boolean {
+        return this.premovePossibleCaptures.some(
+            (capture) => capture.row === row && capture.col === col
+        );
     }
 
     isXYInSourceMove(i: number, j: number) {
         return this.lastMoveSrc && this.lastMoveSrc.row === i && this.lastMoveSrc.col === j;
     }
 
+    isXYInSourcePremove(i: number, j: number) {
+        return (
+            this.premoveSrc &&
+            this.premoveSrc.row === i &&
+            this.premoveSrc.col === j
+        );
+    }
+
     isXYInDestMove(i: number, j: number) {
         return this.lastMoveDest && this.lastMoveDest.row === i && this.lastMoveDest.col === j;
+    }
+
+    isXYInDestPremove(i: number, j: number) {
+        return (
+            this.premoveDest &&
+            this.premoveDest.row === i &&
+            this.premoveDest.col === j
+        );
     }
 
     isXYInActiveMove(i: number, j: number) {
         return this.activePiece && this.activePiece.point.row === i && this.activePiece.point.col === j;
     }
 
+    isXYInActivePremove(i: number, j: number) {
+        return (
+            this.premoveActivePiece &&
+            this.premoveActivePiece.point.row === i &&
+            this.premoveActivePiece.point.col === j
+        );
+    }
+
     isPointInPossibleMoves(point: Point): boolean {
         return this.possibleMoves.some((move) => move.row === point.row && move.col === point.col);
+    }
+
+    isPointInPremovePossibleMoves(point: Point): boolean {
+        return this.premovePossibleMoves.some(
+            (move) => move.row === point.row && move.col === point.col
+        );
     }
 
     isPointInPossibleCaptures(point: Point): boolean {
         return this.possibleCaptures.some((capture) => capture.row === point.row && capture.col === point.col);
     }
 
+    isPointInPremovePossibleCaptures(point: Point): boolean {
+        return this.premovePossibleCaptures.some(
+            (capture) => capture.row === point.row && capture.col === point.col
+        );
+    }
+
     reset() {
         this.lastMoveDest = null;
         this.lastMoveSrc = null;
+
+        this.premoveDest = null;
+        this.premoveSrc = null;
+
         this.whiteKingChecked = false;
         this.blackKingChecked = false;
         this.possibleCaptures = [];
         this.possibleMoves = [];
+
+        this.premovePossibleCaptures = [];
+        this.premovePossibleMoves = [];
+
         this.activePiece = null;
+        this.premoveActivePiece = null;
+
         this.reverted = false;
         this.currentWhitePlayer = true;
         this.enPassantPoint = null;
@@ -82,16 +159,24 @@ export class Board {
         this.calculateFEN();
     }
 
-        reverse() {
+    reverse() {
         this.reverted = !this.reverted;
         this.activePiece = null;
+        this.premoveActivePiece = null;
         this.possibleMoves = [];
         this.possibleCaptures = [];
+
+        this.premovePossibleMoves = [];
+        this.premovePossibleCaptures = [];
+
 
         this.pieces.forEach((piece: Piece) => this.reversePoint(piece.point));
 
         this.reversePoint(this.lastMoveSrc);
         this.reversePoint(this.lastMoveDest);
+
+        this.reversePoint(this.premoveSrc);
+        this.reversePoint(this.premoveDest);
 
         if (this.enPassantPoint && this.enPassantPiece) {
             this.reversePoint(this.enPassantPoint);

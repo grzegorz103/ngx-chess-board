@@ -1,16 +1,18 @@
-import { PgnOutput } from './pgn-output';
+import { Color } from '../../../models/pieces/color';
+import { Piece } from '../../../models/pieces/piece';
 
 export interface MoveChange {
     move: string;
-    piece: string;
-    color: string;
+    piece: Piece;
+    color: Color;
     x: boolean;
-    mate: boolean;
-
+    premove: boolean;
     check: boolean;
     stalemate: boolean;
     checkmate: boolean;
     fen: string;
-    pgn: PgnOutput;
+    pgn: string;
     freeMode: boolean;
+    insufficientMaterial: boolean;
+    notation: string;
 }

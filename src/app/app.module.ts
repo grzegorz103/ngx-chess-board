@@ -6,10 +6,9 @@ import { AppComponent } from './app.component';
 import { ActionsComponent } from './components/actions/actions.component';
 import { FenComponent } from './components/fen/fen.component';
 import { MovesComponent } from './components/moves/moves.component';
-import { SettingsComponent } from './components/settings/settings.component';
 
 @NgModule({
-    declarations: [AppComponent, ActionsComponent, SettingsComponent, MovesComponent, FenComponent],
+    declarations: [AppComponent, ActionsComponent, MovesComponent, FenComponent],
     imports: [BrowserModule, FormsModule, NgxChessBoardModule],
     bootstrap: [AppComponent],
 })

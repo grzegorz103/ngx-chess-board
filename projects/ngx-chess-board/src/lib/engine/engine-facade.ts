@@ -26,7 +26,6 @@ import { PieceFactory } from './utils/piece-factory';
 
 export class EngineFacade extends AbstractEngineFacade {
 
-    _selected = false;
     drawPoint: DrawPoint;
     drawProvider: DrawProvider;
     boardStateProvider: BoardStateProvider;
@@ -65,7 +64,10 @@ export class EngineFacade extends AbstractEngineFacade {
             this.board = lastBoard;
             this.board.possibleCaptures = [];
             this.board.possibleMoves = [];
+            this.board.premovePossibleCaptures = [];
+            this.board.premovePossibleMoves = [];
             this.board.activePiece = null;
+            this.board.premoveActivePiece = null;
             this.moveHistoryProvider.pop();
             this.board.calculateFEN();
             this.pgnProcessor.removeLast();
@@ -82,93 +84,146 @@ export class EngineFacade extends AbstractEngineFacade {
     }
 
     public move(coords: string) {
-        if (coords) {
-            const sourceIndexes = MoveUtils.translateCoordsToIndex(
-                coords.substring(0, 2),
-                this.board.reverted
-            );
-
-            const destIndexes = MoveUtils.translateCoordsToIndex(
-                coords.substring(2, 4),
-                this.board.reverted
-            );
-
-            const srcPiece = this.board.getPieceByPoint(
-                sourceIndexes.yAxis,
-                sourceIndexes.xAxis
-            );
-
-            if (srcPiece) {
-                if (
-                    (this.board.currentWhitePlayer &&
-                        srcPiece.color === Color.BLACK) ||
-                    (!this.board.currentWhitePlayer &&
-                        srcPiece.color === Color.WHITE)
-                ) {
-                    return;
-                }
-
-                this.prepareActivePiece(srcPiece, srcPiece.point);
-
-                if (
-                    this.board.isPointInPossibleMoves(
-                        new Point(destIndexes.yAxis, destIndexes.xAxis)
-                    ) ||
-                    this.board.isPointInPossibleCaptures(
-                        new Point(destIndexes.yAxis, destIndexes.xAxis)
-                    )
-                ) {
-                    this.saveClone();
-                    this.movePiece(
-                        srcPiece,
-                        new Point(destIndexes.yAxis, destIndexes.xAxis),
-                        coords.length === 5 ? +coords.substring(4, 5) : 0
-                    );
-
-                    this.board.lastMoveSrc = new Point(
-                        sourceIndexes.yAxis,
-                        sourceIndexes.xAxis
-                    );
-                    this.board.lastMoveDest = new Point(
-                        destIndexes.yAxis,
-                        destIndexes.xAxis
-                    );
-
-                    this.disableSelection();
-                } else {
-                    this.disableSelection();
-                }
-            }
+        if (!coords) {
+            return;
         }
 
+        const sourceIndexes = MoveUtils.translateCoordsToIndex(
+            coords.substring(0, 2),
+            this.board.reverted
+        );
+
+        const destIndexes = MoveUtils.translateCoordsToIndex(
+            coords.substring(2, 4),
+            this.board.reverted
+        );
+
+        const srcPiece = this.board.getPieceByPoint(
+            sourceIndexes.yAxis,
+            sourceIndexes.xAxis
+        );
+
+        if (srcPiece) {
+            if (
+                (this.board.currentWhitePlayer &&
+                    srcPiece.color === Color.BLACK) ||
+                (!this.board.currentWhitePlayer &&
+                    srcPiece.color === Color.WHITE)
+            ) {
+                return;
+            }
+
+            this.prepareActivePiece(srcPiece, srcPiece.point);
+
+            if (
+                this.board.isPointInPossibleMoves(
+                    new Point(destIndexes.yAxis, destIndexes.xAxis)
+                ) ||
+                this.board.isPointInPossibleCaptures(
+                    new Point(destIndexes.yAxis, destIndexes.xAxis)
+                )
+            ) {
+                this.saveClone();
+                this.movePiece(
+                    srcPiece,
+                    new Point(destIndexes.yAxis, destIndexes.xAxis),
+                    false,
+                    coords.length === 5 ? coords.substring(4, 5).toLowerCase() : null
+                );
+
+                this.board.lastMoveSrc = new Point(
+                    sourceIndexes.yAxis,
+                    sourceIndexes.xAxis
+                );
+                this.board.lastMoveDest = new Point(
+                    destIndexes.yAxis,
+                    destIndexes.xAxis
+                );
+
+                this.disableSelection();
+
+                if (this.board.premoveActivePiece) {
+                    this.prepareActivePiece(
+                        this.board.premoveActivePiece,
+                        this.board.premoveActivePiece.point
+                    );
+
+                    this.disablePremoveSelection();
+                }
+            } else {
+                this.disableSelection();
+            }
+        }
     }
 
     prepareActivePiece(pieceClicked: Piece, pointClicked: Point) {
         this.board.activePiece = pieceClicked;
-        this._selected = true;
-        this.board.possibleCaptures = new AvailableMoveDecorator(
+
+        const decorator = new AvailableMoveDecorator(
             pieceClicked,
             pointClicked,
             this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK,
             this.board
-        ).getPossibleCaptures();
-        this.board.possibleMoves = new AvailableMoveDecorator(
-            pieceClicked,
-            pointClicked,
-            this.board.currentWhitePlayer ? Color.WHITE : Color.BLACK,
-            this.board
-        ).getPossibleMoves();
+        );
+
+        this.board.possibleCaptures = decorator.getPossibleCaptures();
+        this.board.possibleMoves = decorator.getPossibleMoves();
     }
 
-    onPieceClicked(pieceClicked, pointClicked) {
+    preparePremoveActivePiece(pieceClicked: Piece, pointClicked: Point) {
+        if(this.premoveEnabled !== true) {
+            return;
+        }
+        this.board.premoveActivePiece = pieceClicked;
+        
+        const lastMove = this.moveHistoryProvider.getLastMove();
+        const gameOver = lastMove?.stalemate || lastMove?.checkmate;
+
+        if (gameOver) {
+            this.board.premovePossibleMoves = [];
+            this.board.premovePossibleCaptures = [];
+        } else {
+            const decorator = new AvailableMoveDecorator(
+                pieceClicked,
+                pointClicked,
+                this.board.currentWhitePlayer ? Color.BLACK : Color.WHITE,
+                this.board
+            );
+
+            const moves = decorator.getAllMoves();
+
+            this.board.premovePossibleMoves = moves;
+            this.board.premovePossibleCaptures = moves.filter(
+                (move) => !this.board.isFieldEmpty(move.row, move.col)
+            );
+        }
+  }
+
+    onPieceClicked(pieceClicked: Piece, pointClicked: Point) {
         if (
             (this.board.currentWhitePlayer && pieceClicked.color === Color.BLACK) ||
             (!this.board.currentWhitePlayer && pieceClicked.color === Color.WHITE)
         ) {
+            this.preparePremoveActivePiece(pieceClicked, pointClicked);
             return;
         }
 
         this.prepareActivePiece(pieceClicked, pointClicked);
+    }
+
+    public handlePremoveClickEvent(pointClicked: Point, isMouseDown: boolean) {
+        if (
+            (this.board.isPointInPremovePossibleMoves(pointClicked) ||
+                this.board.isPointInPremovePossibleCaptures(pointClicked)) &&
+            pointClicked.isInRange()
+        ) {
+            this.board.premoveSrc = new Point(
+                this.board.premoveActivePiece.point.row,
+                this.board.premoveActivePiece.point.col
+            );
+            this.board.premoveDest = pointClicked.clone();
+            this.disablePremoveSelection();
+        }
     }
 
     public handleClickEvent(pointClicked: Point, isMouseDown: boolean) {
@@ -183,7 +238,7 @@ export class EngineFacade extends AbstractEngineFacade {
                 this.board.activePiece.point.col
             );
             this.board.lastMoveDest = pointClicked.clone();
-            this.movePiece(this.board.activePiece, pointClicked);
+            this.movePiece(this.board.activePiece, pointClicked, false);
 
             if (!this.board.activePiece.point.isEqual(this.board.lastMoveSrc)) {
                 moving = true;
@@ -210,6 +265,12 @@ export class EngineFacade extends AbstractEngineFacade {
         if (this.board.activePiece) {
             this.disableSelection();
         }
+
+        this.clearPremove();
+
+        if (this.board.premoveActivePiece) {
+            this.disablePremoveSelection();
+        }
     }
 
     onMouseDown(
@@ -218,7 +279,6 @@ export class EngineFacade extends AbstractEngineFacade {
         left?: number,
         top?: number
     ) {
-        this.moveDone = false;
         if (event.button !== 0) {
             this.drawPoint = ClickUtils.getDrawingPoint(
                 this.heightAndWidth,
@@ -234,6 +294,7 @@ export class EngineFacade extends AbstractEngineFacade {
             return;
         }
 
+        this.clearPremove();
         this.drawProvider.clear();
 
         if (
@@ -241,6 +302,14 @@ export class EngineFacade extends AbstractEngineFacade {
             pointClicked.isEqual(this.board.activePiece.point)
         ) {
             this.disabling = true;
+            return;
+        }
+
+        if (
+            this.board.premoveActivePiece &&
+            pointClicked.isEqual(this.board.premoveActivePiece.point)
+        ) {
+            this.premoveDisabling = true;
             return;
         }
 
@@ -263,9 +332,17 @@ export class EngineFacade extends AbstractEngineFacade {
             return;
         }
 
-        if (this._selected) {
+        if (this.board.activePiece) {
             this.handleClickEvent(pointClicked, true);
-        } else {
+        } else if (this.board.premoveActivePiece &&
+            [
+                ...this.board.premovePossibleMoves,
+                ...this.board.premovePossibleCaptures,
+            ].some((point) => point.isEqual(pointClicked))
+        ) {
+            this.handlePremoveClickEvent(pointClicked, false);
+        }
+        else {
             if (pieceClicked) {
                 this.onFreeMode(pieceClicked);
                 this.onPieceClicked(pieceClicked, pointClicked);
@@ -279,7 +356,6 @@ export class EngineFacade extends AbstractEngineFacade {
         left: number,
         top: number
     ) {
-        this.moveDone = false;
         if (event.button !== 0) {
             if (!this.drawDisabled && this.drawPoint) {
                 this.addDrawPoint(
@@ -311,6 +387,17 @@ export class EngineFacade extends AbstractEngineFacade {
             this.disabling = false;
             return;
         }
+
+        if (
+            this.board.premoveActivePiece &&
+            pointClicked.isEqual(this.board.premoveActivePiece.point) &&
+            this.premoveDisabling
+        ) {
+            this.disablePremoveSelection();
+            this.premoveDisabling = false;
+            return;
+        }
+
         const pieceClicked = this.board.getPieceByPoint(
             pointClicked.row,
             pointClicked.col
@@ -320,9 +407,28 @@ export class EngineFacade extends AbstractEngineFacade {
             return;
         }
 
-        if (this._selected) {
+        if (
+            this.board.isPointInPossibleMoves(pointClicked) ||
+            this.board.isPointInPossibleCaptures(pointClicked)
+        ) {
             this.handleClickEvent(pointClicked, false);
-            //   this.possibleMoves = activePiece.getPossibleMoves();
+        } else if (
+            this.board.activePiece &&
+            !this.board.activePiece.point.isEqual(pointClicked)
+        ) {
+            this.disableSelection();
+        }
+
+        if (
+            this.board.isPointInPremovePossibleMoves(pointClicked) ||
+            this.board.isPointInPremovePossibleCaptures(pointClicked)
+        ) {
+            this.handlePremoveClickEvent(pointClicked, false);
+        } else if (
+            this.board.premoveActivePiece &&
+            !this.board.premoveActivePiece.point.isEqual(pointClicked)
+        ) {
+            this.disablePremoveSelection();
         }
     }
 
@@ -335,7 +441,7 @@ export class EngineFacade extends AbstractEngineFacade {
         this.boardStateProvider.addMove(new BoardState(clone));
     }
 
-    movePiece(toMovePiece: Piece, newPoint: Point, promotionIndex?: number) {
+    movePiece(toMovePiece: Piece, newPoint: Point, premove: boolean, promotionLetter?: string) {
         const destPiece = this.board.pieces.find(
             (piece) =>
                 piece.point.col === newPoint.col &&
@@ -361,9 +467,10 @@ export class EngineFacade extends AbstractEngineFacade {
 
         this.historyMoveCandidate = new HistoryMove(
             MoveUtils.format(toMovePiece.point, newPoint, this.board.reverted),
-            toMovePiece.constant.name,
-            toMovePiece.color === Color.WHITE ? 'white' : 'black',
-            !!destPiece
+            toMovePiece,
+            toMovePiece.color,
+            !!destPiece,
+            premove
         );
         this.moveHistoryProvider.addMove(this.historyMoveCandidate);
 
@@ -402,12 +509,12 @@ export class EngineFacade extends AbstractEngineFacade {
         this.increaseFullMoveCount();
         this.board.currentWhitePlayer = !this.board.currentWhitePlayer;
 
-        if (!this.checkForPawnPromote(toMovePiece, promotionIndex)) {
+        if (!this.checkForPawnPromote(toMovePiece, promotionLetter)) {
             this.afterMoveActions();
         }
     }
 
-    checkForPawnPromote(toPromotePiece: Piece, promotionIndex?: number) {
+    checkForPawnPromote(toPromotePiece: Piece, promotionLetter?: string) {
         if (!(toPromotePiece instanceof Pawn)) {
             return;
         }
@@ -419,22 +526,22 @@ export class EngineFacade extends AbstractEngineFacade {
 
             // When we make move manually, we pass promotion index already, so we don't need
             // to acquire it from promote dialog
-            if (!promotionIndex) {
+            if (!promotionLetter) {
                 this.openPromoteDialog(toPromotePiece);
             } else {
                 PiecePromotionResolver.resolvePromotionChoice(
                     this.board,
                     toPromotePiece,
-                    promotionIndex
+                    promotionLetter
                 );
-                this.afterMoveActions(promotionIndex);
+                this.afterMoveActions(promotionLetter);
             }
 
             return true;
         }
     }
 
-    afterMoveActions(promotionIndex?: number) {
+    afterMoveActions(promotionLetter?: string) {
         this.checkIfPawnFirstMove(this.board.activePiece);
         this.checkIfRookMoved(this.board.activePiece);
         this.checkIfKingMoved(this.board.activePiece);
@@ -449,63 +556,75 @@ export class EngineFacade extends AbstractEngineFacade {
         );
         const check =
             this.board.blackKingChecked || this.board.whiteKingChecked;
-        const checkmate =
-            this.checkForPossibleMoves(Color.BLACK) ||
-            this.checkForPossibleMoves(Color.WHITE);
-        const stalemate =
-            this.checkForPat(Color.BLACK) || this.checkForPat(Color.WHITE);
+
+        const checkmate = this.board.currentWhitePlayer
+            ? this.checkForCheckmate(Color.WHITE) 
+            : this.checkForCheckmate(Color.BLACK);
+        const stalemate = this.board.currentWhitePlayer
+            ? this.checkForPat(Color.WHITE) 
+            : this.checkForPat(Color.BLACK);
 
         this.historyMoveCandidate.setGameStates(check, stalemate, checkmate);
         this.pgnProcessor.processChecks(checkmate, check, stalemate);
-        this.pgnProcessor.addPromotionChoice(promotionIndex);
+        this.pgnProcessor.addPromotionChoice(promotionLetter);
 
         this.disabling = false;
         this.board.calculateFEN();
 
         const lastMove = this.moveHistoryProvider.getLastMove();
-        if (lastMove && promotionIndex) {
-            lastMove.move += promotionIndex;
+        if (lastMove && promotionLetter) {
+            lastMove.move += promotionLetter;
         }
 
         this.moveChange.emit({
             ...lastMove,
             check,
-            checkmate,
-            stalemate,
             fen: this.board.fen,
-            pgn: {
-                pgn: this.pgnProcessor.getPGN()
-            },
-            freeMode: this.freeMode
+            pgn: this.pgnProcessor.getPGN(),
+            freeMode: this.freeMode,
+            insufficientMaterial: this.checkInSufficientMaterial(),
+            notation: this.pgnProcessor.getLast()
         });
-
-        this.moveDone = true;
     }
 
     checkForPat(color: Color) {
-        if (color === Color.WHITE && !this.board.whiteKingChecked) {
-            return this.checkForPossibleMoves(color);
-        } else {
-            if (color === Color.BLACK && !this.board.blackKingChecked) {
-                return this.checkForPossibleMoves(color);
-            }
+        if (color === Color.WHITE) {
+            return this.hasPossibleMoves(color) && !this.board.whiteKingChecked;
+        }
+
+        if (color === Color.BLACK) {
+            return this.hasPossibleMoves(color) && !this.board.blackKingChecked;
+        }
+    }
+
+    checkForCheckmate(color: Color) {
+        if (color === Color.WHITE) {
+            return this.hasPossibleMoves(color) && this.board.whiteKingChecked;
+        }
+
+        if (color === Color.BLACK) {
+            return this.hasPossibleMoves(color) && this.board.blackKingChecked;
         }
     }
 
     openPromoteDialog(piece: Piece) {
         if (piece.color === this.board.activePiece.color) {
-            this.modal.open((index) => {
-                PiecePromotionResolver.resolvePromotionChoice(
-                    this.board,
-                    piece,
-                    index
-                );
-                this.afterMoveActions(index);
+            this.modal.open((letter) => {
+                if (letter) {
+                    PiecePromotionResolver.resolvePromotionChoice(
+                        this.board,
+                        piece,
+                        letter
+                    );
+                    this.afterMoveActions(letter);
+                } else {
+                    this.undo();
+                }
             });
         }
     }
 
-    checkForPossibleMoves(color: Color): boolean {
+    hasPossibleMoves(color: Color): boolean {
         return !this.board.pieces
             .filter((piece) => piece.color === color)
             .some(
@@ -540,10 +659,15 @@ export class EngineFacade extends AbstractEngineFacade {
     }
 
     disableSelection() {
-        this._selected = false;
         this.board.possibleCaptures = [];
-        this.board.activePiece = null;
         this.board.possibleMoves = [];
+        this.board.activePiece = null;
+    }
+
+    disablePremoveSelection() {
+        this.board.premovePossibleCaptures = [];
+        this.board.premovePossibleMoves = [];
+        this.board.premoveActivePiece = null;
     }
 
     /**
@@ -569,7 +693,13 @@ export class EngineFacade extends AbstractEngineFacade {
                     capture.row === pieceClicked.point.row
             );
 
-            if (foundCapture) {
+            const foundPremoveCapture = this.board.premovePossibleCaptures.find(
+                (capture) =>
+                    capture.col === pieceClicked.point.col &&
+                    capture.row === pieceClicked.point.row
+            );
+
+            if (foundCapture || foundPremoveCapture) {
                 return false;
             }
         }
@@ -656,4 +786,31 @@ export class EngineFacade extends AbstractEngineFacade {
             this.afterMoveActions();
         }
     }
+
+    public applyPremove = (): void => {
+        if (!this.board.premoveSrc || !this.board.premoveDest) {
+            return;
+        }
+
+        const piece = this.board.pieces.find(
+            (piece) =>
+                piece.point.col === this.board.premoveSrc.col &&
+                piece.point.row === this.board.premoveSrc.row
+        );
+        this.prepareActivePiece(piece, this.board.premoveDest);
+
+        if (
+            this.board.isPointInPossibleMoves(this.board.premoveDest) ||
+            this.board.isPointInPossibleCaptures(this.board.premoveDest)
+        ) {
+            this.saveClone();
+            this.movePiece(piece, this.board.premoveDest, true, 'q');
+            if (piece === this.moveHistoryProvider.getLastMove()?.piece) {
+                this.board.lastMoveSrc = this.board.premoveSrc.clone();
+                this.board.lastMoveDest = this.board.premoveDest.clone();
+            }
+        }
+        this.disableSelection();
+        this.clearPremove();
+    };
 }

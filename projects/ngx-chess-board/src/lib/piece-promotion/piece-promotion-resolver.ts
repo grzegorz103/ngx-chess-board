@@ -9,10 +9,10 @@ import { UnicodeConstants } from '../utils/unicode-constants';
 
 export class PiecePromotionResolver {
 
-    static resolvePromotionChoice(board: Board, piece: Piece, index: number) {
+    static resolvePromotionChoice(board: Board, piece: Piece, letter: string) {
         const isWhite = piece.color === Color.WHITE;
-        switch (index) {
-            case 1:
+        switch (letter) {
+            case "q":
                 board.pieces.push(
                     new Queen(
                         piece.point,
@@ -24,7 +24,7 @@ export class PiecePromotionResolver {
                     )
                 );
                 break;
-            case 2:
+            case "r":
                 board.pieces.push(
                     new Rook(
                         piece.point,
@@ -36,7 +36,7 @@ export class PiecePromotionResolver {
                     )
                 );
                 break;
-            case 3:
+            case "b":
                 board.pieces.push(
                     new Bishop(
                         piece.point,
@@ -48,7 +48,7 @@ export class PiecePromotionResolver {
                     )
                 );
                 break;
-            case 4:
+            case "n":
                 board.pieces.push(
                     new Knight(
                         piece.point,

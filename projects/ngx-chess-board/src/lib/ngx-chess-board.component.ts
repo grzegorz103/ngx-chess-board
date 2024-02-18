@@ -1,6 +1,7 @@
 import { CdkDragEnd, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
     AfterViewInit,
+    ChangeDetectorRef,
     Component,
     ElementRef,
     EventEmitter,
@@ -30,6 +31,7 @@ import { Constants } from './utils/constants';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
+import { Color } from './models/pieces/color';
 
 @Component({
     selector: 'ngx-chess-board',
@@ -42,8 +44,12 @@ export class NgxChessBoardComponent
     @Input() darkTileColor = Constants.DEFAULT_DARK_TILE_COLOR;
     @Input() lightTileColor: string = Constants.DEFAULT_LIGHT_TILE_COLOR;
     @Input() showCoords = true;
+    @Input() dragWhiteDisabled: boolean = false;
+    @Input() dragBlackDisabled: boolean = false;
     @Input() sourcePointColor: string = Constants.DEFAULT_SOURCE_POINT_COLOR;
     @Input() destinationPointColor: string = Constants.DEFAULT_DESTINATION_POINT_COLOR;
+    @Input() premoveSourcePointColor: string = Constants.DEFAULT_PREMOVE_SOURCE_POINT_COLOR;
+    @Input() premoveDestinationPointColor: string = Constants.DEFAULT_PREMOVE_DESTINATION_POINT_COLOR;
     @Input() legalMovesPointColor: string = Constants.DEFAULT_LEGAL_MOVE_POINT_COLOR;
     @Input() showLastMove = true;
     @Input() showLegalMoves = true;
@@ -61,19 +67,20 @@ export class NgxChessBoardComponent
     boardRef: ElementRef;
     @ViewChild('modal')
     modal: PiecePromotionModalComponent;
-
+    Color = Color;
     pieceSize: number;
     selected = false;
     boardLoader: BoardLoader;
     pieceIconManager: PieceIconInputManager;
     isDragging = false;
+    dragStartHistoryLength: number
     startTransition = '';
 
     engineFacade: AbstractEngineFacade;
 
     randomId = (Math.random() + 1).toString(36).substring(7);
 
-    constructor() {
+    constructor(public cd: ChangeDetectorRef) {
         this.engineFacade = new EngineFacade(
             new Board(),
             this.moveChange
@@ -93,6 +100,11 @@ export class NgxChessBoardComponent
         }
         this.engineFacade.drawProvider.clear();
         this.calculatePieceSize();
+    }
+
+    @Input('premoveEnabled')
+    public set premoveEnabled(premoveEnabled: boolean) {
+        this.engineFacade.premoveEnabled = premoveEnabled;
     }
 
     @Input('freeMode')
@@ -170,6 +182,10 @@ export class NgxChessBoardComponent
         this.engineFacade.board = board;
         this.engineFacade.board.possibleCaptures = [];
         this.engineFacade.board.possibleMoves = [];
+
+        this.engineFacade.board.premovePossibleCaptures = [];
+        this.engineFacade.board.premovePossibleMoves = [];
+
         this.boardLoader = new BoardLoader(this.engineFacade);
         this.boardLoader.setEngineFacade(this.engineFacade);
     };
@@ -182,6 +198,8 @@ export class NgxChessBoardComponent
             this.engineFacade.boardLoader.loadFEN(fen);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.board.premovePossibleCaptures = [];
+            this.engineFacade.board.premovePossibleMoves = [];
             this.engineFacade.coords.reset();
         } catch (exception) {
             this.engineFacade.boardLoader.addPieces();
@@ -197,6 +215,8 @@ export class NgxChessBoardComponent
             this.engineFacade.boardLoader.loadPGN(pgn);
             this.engineFacade.board.possibleCaptures = [];
             this.engineFacade.board.possibleMoves = [];
+            this.engineFacade.board.premovePossibleCaptures = [];
+            this.engineFacade.board.premovePossibleMoves = [];
             this.engineFacade.coords.reset();
         } catch (exception) {
             console.log(exception);
@@ -208,19 +228,23 @@ export class NgxChessBoardComponent
         return this.engineFacade.board.fen;
     }
 
-    dragEnded(event: CdkDragEnd): void {
+    dragEnded(event: CdkDragEnd, piece: Piece): void {
         this.isDragging = false;
+
+        const lastMove = this.engineFacade.moveHistoryProvider.getLastMove();
+        const length = this.engineFacade.getMoveHistory().length;
+
         this.engineFacade.dragEndStrategy.process(
             event,
-            this.engineFacade.moveDone,
+            piece === lastMove?.piece && length !== this.dragStartHistoryLength,
             this.startTransition
         );
     }
 
     dragStart(event: CdkDragStart): void {
         this.isDragging = true;
+        this.dragStartHistoryLength = this.engineFacade.getMoveHistory().length
         let trans = event.source.getRootElement().style.transform.split(') ');
-        //   this.startTrans= trans;
         this.startTransition = trans.length === 2 ? trans[1] : trans[0];
         this.engineFacade.dragStartStrategy.process(event);
     }
@@ -305,8 +329,24 @@ export class NgxChessBoardComponent
             if (this.engineFacade.board.isXYInDestMove(i, j)) {
                 color = this.destinationPointColor;
             }
+
+            if (this.engineFacade.board.isXYInSourcePremove(i, j)) {
+                color = this.premoveSourcePointColor;
+            }
+
+            if (this.engineFacade.board.isXYInDestPremove(i, j)) {
+                color = this.premoveDestinationPointColor;
+            }
         }
 
         return color;
+    }
+
+    public trackByRow(_: number, numbers: number[]): string {
+        return numbers.toString();
+    }
+
+    public trackByCol(_: number, number: number): number {
+        return number;
     }
 }

@@ -6,7 +6,7 @@ export class DefaultDragStartProcessor implements DragStartProcessor {
     dragStarted(event: CdkDragStart) {
         const style = event.source.element.nativeElement.style;
         style.position = 'relative';
-        style.zIndex = '1000';
+        style.zIndex = '99';
         style.touchAction = 'none';
         style.pointerEvents = 'none';
     }

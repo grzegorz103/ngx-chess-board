@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 import { ActionsComponent } from './components/actions/actions.component';
 import { FenComponent } from './components/fen/fen.component';
 import { MovesComponent } from './components/moves/moves.component';
-import { SettingsComponent } from './components/settings/settings.component';
 
 describe('AppComponent', () => {
     beforeEach(async(() => {
@@ -14,7 +13,6 @@ describe('AppComponent', () => {
             imports: [FormsModule, DragDropModule],
             declarations: [
                 AppComponent,
-                SettingsComponent,
                 ActionsComponent,
                 NgxChessBoardComponent,
                 MovesComponent,

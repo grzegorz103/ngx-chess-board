@@ -2,15 +2,15 @@
     id="board"
     [style.height.px]="engineFacade.heightAndWidth"
     [style.width.px]="engineFacade.heightAndWidth"
-    (contextmenu)="!modal.opened && onContextMenu($event)"
+    (contextmenu)="onContextMenu($event)"
     (pointerdown)="!modal.opened && onMouseDown($event)"
     (pointerup)="!modal.opened && onMouseUp($event)"
     #boardRef
 >
     <div id="drag">
         <div
-            [cdkDragDisabled]="engineFacade.dragDisabled"
-            (cdkDragEnded)="dragEnded($event)"
+            [cdkDragDisabled]="engineFacade.dragDisabled || (dragWhiteDisabled && piece.color === Color.WHITE) || (dragBlackDisabled && piece.color === Color.BLACK)"
+            (cdkDragEnded)="dragEnded($event, piece)"
             (cdkDragMoved)="dragMoved($event)"
             (cdkDragStarted)="dragStart($event)"
             class="single-piece" [innerHTML]="engineFacade.pieceIconManager.isDefaultIcons() ? piece.constant.icon : ''"
@@ -32,12 +32,15 @@
             <div
                 class="board-col"
                 [class.current-selection]="showActivePiece && engineFacade.board.isXYInActiveMove(i,j)"
+                [class.premove-current-selection]="showActivePiece && engineFacade.board.isXYInActivePremove(i,j)"
                 [class.king-check]=" engineFacade.board.isKingChecked(engineFacade.board.getPieceByPoint(i,j))"
                 [class.point-circle]="engineFacade.board.isXYInPointSelection(i, j)"
                 [class.possible-capture]="showPossibleCaptures && engineFacade.board.isXYInPossibleCaptures(i, j)"
                 [class.possible-point]="engineFacade.board.isXYInPossibleMoves(i, j) && showLegalMoves"
+                [class.premove-possible-capture]="showPossibleCaptures && engineFacade.board.isXYInPremovePossibleCaptures(i, j)"
+                [class.premove-possible-point]="engineFacade.board.isXYInPremovePossibleMoves(i, j) && showLegalMoves"
                 [style.background-color]="getTileBackgroundColor(i, j)"
-                *ngFor="let col of row; let j = index"
+                *ngFor="let col of row; let j = index; trackBy: trackByCol"
             >
                 <span
                     class="yCoord"
@@ -72,7 +75,7 @@
     <svg
         [attr.height]="engineFacade.heightAndWidth"
         [attr.width]="engineFacade.heightAndWidth"
-        style="position:absolute; top:0; pointer-events: none"
+        style="position:absolute; top:0; pointer-events: none; z-index: 100"
     >
         <defs *ngFor="let color of ['red', 'green', 'blue', 'orange']">
             <marker
@@ -111,5 +114,5 @@
     </svg>
     <app-piece-promotion-modal #modal
                                [pieceIconInput]="engineFacade.pieceIconManager.pieceIconInput"
-                               [color]="engineFacade.board.getCurrentPlayerColor() ? 'white' : 'black'"></app-piece-promotion-modal>
+                               [color]="engineFacade.board.getCurrentPlayerColor()"></app-piece-promotion-modal>
 </div>

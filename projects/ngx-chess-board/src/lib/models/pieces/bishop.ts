@@ -15,6 +15,31 @@ export class Bishop extends Piece {
         super(point, color, constant, 3, board);
     }
 
+    getAllMoves(): Point[] {
+        const possiblePoints = [];
+
+        const row = this.point.row;
+        const col = this.point.col;
+
+        for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; --i, --j) {
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row - 1, j = col + 1; i >= 0 && j < 8; --i, ++j) {
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row + 1, j = col - 1; i < 8 && j >= 0; ++i, --j) {
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row + 1, j = col + 1; i < 8 && j < 8; ++i, ++j) {
+            possiblePoints.push(new Point(i, j));
+        }
+
+        return possiblePoints;
+    }
+
     getPossibleMoves(): Point[] {
         const possiblePoints = [];
 

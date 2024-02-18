@@ -9,7 +9,7 @@ export class King extends Piece {
     castledAlready = false;
     shortCastled = false;
     longCastled = false;
-    isMovedAlready;
+    isMovedAlready = false;
     isCastling = false;
 
     constructor(
@@ -19,6 +19,65 @@ export class King extends Piece {
         board: Board
     ) {
         super(point, color, constant, 0, board);
+    }
+
+    getAllMoves(): Point[] {
+        const possiblePoints = [];
+
+        const row = this.point.row;
+        const col = this.point.col;
+
+        possiblePoints.push(new Point(row, col - 1));
+        possiblePoints.push(new Point(row, col + 1));
+        possiblePoints.push(new Point(row + 1, col));
+        possiblePoints.push(new Point(row - 1, col));
+        possiblePoints.push(new Point(row - 1, col - 1));
+        possiblePoints.push(new Point(row - 1, col + 1));
+        possiblePoints.push(new Point(row + 1, col - 1));
+        possiblePoints.push(new Point(row + 1, col + 1));
+
+        if (!this.isMovedAlready) {
+            if (
+                this.board.getPieceByField(row, 0)
+            ) {
+                const leftRook = this.board.getPieceByField(row, 0);
+                if (leftRook instanceof Rook) {
+                    if (!leftRook.isMovedAlready) {
+                        possiblePoints.push(new Point(row, col - 2));
+                    }
+                }
+            }
+
+            let shortCastlePossible = true;
+            for (let i = col + 1; i < 7; ++i) {
+                if (
+                    !this.board.isFieldEmpty(row, i) ||
+                    this.board.isFieldUnderAttack(
+                        row,
+                        i,
+                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                    )
+                ) {
+                    shortCastlePossible = false;
+                    break;
+                }
+            }
+
+            if (
+                shortCastlePossible &&
+                !this.board.isKingInCheck(this.color, this.board.pieces) &&
+                this.board.getPieceByField(row, 7)
+            ) {
+                const rightRook = this.board.getPieceByField(row, 7);
+                if (rightRook instanceof Rook) {
+                    if (!rightRook.isMovedAlready) {
+                        possiblePoints.push(new Point(row, col + 2));
+                    }
+                }
+            }
+        }
+
+        return possiblePoints;
     }
 
     getPossibleMoves(): Point[] {

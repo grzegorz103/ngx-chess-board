@@ -15,6 +15,49 @@ export class Queen extends Piece {
         super(point, color, constant, 9, board);
     }
 
+    getAllMoves(): Point[] {
+        const possiblePoints = [];
+
+        const row = this.point.row;
+        const col = this.point.col;
+
+        for (let i = row - 1, j = col - 1; i >= 0 && j >= 0; --i, --j) {
+            // lewa gorna przekatna
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row - 1, j = col + 1; i >= 0 && j < 8; --i, ++j) {
+            // prawa gorna przekatna
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row + 1, j = col - 1; i < 8 && j >= 0; ++i, --j) {
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row + 1, j = col + 1; i < 8 && j < 8; ++i, ++j) {
+            possiblePoints.push(new Point(i, j));
+        }
+
+        for (let i = row + 1; i < 8; ++i) {
+            possiblePoints.push(new Point(i, col));
+        }
+
+        for (let i = row - 1; i >= 0; --i) {
+            possiblePoints.push(new Point(i, col));
+        }
+
+        for (let j = col - 1; j >= 0; --j) {
+            possiblePoints.push(new Point(row, j));
+        }
+
+        for (let j = col + 1; j < 8; ++j) {
+            possiblePoints.push(new Point(row, j));
+        }
+
+        return possiblePoints;
+    }
+
     getPossibleMoves(): Point[] {
         const possiblePoints = [];
 

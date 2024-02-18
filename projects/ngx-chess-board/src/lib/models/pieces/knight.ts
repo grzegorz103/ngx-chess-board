@@ -16,6 +16,23 @@ export class Knight extends Piece {
         super(point, color, constant, 3, board);
     }
 
+    getAllMoves(): Point[] {
+        const possiblePoints = [];
+
+        const row = this.point.row;
+        const col = this.point.col;
+
+        possiblePoints.push(new Point(row - 2, col - 1));
+        possiblePoints.push(new Point(row - 2, col + 1));
+        possiblePoints.push(new Point(row - 1, col - 2));
+        possiblePoints.push(new Point(row - 1, col + 2));
+        possiblePoints.push(new Point(row + 1, col - 2));
+        possiblePoints.push(new Point(row + 1, col + 2));
+        possiblePoints.push(new Point(row + 2, col - 1));
+        possiblePoints.push(new Point(row + 2, col + 1));
+        return possiblePoints;
+    }
+
     getPossibleMoves(): Point[] {
         const possiblePoints = [];
 

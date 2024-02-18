@@ -28,6 +28,8 @@ export abstract class Piece implements AbstractPiece {
 
     abstract getPossibleMoves(): Point[];
 
+    abstract getAllMoves(): Point[];
+
     abstract getPossibleCaptures(): Point[];
 
     abstract getCoveredFields(): Point[]; // zwraca liste punktow ktore sa puste lub istnieje na nich pionek tego samego koloru
