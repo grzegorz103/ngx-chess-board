@@ -2,6 +2,7 @@
     id="board"
     [style.height.px]="engineFacade.heightAndWidth"
     [style.width.px]="engineFacade.heightAndWidth"
+    (contextmenu)="!modal.opened && onContextMenu($event)"
     (pointerdown)="!modal.opened && onMouseDown($event)"
     (pointerup)="!modal.opened && onMouseUp($event)"
     #boardRef
@@ -20,6 +21,7 @@
             [style.width]="pieceSize + 'px'"
             [style.height]="pieceSize + 'px'"
             cdkDrag
+            [style.--animation-duration]="animationDuration + 'ms'"
             *ngFor="let piece of engineFacade.board.pieces; let i = index"
         >
         </div>
@@ -74,7 +76,7 @@
     >
         <defs *ngFor="let color of ['red', 'green', 'blue', 'orange']">
             <marker
-                [id]="color + 'Arrow'"
+                [id]="randomId + color + 'Arrow'"
                 markerHeight="13"
                 markerWidth="13"
                 orient="auto"
@@ -89,7 +91,7 @@
         </defs>
         <line
             class="arrow"
-            [attr.marker-end]="'url(#' + arrow.end.color + 'Arrow)'"
+            [attr.marker-end]="'url(#' + randomId + arrow.end.color + 'Arrow)'"
             [attr.stroke]="arrow.end.color"
             [attr.x1]="arrow.start.x"
             [attr.x2]="arrow.end.x"

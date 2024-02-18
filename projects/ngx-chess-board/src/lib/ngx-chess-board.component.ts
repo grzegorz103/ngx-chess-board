@@ -15,7 +15,8 @@ import {
 import { AbstractEngineFacade } from './engine/abstract-engine-facade';
 import { BoardLoader } from './engine/board-state-provider/board-loader/board-loader';
 import {
-    NotationProcessorFactory, NotationType,
+    NotationProcessorFactory,
+    NotationType,
 } from './engine/board-state-provider/board-loader/notation-processors/notation-processor-factory';
 import { ClickUtils } from './engine/click/click-utils';
 import { EngineFacade } from './engine/engine-facade';
@@ -25,12 +26,10 @@ import { Board } from './models/board';
 import { Piece } from './models/pieces/piece';
 import { NgxChessBoardView } from './ngx-chess-board-view';
 import { PiecePromotionModalComponent } from './piece-promotion/piece-promotion-modal/piece-promotion-modal.component';
-import { NgxChessBoardService } from './service/ngx-chess-board.service';
 import { Constants } from './utils/constants';
 import { PieceIconInput } from './utils/inputs/piece-icon-input';
 import { PieceIconInputManager } from './utils/inputs/piece-icon-input-manager';
 import { ColorInput, PieceTypeInput } from './utils/inputs/piece-type-input';
-
 
 @Component({
     selector: 'ngx-chess-board',
@@ -49,6 +48,7 @@ export class NgxChessBoardComponent
     @Input() showLastMove = true;
     @Input() showLegalMoves = true;
     @Input() showActivePiece = true;
+    @Input() animationDuration = 200;
     @Input() showPossibleCaptures = true;
     /**
      * Enabling free mode removes turn-based restriction and allows to move any piece freely!
@@ -71,7 +71,9 @@ export class NgxChessBoardComponent
 
     engineFacade: AbstractEngineFacade;
 
-    constructor(private ngxChessBoardService: NgxChessBoardService) {
+    randomId = (Math.random() + 1).toString(36).substring(7);
+
+    constructor() {
         this.engineFacade = new EngineFacade(
             new Board(),
             this.moveChange
@@ -142,12 +144,7 @@ export class NgxChessBoardComponent
         }
     }
 
-    ngOnInit() {
-        this.ngxChessBoardService.componentMethodCalled$.subscribe(() => {
-            this.engineFacade.reset();
-        });
-
-    }
+    ngOnInit() {}
 
     ngAfterViewInit(): void {
         this.engineFacade.modal = this.modal;
@@ -169,12 +166,13 @@ export class NgxChessBoardComponent
         this.engineFacade.coords.reverse();
     }
 
-    updateBoard(board: Board) {
+    updateBoard = (board: Board) => {
         this.engineFacade.board = board;
-        this.boardLoader.setEngineFacade(this.engineFacade);
         this.engineFacade.board.possibleCaptures = [];
         this.engineFacade.board.possibleMoves = [];
-    }
+        this.boardLoader = new BoardLoader(this.engineFacade);
+        this.boardLoader.setEngineFacade(this.engineFacade);
+    };
 
     setFEN(fen: string): void {
         try {
@@ -232,6 +230,10 @@ export class NgxChessBoardComponent
             this.boardRef.nativeElement.getBoundingClientRect().left,
             this.boardRef.nativeElement.getBoundingClientRect().top
         );
+    }
+
+    onContextMenu(event: MouseEvent): void {
+        this.engineFacade.onContextMenu(event);
     }
 
     getClickPoint(event) {
