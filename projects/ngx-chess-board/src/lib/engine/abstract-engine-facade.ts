@@ -73,10 +73,6 @@ export abstract class AbstractEngineFacade {
         top?: number
     ): void;
 
-    public abstract onContextMenu(
-        event: MouseEvent,
-    ): void;
-
     public checkIfPawnFirstMove(piece: Piece) {
         if (piece instanceof Pawn) {
             piece.isMovedAlready = true;

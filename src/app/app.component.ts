@@ -7,7 +7,7 @@ import {
 import {
     ColorInput,
     PieceTypeInput
-} from 'ngx-chess-board';
+} from 'ngx-chess-board/src/lib/utils/inputs/piece-type-input';
 import { FenComponent } from './components/fen/fen.component';
 
 @Component({

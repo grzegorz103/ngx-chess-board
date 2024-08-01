@@ -10,7 +10,7 @@ import { SettingsComponent } from './components/settings/settings.component';
 
 @NgModule({
     declarations: [AppComponent, ActionsComponent, SettingsComponent, MovesComponent, FenComponent],
-    imports: [BrowserModule, FormsModule, NgxChessBoardModule],
+    imports: [BrowserModule, FormsModule, NgxChessBoardModule.forRoot()],
     bootstrap: [AppComponent],
 })
 export class AppModule {}
