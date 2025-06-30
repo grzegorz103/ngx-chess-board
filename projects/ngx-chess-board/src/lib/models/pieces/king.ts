@@ -16,7 +16,7 @@ export class King extends Piece {
         point: Point,
         color: Color,
         constant: PieceConstant,
-        board: Board
+        board: Board,
     ) {
         super(point, color, constant, 0, board);
     }
@@ -32,7 +32,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row, col - 1));
@@ -44,7 +44,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row, col + 1));
@@ -56,7 +56,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row + 1,
                 col,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row + 1, col));
@@ -68,7 +68,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row - 1,
                 col,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row - 1, col));
@@ -80,7 +80,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row - 1,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row - 1, col - 1));
@@ -91,7 +91,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row - 1,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row - 1, col + 1));
@@ -103,7 +103,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row + 1,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row + 1, col - 1));
@@ -114,7 +114,7 @@ export class King extends Piece {
             !this.board.isFieldUnderAttack(
                 row + 1,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row + 1, col + 1));
@@ -122,13 +122,13 @@ export class King extends Piece {
 
         if (!this.isMovedAlready) {
             let longCastlePossible = true;
-            for (let i = col - 1; i > 0; --i) {
+            for (let i = col - 1; i > 1; --i) {
                 if (
                     !this.board.isFieldEmpty(row, i) ||
                     this.board.isFieldUnderAttack(
                         row,
                         i,
-                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
                     )
                 ) {
                     longCastlePossible = false;
@@ -136,10 +136,11 @@ export class King extends Piece {
                 }
             }
 
-            if (longCastlePossible && !this.board.isKingInCheck(
-                this.color,
-                this.board.pieces
-            ) && this.board.getPieceByField(row, 0)) {
+            if (
+                longCastlePossible &&
+                !this.board.isKingInCheck(this.color, this.board.pieces) &&
+                this.board.getPieceByField(row, 0)
+            ) {
                 const leftRook = this.board.getPieceByField(row, 0);
                 if (leftRook instanceof Rook) {
                     if (!leftRook.isMovedAlready) {
@@ -155,7 +156,7 @@ export class King extends Piece {
                     this.board.isFieldUnderAttack(
                         row,
                         i,
-                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                        this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
                     )
                 ) {
                     shortCastlePossible = false;
@@ -163,10 +164,11 @@ export class King extends Piece {
                 }
             }
 
-            if (shortCastlePossible && !this.board.isKingInCheck(
-                this.color,
-                this.board.pieces
-            ) && this.board.getPieceByField(row, 7)) {
+            if (
+                shortCastlePossible &&
+                !this.board.isKingInCheck(this.color, this.board.pieces) &&
+                this.board.getPieceByField(row, 7)
+            ) {
                 const rightRook = this.board.getPieceByField(row, 7);
                 if (rightRook instanceof Rook) {
                     if (!rightRook.isMovedAlready) {
@@ -190,12 +192,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row, col - 1));
@@ -206,12 +208,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row, col + 1));
@@ -222,12 +224,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row + 1,
                 col,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row + 1,
                 col,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row + 1, col));
@@ -238,12 +240,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row - 1,
                 col,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row - 1,
                 col,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row - 1, col));
@@ -254,12 +256,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row - 1,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row - 1,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row - 1, col - 1));
@@ -269,12 +271,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row - 1,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row - 1,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row - 1, col + 1));
@@ -285,12 +287,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row + 1,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row + 1,
                 col - 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row + 1, col - 1));
@@ -300,12 +302,12 @@ export class King extends Piece {
             this.board.isFieldTakenByEnemy(
                 row + 1,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             ) &&
             !this.board.isFieldUnderAttack(
                 row + 1,
                 col + 1,
-                this.color === Color.WHITE ? Color.BLACK : Color.WHITE
+                this.color === Color.WHITE ? Color.BLACK : Color.WHITE,
             )
         ) {
             possiblePoints.push(new Point(row + 1, col + 1));
@@ -343,7 +345,6 @@ export class King extends Piece {
 
         // prawo dol
         possiblePoints.push(new Point(row + 1, col + 1));
-
 
         return possiblePoints;
     }
